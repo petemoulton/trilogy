@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "MCP Chrome Agent",
+  "version": "1.0.0",
+  "description": "Chrome extension for MCP (Model Control Protocol) browser automation and monitoring",
+  
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "tabs",
+    "storage",
+    "host_permissions"
+  ],
+  
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "<all_urls>"
+  ],
+  
+  "background": {
+    "service_worker": "background.js"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js", "recorder.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "MCP Chrome Agent"
+  },
+  
+  "web_accessible_resources": [
+    {
+      "resources": ["content.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

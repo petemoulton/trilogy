@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # Main Trilogy AI System
+  trilogy-app:
+    build: .
+    container_name: trilogy-ai-system
+    ports:
+      - "8080:8080"
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - MEMORY_BACKEND=postgresql
+      - DATABASE_URL=postgresql://trilogy:trilogy123@postgres:5432/trilogy
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=trilogy
+      - POSTGRES_USER=trilogy
+      - POSTGRES_PASSWORD=trilogy123
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./memory:/app/memory
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - trilogy-network
+
+  # PostgreSQL for memory and persistent data
+  postgres:
+    image: postgres:15-alpine
+    container_name: trilogy-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: trilogy
+      POSTGRES_USER: trilogy
+      POSTGRES_PASSWORD: trilogy123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    networks:
+      - trilogy-network
+
+  # Chrome Extension MCP Server
+  mcp-server:
+    build:
+      context: ./materials/chromeext
+      dockerfile: Dockerfile
+    container_name: trilogy-mcp
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=sqlite:///app/data/mcp.db
+    volumes:
+      - ./materials/chromeext/data:/app/data
+    restart: unless-stopped
+    networks:
+      - trilogy-network
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: trilogy-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - trilogy-app
+      - mcp-server
+    restart: unless-stopped
+    networks:
+      - trilogy-network
+
+volumes:
+  postgres_data:
+
+networks:
+  trilogy-network:
+    driver: bridge

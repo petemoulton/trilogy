@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Chrome Agent Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard">
+        <header class="header">
+            <h1><i class="fas fa-robot"></i> MCP Chrome Agent Dashboard</h1>
+            <div class="header-controls">
+                <div class="connection-status" id="connection-status">
+                    <i class="fas fa-circle"></i>
+                    <span id="status-text">Connecting...</span>
+                </div>
+                <button onclick="logout()" class="logout-btn" style="background:#ef4444; color:white; border:none; padding:0.5rem 1rem; border-radius:0.5rem; margin-left:1rem; cursor:pointer; display:none;" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-tabs"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="active-sessions">0</h3>
+                        <p>Active Sessions</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-mouse-pointer"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="total-events">0</h3>
+                        <p>Total Events</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-terminal"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="pending-commands">0</h3>
+                        <p>Pending Commands</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="uptime">0s</h3>
+                        <p>Server Uptime</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <div class="panel sessions-panel">
+                    <div class="panel-header">
+                        <h2><i class="fas fa-browser"></i> Active Sessions</h2>
+                        <button class="refresh-btn" onclick="refreshSessions()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="panel-content">
+                        <div id="sessions-list" class="sessions-list">
+                            <!-- Sessions will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel events-panel">
+                    <div class="panel-header">
+                        <h2><i class="fas fa-history"></i> Recent Events</h2>
+                        <div class="panel-controls">
+                            <select id="event-filter">
+                                <option value="">All Events</option>
+                                <option value="click">Clicks</option>
+                                <option value="input">Inputs</option>
+                                <option value="change">Changes</option>
+                            </select>
+                            <button class="refresh-btn" onclick="refreshEvents()">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="panel-content">
+                        <div id="events-list" class="events-list">
+                            <!-- Events will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2><i class="fas fa-gamepad"></i> Command Center</h2>
+                    </div>
+                    <div class="panel-content">
+                        <div class="command-form">
+                            <div class="form-row">
+                                <select id="session-select">
+                                    <option value="">Select Session</option>
+                                </select>
+                                <select id="command-type">
+                                    <option value="click">Click</option>
+                                    <option value="highlight">Highlight</option>
+                                    <option value="input">Input</option>
+                                    <option value="scroll">Scroll</option>
+                                    <option value="capture_dom">Capture DOM</option>
+                                </select>
+                            </div>
+                            <div class="form-row">
+                                <input type="text" id="command-selector" placeholder="CSS Selector (e.g., #button-id, .class-name)">
+                                <input type="text" id="command-value" placeholder="Value (for input commands)" style="display: none;">
+                            </div>
+                            <div class="form-row">
+                                <button class="send-command-btn" onclick="sendCommand()">
+                                    <i class="fas fa-paper-plane"></i> Send Command
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>

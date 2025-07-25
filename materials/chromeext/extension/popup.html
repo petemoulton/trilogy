@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 350px;
+      padding: 15px;
+      font-family: Arial, sans-serif;
+    }
+    .status {
+      padding: 8px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .status.connected {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .status.disconnected {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    .session-info {
+      background-color: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .capture-btn {
+      background-color: #007bff;
+      color: white;
+    }
+    .toggle-btn {
+      background-color: #28a745;
+      color: white;
+    }
+    .toggle-btn.disabled {
+      background-color: #dc3545;
+    }
+    .macro-controls {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #ddd;
+    }
+    .macro-controls h3, .macro-controls h4 {
+      margin: 0 0 10px 0;
+      font-size: 14px;
+    }
+    .macro-section {
+      margin-bottom: 15px;
+    }
+    #macro-name {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    .macro-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    .record-btn {
+      background-color: #dc3545;
+      color: white;
+      flex: 1;
+    }
+    .stop-btn {
+      background-color: #6c757d;
+      color: white;
+      flex: 1;
+    }
+    .macros-list {
+      max-height: 120px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 8px;
+    }
+    .macro-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .macro-item:last-child {
+      border-bottom: none;
+    }
+    .macro-name {
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .macro-actions {
+      font-size: 10px;
+      color: #666;
+    }
+    .play-btn {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    .no-macros {
+      text-align: center;
+      color: #666;
+      font-size: 12px;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="status" class="status disconnected">
+    Connecting to MCP Server...
+  </div>
+  
+  <div id="session-info" class="session-info" style="display: none;">
+    <div><strong>Session:</strong> <span id="session-id">N/A</span></div>
+    <div><strong>URL:</strong> <span id="current-url">N/A</span></div>
+  </div>
+  
+  <div class="controls">
+    <button id="capture-dom" class="capture-btn">Capture DOM</button>
+    <button id="capture-screenshot" class="capture-btn">Take Screenshot</button>
+    <button id="toggle-tracking" class="toggle-btn">Enable Tracking</button>
+  </div>
+  
+  <div class="macro-controls">
+    <h3>Macro Recording</h3>
+    <div class="macro-section">
+      <input type="text" id="macro-name" placeholder="Macro name" maxlength="50">
+      <div class="macro-buttons">
+        <button id="start-recording" class="record-btn">
+          <i class="fas fa-record-vinyl"></i> Start Recording
+        </button>
+        <button id="stop-recording" class="stop-btn" style="display: none;">
+          <i class="fas fa-stop"></i> Stop Recording
+        </button>
+      </div>
+    </div>
+    
+    <div class="saved-macros">
+      <h4>Saved Macros</h4>
+      <div id="macros-list" class="macros-list">
+        <p class="no-macros">No macros saved</p>
+      </div>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

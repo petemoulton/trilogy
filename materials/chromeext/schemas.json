@@ -1,0 +1,289 @@
+{
+  "schemas": {
+    "click-event": {
+      "type": "object",
+      "required": ["sessionId", "event", "url", "timestamp"],
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "description": "Unique session identifier for the browser tab"
+        },
+        "event": {
+          "type": "object",
+          "required": ["type", "tagName", "selector", "timestamp", "url"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["click", "input", "change"],
+              "description": "Type of user interaction"
+            },
+            "tagName": {
+              "type": "string",
+              "description": "HTML tag name of the target element"
+            },
+            "id": {
+              "type": ["string", "null"],
+              "description": "ID attribute of the target element"
+            },
+            "className": {
+              "type": ["string", "null"],
+              "description": "CSS class names of the target element"
+            },
+            "text": {
+              "type": ["string", "null"],
+              "description": "Visible text content of the element (truncated to 100 chars)"
+            },
+            "selector": {
+              "type": "string",
+              "description": "CSS selector to uniquely identify the element"
+            },
+            "coordinates": {
+              "type": "object",
+              "properties": {
+                "x": { "type": "number" },
+                "y": { "type": "number" },
+                "pageX": { "type": "number" },
+                "pageY": { "type": "number" }
+              },
+              "description": "Click coordinates (for click events)"
+            },
+            "value": {
+              "type": ["string", "null"],
+              "description": "Input value (for input/change events)"
+            },
+            "inputType": {
+              "type": ["string", "null"],
+              "description": "Input type attribute (for input events)"
+            },
+            "name": {
+              "type": ["string", "null"],
+              "description": "Name attribute of the element"
+            },
+            "checked": {
+              "type": ["boolean", "null"],
+              "description": "Checked state (for checkboxes/radio buttons)"
+            },
+            "timestamp": {
+              "type": "number",
+              "description": "Unix timestamp when the event occurred"
+            },
+            "url": {
+              "type": "string",
+              "description": "URL of the page where the event occurred"
+            }
+          }
+        },
+        "url": {
+          "type": "string",
+          "description": "URL of the page where the event occurred"
+        },
+        "timestamp": {
+          "type": "number",
+          "description": "Unix timestamp when the event was sent to server"
+        }
+      }
+    },
+    
+    "command": {
+      "type": "object",
+      "required": ["type", "selector"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["click", "highlight", "scroll", "input", "capture_dom"],
+          "description": "Type of command to execute"
+        },
+        "selector": {
+          "type": "string",
+          "description": "CSS selector to target the element"
+        },
+        "value": {
+          "type": ["string", "null"],
+          "description": "Value to input (for input commands)"
+        },
+        "coordinates": {
+          "type": "object",
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" }
+          },
+          "description": "Scroll coordinates (for scroll commands)"
+        },
+        "duration": {
+          "type": ["number", "null"],
+          "description": "Duration in milliseconds (for highlight commands)"
+        }
+      }
+    },
+    
+    "dom-snapshot": {
+      "type": "object",
+      "required": ["sessionId", "html", "url", "timestamp"],
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "description": "Unique session identifier for the browser tab"
+        },
+        "html": {
+          "type": "string",
+          "description": "Complete HTML content of the page"
+        },
+        "url": {
+          "type": "string",
+          "description": "URL of the page"
+        },
+        "title": {
+          "type": ["string", "null"],
+          "description": "Page title"
+        },
+        "timestamp": {
+          "type": "number",
+          "description": "Unix timestamp when the snapshot was taken"
+        }
+      }
+    },
+    
+    "session": {
+      "type": "object",
+      "required": ["tabId", "url", "createdAt", "lastActivity", "eventCount"],
+      "properties": {
+        "tabId": {
+          "type": "number",
+          "description": "Chrome tab ID"
+        },
+        "url": {
+          "type": "string",
+          "description": "URL of the tab"
+        },
+        "createdAt": {
+          "type": "number",
+          "description": "Unix timestamp when session was created"
+        },
+        "lastActivity": {
+          "type": "number",
+          "description": "Unix timestamp of last activity"
+        },
+        "eventCount": {
+          "type": "number",
+          "description": "Total number of events for this session"
+        }
+      }
+    },
+    
+    "api-response": {
+      "type": "object",
+      "required": ["success"],
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "description": "Whether the request was successful"
+        },
+        "error": {
+          "type": ["string", "null"],
+          "description": "Error message if success is false"
+        },
+        "data": {
+          "type": ["object", "null"],
+          "description": "Response data if success is true"
+        }
+      }
+    }
+  },
+  
+  "endpoints": {
+    "/click-event": {
+      "method": "POST",
+      "request": { "$ref": "#/schemas/click-event" },
+      "response": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "eventId": { "type": "number" }
+        }
+      }
+    },
+    
+    "/commands": {
+      "method": "GET",
+      "queryParams": {
+        "sessionId": { "type": "string", "required": false }
+      },
+      "response": {
+        "type": "object",
+        "properties": {
+          "commands": {
+            "type": "array",
+            "items": { "$ref": "#/schemas/command" }
+          }
+        }
+      }
+    },
+    
+    "/commands": {
+      "method": "POST",
+      "request": {
+        "type": "object",
+        "properties": {
+          "sessionId": { "type": "string" },
+          "command": { "$ref": "#/schemas/command" }
+        }
+      },
+      "response": { "$ref": "#/schemas/api-response" }
+    },
+    
+    "/full-dom": {
+      "method": "POST",
+      "request": { "$ref": "#/schemas/dom-snapshot" },
+      "response": { "$ref": "#/schemas/api-response" }
+    },
+    
+    "/session": {
+      "method": "POST",
+      "request": {
+        "type": "object",
+        "properties": {
+          "tabId": { "type": "number" },
+          "url": { "type": "string" }
+        }
+      },
+      "response": {
+        "type": "object",
+        "properties": {
+          "sessionId": { "type": "string" },
+          "success": { "type": "boolean" }
+        }
+      }
+    },
+    
+    "/sessions": {
+      "method": "GET",
+      "response": {
+        "type": "object",
+        "properties": {
+          "sessions": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                { "$ref": "#/schemas/session" },
+                { "properties": { "sessionId": { "type": "string" } } }
+              ]
+            }
+          }
+        }
+      }
+    },
+    
+    "/health": {
+      "method": "GET",
+      "response": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string" },
+          "timestamp": { "type": "number" },
+          "activeSessions": { "type": "number" },
+          "eventCount": { "type": "number" }
+        }
+      }
+    }
+  }
+}
