@@ -436,3 +436,40 @@ body {
 .panel-content::-webkit-scrollbar-thumb:hover {
     background: var(--light-text);
 }
+/* Trilogy AI Integration Styles */
+.trilogy-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.trilogy-stat {
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.trilogy-stat strong {
+    color: #2d3748;
+    display: block;
+    margin-bottom: 4px;
+}
+
+#trilogy-prd-title {
+    color: #4a5568;
+    font-size: 0.85rem;
+    max-width: 100%;
+    word-wrap: break-word;
+}
+
+#trilogy-tasks-approved {
+    color: #38a169;
+    font-weight: bold;
+}
+
+#trilogy-tasks-rejected {
+    color: #e53e3e;
+    font-weight: bold;
+}
+

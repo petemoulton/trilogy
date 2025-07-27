@@ -3,14 +3,19 @@ const BaseAgent = require('./base-agent');
 class OpusAgent extends BaseAgent {
   constructor(config = {}) {
     super('opus', config);
-    this.role = 'Decision-Making Core';
+    this.role = 'Team Lead & Task Allocation Engine';
     this.capabilities = [
       'Task Prioritization',
       'Feasibility Filtering',
       'Resource Allocation',
       'Roadmap Generation',
-      'Strategic Decision Making'
+      'Strategic Decision Making',
+      'Agent Pool Management',
+      'Task Distribution',
+      'Load Balancing',
+      'Capability Matching'
     ];
+    this.teamLeadMode = true;
   }
 
   async process(input) {
@@ -26,6 +31,17 @@ class OpusAgent extends BaseAgent {
           return await this.makeDecision(input.options);
         case 'review_sonnet_output':
           return await this.reviewSonnetOutput(input.analysis);
+        // NEW: Team Lead capabilities for Milestone 2
+        case 'analyze_prd':
+          return await this.analyzePRD(input.prdContent);
+        case 'allocate_tasks':
+          return await this.allocateTasksToAgents(input.tasks, input.agentPool);
+        case 'rebalance_workload':
+          return await this.rebalanceWorkload(input.agentPool);
+        case 'evaluate_agent_capacity':
+          return await this.evaluateAgentCapacity(input.agentId);
+        case 'optimize_allocation':
+          return await this.optimizeTaskAllocation(input.currentAllocation);
         default:
           return await this.handleGenericInput(input);
       }
@@ -434,6 +450,294 @@ class OpusAgent extends BaseAgent {
       ],
       timestamp: new Date().toISOString()
     };
+  }
+
+  // ===========================================
+  // NEW: TEAM LEAD CAPABILITIES - MILESTONE 2
+  // ===========================================
+
+  async analyzePRD(prdContent) {
+    console.log('👨‍💼 Team Lead: Analyzing PRD for task allocation...');
+    
+    // Simulate intelligent PRD analysis
+    const analysis = {
+      features: this.extractFeatures(prdContent),
+      complexity: this.assessComplexity(prdContent),
+      timeline: this.estimateTimeline(prdContent),
+      requiredAgents: this.determineRequiredAgents(prdContent),
+      risks: this.identifyRisks(prdContent)
+    };
+
+    // Store analysis results
+    await this.writeMemory('prd', 'analysis.json', analysis);
+    
+    // Broadcast to dashboard
+    this.broadcast('prd_analysis_complete', analysis);
+
+    return {
+      success: true,
+      analysis,
+      recommendation: `Identified ${analysis.features.length} features requiring ${analysis.requiredAgents.length} specialist agents`,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  async allocateTasksToAgents(tasks, agentPool) {
+    console.log(`👨‍💼 Team Lead: Allocating ${tasks.length} tasks across ${agentPool.length} agents...`);
+    
+    const allocation = {};
+    const unallocatedTasks = [];
+    
+    // Sort tasks by priority and dependencies
+    const sortedTasks = this.prioritizeTasks(tasks);
+    
+    for (const task of sortedTasks) {
+      const bestAgent = this.findBestAgentForTask(task, agentPool);
+      
+      if (bestAgent) {
+        if (!allocation[bestAgent.id]) {
+          allocation[bestAgent.id] = {
+            agent: bestAgent,
+            tasks: [],
+            estimatedLoad: 0
+          };
+        }
+        
+        allocation[bestAgent.id].tasks.push(task);
+        allocation[bestAgent.id].estimatedLoad += task.estimatedHours || 8;
+        
+        // Update agent status
+        bestAgent.status = 'assigned';
+        bestAgent.currentTasks = allocation[bestAgent.id].tasks.length;
+      } else {
+        unallocatedTasks.push(task);
+      }
+    }
+
+    // Calculate load balancing metrics
+    const metrics = this.calculateAllocationMetrics(allocation);
+    
+    // Store allocation results
+    const allocationResult = {
+      allocation,
+      unallocatedTasks,
+      metrics,
+      timestamp: new Date().toISOString()
+    };
+    
+    await this.writeMemory('tasks', 'allocation.json', allocationResult);
+    
+    // Broadcast real-time updates
+    this.broadcast('task_allocation_complete', allocationResult);
+    
+    return {
+      success: true,
+      allocation,
+      unallocatedTasks,
+      metrics,
+      message: `Allocated ${Object.keys(allocation).length * 5} tasks across ${Object.keys(allocation).length} agents`,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  async rebalanceWorkload(agentPool) {
+    console.log('👨‍💼 Team Lead: Rebalancing workload across agent pool...');
+    
+    // Get current allocation
+    const currentAllocation = await this.readMemory('tasks', 'allocation.json');
+    if (!currentAllocation) {
+      return { success: false, error: 'No current allocation found' };
+    }
+
+    // Identify overloaded and underloaded agents
+    const overloaded = [];
+    const underloaded = [];
+    
+    Object.values(currentAllocation.allocation).forEach(agentAlloc => {
+      if (agentAlloc.estimatedLoad > 40) { // 40+ hours = overloaded
+        overloaded.push(agentAlloc);
+      } else if (agentAlloc.estimatedLoad < 20) { // <20 hours = underloaded
+        underloaded.push(agentAlloc);
+      }
+    });
+
+    // Rebalance by moving tasks
+    const rebalancedAllocation = { ...currentAllocation.allocation };
+    const movedTasks = [];
+
+    for (const overloadedAgent of overloaded) {
+      const tasksToMove = overloadedAgent.tasks.slice(-2); // Move last 2 tasks
+      
+      for (const task of tasksToMove) {
+        const bestUnderloadedAgent = underloaded.find(agent => 
+          this.canAgentHandleTask(agent.agent, task)
+        );
+        
+        if (bestUnderloadedAgent) {
+          // Move task
+          overloadedAgent.tasks = overloadedAgent.tasks.filter(t => t.id !== task.id);
+          overloadedAgent.estimatedLoad -= task.estimatedHours || 8;
+          
+          bestUnderloadedAgent.tasks.push(task);
+          bestUnderloadedAgent.estimatedLoad += task.estimatedHours || 8;
+          
+          movedTasks.push({
+            task: task.id,
+            from: overloadedAgent.agent.id,
+            to: bestUnderloadedAgent.agent.id
+          });
+        }
+      }
+    }
+
+    // Update allocation
+    await this.writeMemory('tasks', 'allocation.json', { 
+      ...currentAllocation, 
+      allocation: rebalancedAllocation,
+      lastRebalanced: new Date().toISOString()
+    });
+
+    // Broadcast rebalancing results
+    this.broadcast('workload_rebalanced', { movedTasks, timestamp: new Date().toISOString() });
+
+    return {
+      success: true,
+      movedTasks,
+      message: `Rebalanced workload: moved ${movedTasks.length} tasks`,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  // Helper methods for Team Lead functionality
+  extractFeatures(prdContent) {
+    // Simulate feature extraction from PRD
+    const features = [
+      { name: 'User Authentication', complexity: 'Medium', priority: 'High' },
+      { name: 'Dashboard Interface', complexity: 'High', priority: 'High' },
+      { name: 'API Integration', complexity: 'Medium', priority: 'Medium' },
+      { name: 'Data Processing', complexity: 'High', priority: 'Medium' },
+      { name: 'Testing Suite', complexity: 'Low', priority: 'Low' }
+    ];
+    return features;
+  }
+
+  assessComplexity(prdContent) {
+    return {
+      overall: 'High',
+      score: 7.5,
+      factors: ['Multiple integrations', 'Real-time requirements', 'Complex UI']
+    };
+  }
+
+  estimateTimeline(prdContent) {
+    return {
+      totalWeeks: 4,
+      phases: [
+        { name: 'Foundation', weeks: 1.5 },
+        { name: 'Core Features', weeks: 2 },
+        { name: 'Integration & Testing', weeks: 0.5 }
+      ]
+    };
+  }
+
+  determineRequiredAgents(prdContent) {
+    return [
+      { role: 'frontend-specialist', count: 2, reason: 'Complex UI requirements' },
+      { role: 'backend-specialist', count: 2, reason: 'API and data processing' },
+      { role: 'qa-specialist', count: 1, reason: 'Testing and quality assurance' },
+      { role: 'devops-specialist', count: 1, reason: 'Deployment and infrastructure' }
+    ];
+  }
+
+  identifyRisks(prdContent) {
+    return [
+      { risk: 'Integration complexity', probability: 'Medium', impact: 'High' },
+      { risk: 'Resource availability', probability: 'Low', impact: 'Medium' },
+      { risk: 'Timeline constraints', probability: 'High', impact: 'Medium' }
+    ];
+  }
+
+  prioritizeTasks(tasks) {
+    return tasks.sort((a, b) => {
+      // Priority order: High -> Medium -> Low
+      const priorityScore = { 'High': 3, 'Medium': 2, 'Low': 1 };
+      const aPriority = priorityScore[a.priority] || 2;
+      const bPriority = priorityScore[b.priority] || 2;
+      
+      if (aPriority !== bPriority) {
+        return bPriority - aPriority;
+      }
+      
+      // Secondary sort by dependencies (fewer dependencies first)
+      return (a.dependencies?.length || 0) - (b.dependencies?.length || 0);
+    });
+  }
+
+  findBestAgentForTask(task, agentPool) {
+    let bestAgent = null;
+    let bestScore = 0;
+    
+    for (const agent of agentPool) {
+      const score = this.calculateAgentTaskFit(agent, task);
+      if (score > bestScore && agent.status !== 'busy') {
+        bestScore = score;
+        bestAgent = agent;
+      }
+    }
+    
+    return bestAgent;
+  }
+
+  calculateAgentTaskFit(agent, task) {
+    let score = 0;
+    
+    // Capability matching
+    const taskRequirements = task.requiredSkills || [];
+    const agentCapabilities = agent.capabilities || [];
+    
+    const matchingCapabilities = taskRequirements.filter(req => 
+      agentCapabilities.some(cap => cap.toLowerCase().includes(req.toLowerCase()))
+    );
+    
+    score += (matchingCapabilities.length / taskRequirements.length) * 50;
+    
+    // Workload consideration
+    const currentLoad = agent.currentTasks || 0;
+    if (currentLoad < 3) score += 30;
+    else if (currentLoad < 5) score += 10;
+    
+    // Agent type matching
+    if (agent.role === task.category) score += 20;
+    
+    return score;
+  }
+
+  canAgentHandleTask(agent, task) {
+    return this.calculateAgentTaskFit(agent, task) > 30;
+  }
+
+  calculateAllocationMetrics(allocation) {
+    const loads = Object.values(allocation).map(a => a.estimatedLoad);
+    const totalLoad = loads.reduce((sum, load) => sum + load, 0);
+    const avgLoad = totalLoad / loads.length;
+    const maxLoad = Math.max(...loads);
+    const minLoad = Math.min(...loads);
+    
+    return {
+      totalTasks: Object.values(allocation).reduce((sum, a) => sum + a.tasks.length, 0),
+      averageLoad: avgLoad,
+      loadBalance: maxLoad > 0 ? (minLoad / maxLoad) * 100 : 100,
+      efficiency: totalLoad > 0 ? (avgLoad / maxLoad) * 100 : 100,
+      utilizationRate: (totalLoad / (Object.keys(allocation).length * 40)) * 100
+    };
+  }
+
+  broadcast(event, data) {
+    // Send real-time updates to dashboard via WebSocket
+    if (this.wsConnection) {
+      this.wsConnection.emit(event, data);
+    }
+    console.log(`📡 Team Lead Broadcasting: ${event}`, data);
   }
 }
 

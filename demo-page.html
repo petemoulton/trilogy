@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trilogy AI Demo - E-commerce Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .success-message {
+            display: none;
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .product-card {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .product-card:hover {
+            border-color: #007bff;
+        }
+        .product-card.selected {
+            border-color: #007bff;
+            background-color: #e7f3ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>🛒 Demo E-commerce Form</h1>
+        
+        <div class="product-grid">
+            <div class="product-card" data-product="laptop">
+                <h3>💻 Laptop</h3>
+                <p>$999</p>
+            </div>
+            <div class="product-card" data-product="phone">
+                <h3>📱 Phone</h3>
+                <p>$699</p>
+            </div>
+            <div class="product-card" data-product="tablet">
+                <h3>📲 Tablet</h3>
+                <p>$399</p>
+            </div>
+        </div>
+
+        <form id="orderForm">
+            <div class="form-group">
+                <label for="customerName">Customer Name:</label>
+                <input type="text" id="customerName" name="customerName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="product">Selected Product:</label>
+                <select id="product" name="product" required>
+                    <option value="">Choose a product...</option>
+                    <option value="laptop">💻 Laptop - $999</option>
+                    <option value="phone">📱 Phone - $699</option>
+                    <option value="tablet">📲 Tablet - $399</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="quantity">Quantity:</label>
+                <input type="number" id="quantity" name="quantity" min="1" max="10" value="1" required>
+            </div>
+
+            <div class="form-group">
+                <label for="notes">Special Instructions:</label>
+                <textarea id="notes" name="notes" rows="3" placeholder="Any special delivery instructions..."></textarea>
+            </div>
+
+            <button type="button" onclick="fillSampleData()">Fill Sample Data</button>
+            <button type="submit">Place Order</button>
+            <button type="button" onclick="clearForm()">Clear Form</button>
+        </form>
+
+        <div id="successMessage" class="success-message">
+            ✅ Order placed successfully! Thank you for your purchase.
+        </div>
+    </div>
+
+    <script>
+        // Product card selection
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('click', function() {
+                // Remove selection from other cards
+                document.querySelectorAll('.product-card').forEach(c => c.classList.remove('selected'));
+                
+                // Select this card
+                this.classList.add('selected');
+                
+                // Update the dropdown
+                const product = this.dataset.product;
+                document.getElementById('product').value = product;
+            });
+        });
+
+        // Form submission
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Simulate order processing
+            setTimeout(() => {
+                document.getElementById('successMessage').style.display = 'block';
+                
+                // Scroll to success message
+                document.getElementById('successMessage').scrollIntoView({ 
+                    behavior: 'smooth' 
+                });
+            }, 1000);
+        });
+
+        // Fill sample data function
+        function fillSampleData() {
+            document.getElementById('customerName').value = 'John Doe';
+            document.getElementById('email').value = 'john.doe@example.com';
+            document.getElementById('product').value = 'laptop';
+            document.getElementById('quantity').value = '2';
+            document.getElementById('notes').value = 'Please deliver after 6 PM';
+            
+            // Select the laptop card
+            document.querySelector('[data-product="laptop"]').classList.add('selected');
+        }
+
+        // Clear form function
+        function clearForm() {
+            document.getElementById('orderForm').reset();
+            document.querySelectorAll('.product-card').forEach(c => c.classList.remove('selected'));
+            document.getElementById('successMessage').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

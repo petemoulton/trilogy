@@ -297,6 +297,24 @@
                 </div>
             </div>
 
+            <!-- Agent Pool Status -->
+            <div class="card">
+                <h3>🤖 Agent Pool</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0;">
+                    <div style="text-align: center;">
+                        <div class="metric-value" id="pool-total">0</div>
+                        <div class="metric-label">Total Agents</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="metric-value" id="pool-active">0</div>
+                        <div class="metric-label">Active</div>
+                    </div>
+                </div>
+                <div id="agent-list" style="max-height: 150px; overflow-y: auto; margin-top: 10px;">
+                    <div style="text-align: center; color: #666; font-size: 14px;">No agents spawned</div>
+                </div>
+            </div>
+
             <!-- Chrome Extension -->
             <div class="card">
                 <h3>🌐 Chrome Extension</h3>
@@ -307,6 +325,19 @@
                 <a href="http://localhost:3000/dashboard" target="_blank" class="btn btn-primary" style="width: 100%; text-align: center;">
                     Open MCP Dashboard
                 </a>
+            </div>
+
+            <!-- PRD Display -->
+            <div class="card">
+                <h3>📄 Current PRD</h3>
+                <div id="prd-title" style="font-weight: bold; margin-bottom: 10px;">Loading...</div>
+                <div id="prd-summary" style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">
+                    Loading PRD content...
+                </div>
+                <details style="margin-top: 10px;">
+                    <summary style="cursor: pointer; font-weight: bold; color: #4a5568;">📋 View Full PRD Content</summary>
+                    <div id="prd-full-content" style="max-height: 300px; overflow-y: auto; margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-family: monospace; font-size: 11px; white-space: pre-wrap; border: 1px solid #e2e8f0;">Loading full content...</div>
+                </details>
             </div>
 
             <!-- Logs -->
@@ -325,6 +356,7 @@
                 <button class="btn btn-primary" onclick="triggerWorkflow()">🚀 Trigger Workflow</button>
                 <button class="btn btn-success" onclick="analyzePRD()">📊 Analyze PRD</button>
                 <button class="btn btn-warning" onclick="generateTasks()">📋 Generate Tasks</button>
+                <button class="btn btn-secondary" onclick="spawnTestAgent()">🤖 Spawn Test Agent</button>
                 <button class="btn btn-primary" onclick="refreshDashboard()">🔄 Refresh</button>
             </div>
         </div>
@@ -339,7 +371,10 @@
             connectWebSocket();
             updateSystemMetrics();
             loadTasks();
+            loadPRD();
+            loadAgentPool();
             setInterval(updateSystemMetrics, 5000);
+            setInterval(loadAgentPool, 10000); // Refresh agent pool every 10s
         }
 
         // WebSocket connection
@@ -367,15 +402,45 @@
         }
 
         function handleWebSocketMessage(message) {
-            switch(message.type) {
+            // Handle both old format (direct object) and new format (parsed from string)
+            const data = typeof message === 'string' ? JSON.parse(message) : message;
+            
+            switch(data.type) {
                 case 'agent_trigger':
-                    addLogEntry(`Agent ${message.data.agent} triggered`);
+                    addLogEntry(`Agent ${data.data.agent} triggered`);
                     break;
                 case 'agent_response':
                     addLogEntry(`Agent response received`);
                     break;
                 case 'memory_update':
-                    addLogEntry(`Memory updated: ${message.data.namespace}`);
+                    addLogEntry(`Memory updated: ${data.data.namespace}`);
+                    break;
+                case 'pool_agent_spawned':
+                    addLogEntry(`🤖 Agent spawned: ${data.data.agentId} (${data.data.role})`);
+                    loadAgentPool();
+                    break;
+                case 'pool_agent_status_change':
+                    addLogEntry(`🔄 Agent ${data.data.agentId} status: ${data.data.status}`);
+                    loadAgentPool();
+                    break;
+                case 'pool_task_completed':
+                    addLogEntry(`✅ Task ${data.data.taskId} completed by ${data.data.agentId}`);
+                    loadAgentPool();
+                    break;
+                case 'pool_agent_error':
+                    addLogEntry(`❌ Agent ${data.data.agentId} error: ${data.data.error}`);
+                    loadAgentPool();
+                    break;
+                case 'agent_spawned':
+                    addLogEntry(`🎯 New agent: ${data.data.agentId}`);
+                    loadAgentPool();
+                    break;
+                case 'agent_removed':
+                    addLogEntry(`🗑️ Agent removed: ${data.data.agentId}`);
+                    loadAgentPool();
+                    break;
+                case 'task_assigned':
+                    addLogEntry(`📋 Task assigned to ${data.data.agentId}: ${data.data.task.description || data.data.taskId}`);
                     break;
             }
         }
@@ -400,7 +465,16 @@
             fetch('/health')
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('memory-usage').textContent = data.redis ? 'Redis' : 'File';
+                    document.getElementById('memory-usage').textContent = data.postgresql ? 'PostgreSQL' : 'File-based';
+                    
+                    // Update memory statistics if available
+                    if (data.stats) {
+                        document.getElementById('memory-keys').textContent = data.stats.totalKeys || '--';
+                    } else {
+                        // For file-based, estimate from the data we know exists
+                        document.getElementById('memory-keys').textContent = '5+';
+                        document.getElementById('memory-size').textContent = '15KB';
+                    }
                 })
                 .catch(error => {
                     console.error('Failed to fetch health:', error);
@@ -409,7 +483,7 @@
 
         async function loadTasks() {
             try {
-                const response = await fetch('/memory/tasks/final/approved_tasks.json');
+                const response = await fetch('/memory/tasks/approved_tasks.json');
                 const data = await response.json();
                 
                 if (data.success && data.data) {
@@ -418,10 +492,106 @@
                     document.getElementById('tasks-completed').textContent = tasks.rejected ? tasks.rejected.length : 0;
                     
                     displayTasks(tasks.approved || []);
+                    addLogEntry(`Loaded ${tasks.approved.length} approved tasks`);
+                } else {
+                    addLogEntry('No task data available');
                 }
             } catch (error) {
                 console.error('Failed to load tasks:', error);
+                addLogEntry('Failed to load tasks from memory');
             }
+        }
+
+        async function loadPRD() {
+            try {
+                const response = await fetch('/memory/prd/crewai-orchestration.md');
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    const prdContent = data.data;
+                    const lines = prdContent.split('\n');
+                    const title = lines[0].replace('#', '').trim();
+                    const summary = lines.slice(1, 10).join('\n').substring(0, 200) + '...';
+                    
+                    document.getElementById('prd-title').textContent = title;
+                    document.getElementById('prd-summary').textContent = summary;
+                    document.getElementById('prd-full-content').textContent = prdContent;
+                    addLogEntry(`✅ Loaded PRD: ${title.substring(0, 50)}...`);
+                    loadCurrentTasks(); // Also load current tasks
+                } else {
+                    document.getElementById('prd-title').textContent = 'No PRD loaded';
+                    document.getElementById('prd-summary').textContent = 'Upload a PRD to get started';
+                    document.getElementById('prd-full-content').textContent = 'No content available';
+                    addLogEntry('⚠️ No PRD data found');
+                }
+            } catch (error) {
+                console.error('Failed to load PRD:', error);
+                document.getElementById('prd-title').textContent = 'No PRD loaded';
+                document.getElementById('prd-summary').textContent = 'Upload a PRD to get started';
+                document.getElementById('prd-full-content').textContent = 'Error loading content';
+                addLogEntry('❌ Failed to load PRD from memory');
+            }
+        }
+
+        // Load current tasks and agent activity
+        async function loadCurrentTasks() {
+            try {
+                const response = await fetch('/memory/tasks/approved_tasks.json');
+                if (response.ok) {
+                    const tasks = await response.json();
+                    addLogEntry(`📋 Found ${tasks.length} approved tasks`);
+                    tasks.forEach((task, index) => {
+                        addLogEntry(`  ${index + 1}. ${task.description || task.title || 'Task'}`);
+                    });
+                }
+            } catch (error) {
+                addLogEntry('❌ Could not load current tasks');
+            }
+        }
+
+        // Load agent pool status
+        async function loadAgentPool() {
+            try {
+                const response = await fetch('/agents/pool/status');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        updateAgentPoolDisplay(data.poolStats, data.agents);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load agent pool:', error);
+            }
+        }
+
+        function updateAgentPoolDisplay(stats, agents) {
+            document.getElementById('pool-total').textContent = stats.totalAgents || 0;
+            document.getElementById('pool-active').textContent = stats.activeAgents || 0;
+            
+            const agentList = document.getElementById('agent-list');
+            
+            if (!agents || agents.length === 0) {
+                agentList.innerHTML = '<div style="text-align: center; color: #666; font-size: 14px;">No agents spawned</div>';
+                return;
+            }
+            
+            agentList.innerHTML = agents.map(agent => `
+                <div style="padding: 8px; margin-bottom: 5px; background: #f8f9fa; border-radius: 4px; border-left: 3px solid ${getStatusColor(agent.status)};">
+                    <div style="font-weight: bold; font-size: 12px;">${agent.id}</div>
+                    <div style="font-size: 11px; color: #666;">${agent.role} • ${agent.status}</div>
+                    <div style="font-size: 10px; color: #888;">Tasks: ${agent.tasksCompleted || 0}</div>
+                </div>
+            `).join('');
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'idle': '#28a745',
+                'working': '#007bff', 
+                'error': '#dc3545',
+                'disconnected': '#6c757d'
+            };
+            return colors[status] || '#6c757d';
         }
 
         function displayTasks(tasks) {
@@ -507,10 +677,77 @@
             }
         }
 
+        async function spawnTestAgent() {
+            addLogEntry('Spawning test agent...');
+            try {
+                const response = await fetch('/agents/pool/spawn', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        role: 'frontend-specialist',
+                        capabilities: ['react', 'css', 'javascript', 'testing'],
+                        config: { maxConcurrentTasks: 2 }
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    addLogEntry(`✅ Agent spawned: ${result.agentId} (${result.role})`);
+                    loadAgentPool(); // Refresh agent pool display
+                } else {
+                    addLogEntry(`❌ Failed to spawn agent: ${result.error}`);
+                }
+            } catch (error) {
+                addLogEntry(`❌ Error spawning agent: ${error.message}`);
+            }
+        }
+
         function refreshDashboard() {
             addLogEntry('Refreshing dashboard...');
             updateSystemMetrics();
             loadTasks();
+            loadPRD();
+            loadAgentPool();
+        }
+
+        // WebSocket message handling
+        function handleWebSocketMessage(message) {
+            const data = JSON.parse(message.data);
+            
+            switch (data.type) {
+                case 'pool_agent_spawned':
+                    addLogEntry(`🤖 Agent spawned: ${data.data.agentId} (${data.data.role})`);
+                    loadAgentPool();
+                    break;
+                    
+                case 'pool_agent_status_change':
+                    addLogEntry(`🔄 Agent ${data.data.agentId} status: ${data.data.status}`);
+                    loadAgentPool();
+                    break;
+                    
+                case 'pool_task_completed':
+                    addLogEntry(`✅ Task ${data.data.taskId} completed by ${data.data.agentId}`);
+                    loadAgentPool();
+                    break;
+                    
+                case 'pool_agent_error':
+                    addLogEntry(`❌ Agent ${data.data.agentId} error: ${data.data.error}`);
+                    loadAgentPool();
+                    break;
+                    
+                case 'agent_spawned':
+                    addLogEntry(`🎯 New agent: ${data.data.agentId}`);
+                    loadAgentPool();
+                    break;
+                    
+                case 'agent_removed':
+                    addLogEntry(`🗑️ Agent removed: ${data.data.agentId}`);
+                    loadAgentPool();
+                    break;
+                    
+                case 'task_assigned':
+                    addLogEntry(`📋 Task assigned to ${data.data.agentId}: ${data.data.task.description || data.data.taskId}`);
+                    break;
+            }
         }
 
         // Initialize when page loads

@@ -2,7 +2,7 @@
 
 class MCPDashboard {
     constructor() {
-        this.serverUrl = 'http://localhost:3000';
+        this.serverUrl = 'http://localhost:3100';
         this.refreshInterval = 5000; // 5 seconds
         this.startTime = Date.now();
         this.socket = null;
@@ -424,6 +424,45 @@ function logout() {
     window.location.href = '/dashboard/login.html';
 }
 
+// Trilogy AI System Integration
+async function refreshTrilogyData() {
+    const trilogyBaseUrl = 'http://localhost:8080';
+    
+    try {
+        // Fetch PRD data
+        const prdResponse = await fetch(`${trilogyBaseUrl}/memory/prd/crewai-orchestration.md`);
+        const prdData = await prdResponse.json();
+        
+        if (prdData.success && prdData.data) {
+            const title = prdData.data.split('\n')[0].replace('#', '').trim();
+            document.getElementById('trilogy-prd-title').textContent = title.substring(0, 60) + '...';
+        } else {
+            document.getElementById('trilogy-prd-title').textContent = 'No PRD loaded';
+        }
+        
+        // Fetch task data
+        const tasksResponse = await fetch(`${trilogyBaseUrl}/memory/tasks/approved_tasks.json`);
+        const tasksData = await tasksResponse.json();
+        
+        if (tasksData.success && tasksData.data) {
+            document.getElementById('trilogy-tasks-approved').textContent = tasksData.data.approved.length || 0;
+            document.getElementById('trilogy-tasks-rejected').textContent = tasksData.data.rejected.length || 0;
+        }
+        
+        // Fetch health status
+        const healthResponse = await fetch(`${trilogyBaseUrl}/health`);
+        const healthData = await healthResponse.json();
+        
+        document.getElementById('trilogy-status').textContent = 
+            healthData.status === 'healthy' ? '🟢 Healthy' : '🔴 Issue';
+            
+    } catch (error) {
+        console.error('Error fetching Trilogy data:', error);
+        document.getElementById('trilogy-prd-title').textContent = 'Connection failed';
+        document.getElementById('trilogy-status').textContent = '🔴 Offline';
+    }
+}
+
 // Initialize dashboard when page loads
 let dashboard;
 document.addEventListener('DOMContentLoaded', () => {
@@ -431,6 +470,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // if (!checkAuth()) return;
     
     dashboard = new MCPDashboard();
+    
+    // Load Trilogy data
+    refreshTrilogyData();
+    
+    // Refresh Trilogy data every 10 seconds
+    setInterval(refreshTrilogyData, 10000);
     
     // Show user info if logged in
     const user = JSON.parse(localStorage.getItem('mcp_user') || '{}');

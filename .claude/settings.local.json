@@ -12,7 +12,14 @@
       "Bash(git add:*)",
       "Bash(git rm:*)",
       "Bash(git commit:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(node:*)",
+      "Bash(curl:*)",
+      "Bash(lsof:*)",
+      "Bash(cat:*)",
+      "Bash(open /Users/petermoulton/Repos/trilogy/milestone2-ui-poc.html)",
+      "Bash(grep:*)",
+      "Bash(open http://localhost:8080)"
     ],
     "deny": []
   }

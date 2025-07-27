@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trilogy AI - Team Collaboration Features</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 30px;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .feature-icon {
+            font-size: 2rem;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+        
+        .feature-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        
+        .feature-subtitle {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+        
+        .demo-container {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        
+        /* Feature 1: User Management */
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+        
+        .user-card:hover { background: #f8f9fa; }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .user-role {
+            font-size: 0.8rem;
+            color: #718096;
+        }
+        
+        .user-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .status-online { background: #c6f6d5; color: #22543d; }
+        .status-busy { background: #fed7d7; color: #742a2a; }
+        .status-away { background: #faf089; color: #744210; }
+        
+        /* Feature 2: Project Workspace */
+        .workspace-tabs {
+            display: flex;
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 4px;
+            gap: 4px;
+        }
+        
+        .workspace-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        
+        .workspace-tab.active {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            color: #667eea;
+        }
+        
+        .workspace-content {
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .project-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #718096;
+            margin-top: 5px;
+        }
+        
+        /* Feature 3: Activity Feed */
+        .activity-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .activity-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-text {
+            font-size: 0.9rem;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+        
+        .activity-time {
+            font-size: 0.7rem;
+            color: #a0aec0;
+        }
+        
+        .activity-badge {
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .badge-ai { background: #e6fffa; color: #234e52; }
+        .badge-user { background: #e8f4f8; color: #2a4a5b; }
+        .badge-system { background: #f0f0f0; color: #4a5568; }
+        
+        /* Feature 4: Task Assignment */
+        .task-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .task-column {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .column-header {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        .task-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .task-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #2d3748;
+            margin-bottom: 6px;
+        }
+        
+        .task-assignee {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: #718096;
+        }
+        
+        .assignee-avatar {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
+        
+        /* Feature 5: Communication */
+        .chat-container {
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .message.own {
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .message-content {
+            max-width: 70%;
+        }
+        
+        .message-bubble {
+            background: white;
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .message.own .message-bubble {
+            background: #667eea;
+            color: white;
+        }
+        
+        .message-time {
+            font-size: 0.7rem;
+            color: #a0aec0;
+            margin-top: 4px;
+            text-align: right;
+        }
+        
+        .message.own .message-time {
+            text-align: left;
+        }
+        
+        .chat-input {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            outline: none;
+        }
+        
+        .chat-input button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .integration-box {
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Trilogy AI Team Collaboration Features</h1>
+        
+        <div class="features-grid">
+            <!-- Feature 1: User Management & Permissions -->
+            <div class="feature-card">
+                <div class="feature-header">
+                    <div class="feature-icon">👥</div>
+                    <div>
+                        <div class="feature-title">User Management & Permissions</div>
+                        <div class="feature-subtitle">Role-based access control for team members</div>
+                    </div>
+                </div>
+                
+                <div class="demo-container">
+                    <div class="user-card">
+                        <div class="user-avatar">PM</div>
+                        <div class="user-info">
+                            <div class="user-name">Peter Moulton</div>
+                            <div class="user-role">Project Manager • Admin</div>
+                        </div>
+                        <div class="user-status status-online">Online</div>
+                    </div>
+                    
+                    <div class="user-card">
+                        <div class="user-avatar">SD</div>
+                        <div class="user-info">
+                            <div class="user-name">Sarah Developer</div>
+                            <div class="user-role">Senior Developer • Editor</div>
+                        </div>
+                        <div class="user-status status-busy">Busy</div>
+                    </div>
+                    
+                    <div class="user-card">
+                        <div class="user-avatar">JT</div>
+                        <div class="user-info">
+                            <div class="user-name">John Tester</div>
+                            <div class="user-role">QA Engineer • Viewer</div>
+                        </div>
+                        <div class="user-status status-away">Away</div>
+                    </div>
+                </div>
+                
+                <div class="integration-box">
+                    <strong>🔐 Role-Based Features:</strong><br>
+                    Admin: Full control • Editor: Can modify PRDs/tasks • Viewer: Read-only access
+                </div>
+            </div>
+            
+            <!-- Feature 2: Project Workspace Switcher -->
+            <div class="feature-card">
+                <div class="feature-header">
+                    <div class="feature-icon">🗂️</div>
+                    <div>
+                        <div class="feature-title">Project Workspace Switcher</div>
+                        <div class="feature-subtitle">Manage multiple projects with isolated environments</div>
+                    </div>
+                </div>
+                
+                <div class="demo-container">
+                    <div class="workspace-tabs">
+                        <div class="workspace-tab active">E-commerce Platform</div>
+                        <div class="workspace-tab">Mobile App</div>
+                        <div class="workspace-tab">AI Dashboard</div>
+                    </div>
+                    
+                    <div class="workspace-content">
+                        <div><strong>Current Project:</strong> E-commerce Platform v2.0</div>
+                        <div class="project-stats">
+                            <div class="stat-card">
+                                <div class="stat-number">12</div>
+                                <div class="stat-label">Active Tasks</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">3</div>
+                                <div class="stat-label">AI Agents</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">85%</div>
+                                <div class="stat-label">Progress</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="integration-box">
+                    <strong>🚀 Isolated Environments:</strong><br>
+                    Each project has separate PRDs, tasks, agents, and team members
+                </div>
+            </div>
+            
+            <!-- Feature 3: Real-time Team Activity Feed -->
+            <div class="feature-card">
+                <div class="feature-header">
+                    <div class="feature-icon">📈</div>
+                    <div>
+                        <div class="feature-title">Real-time Team Activity Feed</div>
+                        <div class="feature-subtitle">Live updates of all team and AI agent activities</div>
+                    </div>
+                </div>
+                
+                <div class="demo-container">
+                    <div class="activity-item">
+                        <div class="activity-avatar">🤖</div>
+                        <div class="activity-content">
+                            <div class="activity-text">
+                                <span class="activity-badge badge-ai">AI Agent</span>
+                                Sonnet completed analysis of checkout flow PRD
+                            </div>
+                            <div class="activity-time">2 minutes ago</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-avatar">PM</div>
+                        <div class="activity-content">
+                            <div class="activity-text">
+                                <span class="activity-badge badge-user">Peter</span>
+                                Updated payment gateway requirements
+                            </div>
+                            <div class="activity-time">5 minutes ago</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-avatar">🔧</div>
+                        <div class="activity-content">
+                            <div class="activity-text">
+                                <span class="activity-badge badge-system">System</span>
+                                Chrome extension captured 15 user interactions
+                            </div>
+                            <div class="activity-time">8 minutes ago</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-avatar">SD</div>
+                        <div class="activity-content">
+                            <div class="activity-text">
+                                <span class="activity-badge badge-user">Sarah</span>
+                                Assigned task "API Integration" to AI agents
+                            </div>
+                            <div class="activity-time">12 minutes ago</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="integration-box">
+                    <strong>⚡ Live Notifications:</strong><br>
+                    WebSocket updates • Slack integration • Email summaries
+                </div>
+            </div>
+            
+            <!-- Feature 4: Task Assignment & Tracking -->
+            <div class="feature-card">
+                <div class="feature-header">
+                    <div class="feature-icon">📋</div>
+                    <div>
+                        <div class="feature-title">Task Assignment & Tracking</div>
+                        <div class="feature-subtitle">Assign tasks to team members or AI agents</div>
+                    </div>
+                </div>
+                
+                <div class="demo-container">
+                    <div class="task-board">
+                        <div class="task-column">
+                            <div class="column-header">📝 To Do</div>
+                            <div class="task-item">
+                                <div class="task-title">Database Schema Review</div>
+                                <div class="task-assignee">
+                                    <div class="assignee-avatar">SD</div>
+                                    Sarah Developer
+                                </div>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-title">API Documentation</div>
+                                <div class="task-assignee">
+                                    <div class="assignee-avatar">🤖</div>
+                                    Sonnet Agent
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="task-column">
+                            <div class="column-header">⚡ In Progress</div>
+                            <div class="task-item">
+                                <div class="task-title">Payment Flow Testing</div>
+                                <div class="task-assignee">
+                                    <div class="assignee-avatar">JT</div>
+                                    John Tester
+                                </div>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-title">Code Generation</div>
+                                <div class="task-assignee">
+                                    <div class="assignee-avatar">🧠</div>
+                                    Opus Agent
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="task-column">
+                            <div class="column-header">✅ Done</div>
+                            <div class="task-item">
+                                <div class="task-title">PRD Analysis Complete</div>
+                                <div class="task-assignee">
+                                    <div class="assignee-avatar">🤖</div>
+                                    AI Team
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="integration-box">
+                    <strong>🎯 Smart Assignment:</strong><br>
+                    AI suggests best assignee • Workload balancing • Skill matching
+                </div>
+            </div>
+            
+            <!-- Feature 5: Team Communication Hub -->
+            <div class="feature-card">
+                <div class="feature-header">
+                    <div class="feature-icon">💬</div>
+                    <div>
+                        <div class="feature-title">Team Communication Hub</div>
+                        <div class="feature-subtitle">Chat with team members and AI agents</div>
+                    </div>
+                </div>
+                
+                <div class="demo-container">
+                    <div class="chat-container">
+                        <div class="chat-messages">
+                            <div class="message">
+                                <div class="message-avatar">PM</div>
+                                <div class="message-content">
+                                    <div class="message-bubble">
+                                        Hey team! The PRD analysis is complete. AI agents found 3 optimization opportunities.
+                                    </div>
+                                    <div class="message-time">10:15 AM</div>
+                                </div>
+                            </div>
+                            
+                            <div class="message">
+                                <div class="message-avatar">🤖</div>
+                                <div class="message-content">
+                                    <div class="message-bubble">
+                                        I can generate the implementation code for the checkout optimization. Should I proceed?
+                                    </div>
+                                    <div class="message-time">10:16 AM</div>
+                                </div>
+                            </div>
+                            
+                            <div class="message own">
+                                <div class="message-avatar">SD</div>
+                                <div class="message-content">
+                                    <div class="message-bubble">
+                                        Yes, please generate the code. Make sure to include error handling.
+                                    </div>
+                                    <div class="message-time">10:17 AM</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="chat-input">
+                            <input type="text" placeholder="Type a message or ask an AI agent...">
+                            <button>Send</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="integration-box">
+                    <strong>🤖 AI Integration:</strong><br>
+                    Chat directly with agents • Get instant code reviews • Ask questions about PRDs
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Demo interactivity
+        document.querySelectorAll('.workspace-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.workspace-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        document.querySelectorAll('.task-item').forEach(item => {
+            item.addEventListener('click', function() {
+                this.style.transform = 'scale(1.02)';
+                setTimeout(() => this.style.transform = '', 200);
+            });
+        });
+    </script>
+</body>
+</html>

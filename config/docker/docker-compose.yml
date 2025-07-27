@@ -7,7 +7,7 @@ services:
     container_name: trilogy-ai-system
     ports:
       - "8080:8080"
-      - "3000:3000"
+      - "3100:3100"
     environment:
       - NODE_ENV=production
       - MEMORY_BACKEND=postgresql
@@ -52,7 +52,7 @@ services:
       dockerfile: Dockerfile
     container_name: trilogy-mcp
     ports:
-      - "3001:3000"
+      - "3101:3100"
     environment:
       - NODE_ENV=production
       - DATABASE_URL=sqlite:///app/data/mcp.db

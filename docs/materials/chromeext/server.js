@@ -9,12 +9,12 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:3000", "chrome-extension://*"],
+    origin: ["http://localhost:3100", "chrome-extension://*"],
     methods: ["GET", "POST"]
   }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3100;
 
 // Security middleware
 app.use(cors({

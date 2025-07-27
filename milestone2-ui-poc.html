@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trilogy AI - Task Allocation Engine POC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* Main Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 20px;
+            height: calc(100vh - 150px);
+        }
+
+        /* Sidebar - Team Lead Controls */
+        .sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .prd-section {
+            margin-bottom: 30px;
+        }
+
+        .prd-upload {
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .prd-upload:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+
+        .prd-upload input {
+            display: none;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            width: 100%;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .btn.secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn.secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .btn.danger {
+            background: #f56565;
+        }
+
+        .btn.danger:hover {
+            background: #e53e3e;
+        }
+
+        /* Main Content - Task Allocation View */
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 15px;
+        }
+
+        .content-header h2 {
+            color: #2d3748;
+            font-size: 1.5rem;
+        }
+
+        .status-badges {
+            display: flex;
+            gap: 10px;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .badge.analyzing {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .badge.allocating {
+            background: #feebc8;
+            color: #dd6b20;
+        }
+
+        .badge.ready {
+            background: #c6f6d5;
+            color: #38a169;
+        }
+
+        /* Task Allocation Grid */
+        .allocation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .agent-column {
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 300px;
+        }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .agent-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .status-active { background: #48bb78; }
+        .status-idle { background: #ed8936; }
+        .status-busy { background: #f56565; }
+
+        .agent-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .agent-capabilities {
+            font-size: 0.8rem;
+            color: #718096;
+        }
+
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            background: white;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .task-item.priority-high {
+            border-left-color: #f56565;
+        }
+
+        .task-item.priority-medium {
+            border-left-color: #ed8936;
+        }
+
+        .task-item.priority-low {
+            border-left-color: #48bb78;
+        }
+
+        .task-title {
+            font-weight: 500;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+
+        .task-meta {
+            font-size: 0.8rem;
+            color: #718096;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Right Panel - Agent Pool & Analytics */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .panel-card h3 {
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 12px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: #718096;
+            margin-top: 4px;
+        }
+
+        .agent-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .agent-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .agent-item:last-child {
+            border-bottom: none;
+        }
+
+        .dependency-map {
+            height: 150px;
+            background: #f7fafc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #718096;
+            font-style: italic;
+        }
+
+        /* Animation for real-time updates */
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 250px 1fr 300px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .allocation-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Trilogy AI - Task Allocation Engine</h1>
+            <p>Milestone 2 POC: Intelligent Task Distribution & Agent Coordination</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Left Sidebar - Team Lead Controls -->
+            <div class="sidebar">
+                <h3>👨‍💼 Team Lead Controls</h3>
+                
+                <!-- PRD Management -->
+                <div class="prd-section">
+                    <h4>📄 PRD Management</h4>
+                    <div class="prd-upload" onclick="document.getElementById('prd-file').click()">
+                        <input type="file" id="prd-file" accept=".md,.txt,.pdf">
+                        <p>📁 Upload PRD Document</p>
+                        <small>Supports .md, .txt, .pdf</small>
+                    </div>
+                    <button class="btn" onclick="analyzePRD()">🔍 Analyze PRD</button>
+                    <button class="btn secondary" onclick="showPRDHistory()">📚 PRD History</button>
+                </div>
+
+                <!-- Workflow Controls -->
+                <div class="prd-section">
+                    <h4>⚡ Workflow Triggers</h4>
+                    <button class="btn" onclick="triggerAllocation()">🎯 Start Allocation</button>
+                    <button class="btn secondary" onclick="pauseAllocation()">⏸️ Pause System</button>
+                    <button class="btn danger" onclick="emergencyStop()">🛑 Emergency Stop</button>
+                </div>
+
+                <!-- Agent Spawning -->
+                <div class="prd-section">
+                    <h4>🏊 Agent Pool</h4>
+                    <select id="agent-role" style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #cbd5e0;">
+                        <option value="frontend-specialist">Frontend Specialist</option>
+                        <option value="backend-specialist">Backend Specialist</option>
+                        <option value="qa-specialist">QA Specialist</option>
+                        <option value="devops-specialist">DevOps Specialist</option>
+                    </select>
+                    <button class="btn" onclick="spawnAgent()">➕ Spawn Agent</button>
+                </div>
+
+                <!-- System Status -->
+                <div class="prd-section">
+                    <h4>📊 System Status</h4>
+                    <div class="metric">
+                        <div class="metric-value pulse" id="system-uptime">0h 0m</div>
+                        <div class="metric-label">Uptime</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content - Task Allocation View -->
+            <div class="main-content">
+                <div class="content-header">
+                    <h2>🎯 Task Allocation Dashboard</h2>
+                    <div class="status-badges">
+                        <span class="badge ready" id="system-status">✅ Ready</span>
+                        <span class="badge analyzing" id="allocation-status">🔄 Analyzing</span>
+                    </div>
+                </div>
+
+                <!-- Team Lead Analysis Summary -->
+                <div class="panel-card" style="margin-bottom: 20px;">
+                    <h3>🧠 Team Lead Analysis</h3>
+                    <div id="analysis-summary" class="loading-skeleton" style="height: 60px; border-radius: 4px;">
+                        <p style="padding: 20px; text-align: center; color: #718096;">
+                            Upload a PRD document to see intelligent task breakdown and agent allocation recommendations
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Task Allocation Grid -->
+                <div class="allocation-grid" id="allocation-grid">
+                    <!-- Agent Column Template -->
+                    <div class="agent-column">
+                        <div class="agent-header">
+                            <div class="agent-status status-idle"></div>
+                            <div>
+                                <div class="agent-name">🎨 Frontend Specialist</div>
+                                <div class="agent-capabilities">React, CSS, Testing</div>
+                            </div>
+                        </div>
+                        <ul class="task-list">
+                            <li class="task-item priority-high">
+                                <div class="task-title">T1-3: UI Component Library</div>
+                                <div class="task-meta">
+                                    <span>⏱️ 8h est</span>
+                                    <span>🔥 High</span>
+                                </div>
+                            </li>
+                            <li class="task-item priority-medium">
+                                <div class="task-title">T4-6: Dashboard Layouts</div>
+                                <div class="task-meta">
+                                    <span>⏱️ 6h est</span>
+                                    <span>🟡 Medium</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="agent-column">
+                        <div class="agent-header">
+                            <div class="agent-status status-active"></div>
+                            <div>
+                                <div class="agent-name">⚙️ Backend Specialist</div>
+                                <div class="agent-capabilities">Node.js, APIs, Database</div>
+                            </div>
+                        </div>
+                        <ul class="task-list">
+                            <li class="task-item priority-high">
+                                <div class="task-title">T7-10: API Endpoints</div>
+                                <div class="task-meta">
+                                    <span>⏱️ 12h est</span>
+                                    <span>🔥 High</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="agent-column">
+                        <div class="agent-header">
+                            <div class="agent-status status-idle"></div>
+                            <div>
+                                <div class="agent-name">🧪 QA Specialist</div>
+                                <div class="agent-capabilities">Testing, Automation, Quality</div>
+                            </div>
+                        </div>
+                        <ul class="task-list">
+                            <li class="task-item priority-low">
+                                <div class="task-title">T11-15: Test Coverage</div>
+                                <div class="task-meta">
+                                    <span>⏱️ 10h est</span>
+                                    <span>🟢 Low</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Analytics & Pool Status -->
+            <div class="right-panel">
+                <!-- Agent Pool Status -->
+                <div class="panel-card">
+                    <h3>🏊 Agent Pool Status</h3>
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <div class="metric-value" id="total-agents">3</div>
+                            <div class="metric-label">Total</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="active-agents">1</div>
+                            <div class="metric-label">Active</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="idle-agents">2</div>
+                            <div class="metric-label">Idle</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="load-balance">67%</div>
+                            <div class="metric-label">Load Balance</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task Analytics -->
+                <div class="panel-card">
+                    <h3>📈 Task Analytics</h3>
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <div class="metric-value" id="total-tasks">15</div>
+                            <div class="metric-label">Total Tasks</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="allocated-tasks">9</div>
+                            <div class="metric-label">Allocated</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="pending-tasks">6</div>
+                            <div class="metric-label">Pending</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="completion-rate">73%</div>
+                            <div class="metric-label">Efficiency</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dependency Visualization -->
+                <div class="panel-card">
+                    <h3>🔗 Dependencies</h3>
+                    <div class="dependency-map">
+                        <p>Interactive dependency graph<br>will be rendered here</p>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="panel-card">
+                    <h3>📝 Recent Activity</h3>
+                    <div class="agent-list" id="activity-log">
+                        <div class="agent-item">
+                            <div class="agent-status status-active"></div>
+                            <div>
+                                <div style="font-size: 0.9rem;">T7 allocated to Backend-01</div>
+                                <div style="font-size: 0.8rem; color: #718096;">2 minutes ago</div>
+                            </div>
+                        </div>
+                        <div class="agent-item">
+                            <div class="agent-status status-idle"></div>
+                            <div>
+                                <div style="font-size: 0.9rem;">Frontend-01 spawned</div>
+                                <div style="font-size: 0.8rem; color: #718096;">5 minutes ago</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Real WebSocket connection to Trilogy backend
+        let ws = null;
+        let systemStartTime = Date.now();
+
+        function initializeWebSocket() {
+            console.log("🔌 Connecting to Trilogy WebSocket...");
+            
+            // Connect to real backend WebSocket
+            try {
+                ws = new WebSocket('ws://localhost:8080');
+                
+                ws.onopen = function(event) {
+                    console.log('✅ Connected to Trilogy WebSocket');
+                    addActivityLog('WebSocket connection established');
+                    document.getElementById('system-status').textContent = '✅ Connected';
+                    document.getElementById('system-status').className = 'badge ready';
+                };
+                
+                ws.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    handleWebSocketMessage(data);
+                };
+                
+                ws.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                    document.getElementById('system-status').textContent = '❌ Disconnected';
+                    document.getElementById('system-status').className = 'badge analyzing';
+                };
+                
+                ws.onclose = function(event) {
+                    console.log('WebSocket connection closed');
+                    setTimeout(initializeWebSocket, 5000); // Reconnect after 5 seconds
+                };
+                
+            } catch (error) {
+                console.error('Failed to connect to WebSocket:', error);
+                // Fallback to polling if WebSocket fails
+                setInterval(pollBackendStatus, 10000);
+            }
+            
+            // Update system status
+            setInterval(updateSystemStatus, 1000);
+        }
+
+        function handleWebSocketMessage(data) {
+            console.log('📨 WebSocket message:', data);
+            
+            switch (data.type) {
+                case 'prd_analysis_complete':
+                    handlePRDAnalysisComplete(data.data);
+                    break;
+                case 'task_allocation_complete':
+                    handleTaskAllocationComplete(data.data);
+                    break;
+                case 'agent_spawned':
+                    handleAgentSpawned(data.data);
+                    break;
+                case 'workload_rebalanced':
+                    handleWorkloadRebalanced(data.data);
+                    break;
+                default:
+                    addActivityLog(`System event: ${data.type}`);
+            }
+        }
+
+        function updateSystemStatus() {
+            const uptime = Date.now() - systemStartTime;
+            const hours = Math.floor(uptime / 3600000);
+            const minutes = Math.floor((uptime % 3600000) / 60000);
+            document.getElementById('system-uptime').textContent = `${hours}h ${minutes}m`;
+        }
+
+        function simulateActivity() {
+            const activities = [
+                "Task T3 completed by Frontend-01",
+                "Backend-02 requesting resource allocation", 
+                "QA-01 starting test execution",
+                "New dependency detected: T5 → T8",
+                "Agent pool expanded to 4 specialists"
+            ];
+            
+            const randomActivity = activities[Math.floor(Math.random() * activities.length)];
+            addActivityLog(randomActivity);
+        }
+
+        function addActivityLog(message) {
+            const activityLog = document.getElementById('activity-log');
+            const newActivity = document.createElement('div');
+            newActivity.className = 'agent-item';
+            newActivity.innerHTML = `
+                <div class="agent-status status-active"></div>
+                <div>
+                    <div style="font-size: 0.9rem;">${message}</div>
+                    <div style="font-size: 0.8rem; color: #718096;">Just now</div>
+                </div>
+            `;
+            activityLog.insertBefore(newActivity, activityLog.firstChild);
+            
+            // Keep only last 5 activities
+            while (activityLog.children.length > 5) {
+                activityLog.removeChild(activityLog.lastChild);
+            }
+        }
+
+        // Real API functions for Team Lead integration
+        async function analyzePRD() {
+            document.getElementById('system-status').textContent = '🔍 Analyzing';
+            document.getElementById('system-status').className = 'badge analyzing';
+            
+            try {
+                // Get PRD content (in real implementation, this would come from file upload)
+                const prdContent = "# Sample PRD\n\nUser Authentication, Dashboard Interface, API Integration, Data Processing, Testing Suite";
+                
+                const response = await fetch('/teamlead/analyze-prd', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prdContent })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    handlePRDAnalysisComplete(result.analysis);
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('PRD Analysis failed:', error);
+                addActivityLog(`PRD analysis failed: ${error.message}`);
+                document.getElementById('system-status').textContent = '❌ Error';
+                document.getElementById('system-status').className = 'badge analyzing';
+            }
+        }
+
+        function handlePRDAnalysisComplete(analysis) {
+            document.getElementById('analysis-summary').innerHTML = `
+                <div style="padding: 15px;">
+                    <h4>✅ PRD Analysis Complete</h4>
+                    <p><strong>Detected Features:</strong> ${analysis.analysis?.features?.map(f => f.name).join(', ') || 'Multiple features'}</p>
+                    <p><strong>Complexity Score:</strong> ${analysis.analysis?.complexity?.score || 7.5}/10 (${analysis.analysis?.complexity?.overall || 'High'})</p>
+                    <p><strong>Recommended Agents:</strong> ${analysis.analysis?.requiredAgents?.map(a => `${a.count} ${a.role}`).join(', ') || 'Multiple specialists'}</p>
+                    <p><strong>Estimated Timeline:</strong> ${analysis.analysis?.timeline?.totalWeeks || 4} weeks</p>
+                    <p><strong>Team Lead Recommendation:</strong> ${analysis.recommendation}</p>
+                </div>
+            `;
+            document.getElementById('system-status').textContent = '✅ Ready';
+            document.getElementById('system-status').className = 'badge ready';
+            addActivityLog("PRD analysis completed by Team Lead");
+        }
+
+        async function triggerAllocation() {
+            document.getElementById('allocation-status').textContent = '🎯 Allocating';
+            addActivityLog("Task allocation process started");
+            
+            try {
+                // Mock tasks for allocation (in real implementation, these come from PRD analysis)
+                const sampleTasks = [
+                    { id: 'T1', name: 'User Authentication', priority: 'High', requiredSkills: ['frontend', 'auth'], estimatedHours: 8 },
+                    { id: 'T2', name: 'Dashboard Interface', priority: 'High', requiredSkills: ['frontend', 'ui'], estimatedHours: 12 },
+                    { id: 'T3', name: 'API Endpoints', priority: 'Medium', requiredSkills: ['backend', 'api'], estimatedHours: 10 },
+                    { id: 'T4', name: 'Testing Suite', priority: 'Low', requiredSkills: ['qa', 'testing'], estimatedHours: 6 }
+                ];
+                
+                const response = await fetch('/teamlead/allocate-tasks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tasks: sampleTasks })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    handleTaskAllocationComplete(result.allocation);
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Task allocation failed:', error);
+                addActivityLog(`Task allocation failed: ${error.message}`);
+                document.getElementById('allocation-status').textContent = '❌ Error';
+                document.getElementById('allocation-status').className = 'badge analyzing';
+            }
+        }
+
+        function handleTaskAllocationComplete(allocation) {
+            document.getElementById('allocation-status').textContent = '✅ Allocated';
+            document.getElementById('allocation-status').className = 'badge ready';
+            addActivityLog(`Tasks allocated to ${Object.keys(allocation.allocation || {}).length} agents`);
+            
+            // Update allocation visualization (simplified for POC)
+            if (allocation.metrics) {
+                document.getElementById('completion-rate').textContent = `${Math.round(allocation.metrics.efficiency || 75)}%`;
+                document.getElementById('allocated-tasks').textContent = allocation.metrics.totalTasks || 0;
+            }
+        }
+
+        async function spawnAgent() {
+            const role = document.getElementById('agent-role').value;
+            
+            try {
+                const response = await fetch('/agents/pool/spawn', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        role: role,
+                        capabilities: getCapabilitiesForRole(role)
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    handleAgentSpawned(result);
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Agent spawning failed:', error);
+                addActivityLog(`Agent spawning failed: ${error.message}`);
+            }
+        }
+
+        function handleAgentSpawned(data) {
+            const totalAgents = parseInt(document.getElementById('total-agents').textContent) + 1;
+            const idleAgents = parseInt(document.getElementById('idle-agents').textContent) + 1;
+            
+            document.getElementById('total-agents').textContent = totalAgents;
+            document.getElementById('idle-agents').textContent = idleAgents;
+            
+            addActivityLog(`New ${data.role} agent spawned: ${data.agentId}`);
+        }
+
+        function getCapabilitiesForRole(role) {
+            const capabilities = {
+                'frontend-specialist': ['React', 'CSS', 'JavaScript', 'Testing'],
+                'backend-specialist': ['Node.js', 'APIs', 'Database', 'Authentication'],
+                'qa-specialist': ['Testing', 'Automation', 'Quality Assurance'],
+                'devops-specialist': ['Docker', 'CI/CD', 'Infrastructure', 'Monitoring']
+            };
+            return capabilities[role] || ['General'];
+        }
+
+        function pauseAllocation() {
+            document.getElementById('allocation-status').textContent = '⏸️ Paused';
+            document.getElementById('allocation-status').className = 'badge analyzing';
+            addActivityLog("System paused by Team Lead");
+        }
+
+        function emergencyStop() {
+            document.getElementById('system-status').textContent = '🛑 Stopped';
+            document.getElementById('system-status').className = 'badge analyzing';
+            addActivityLog("Emergency stop activated");
+        }
+
+        function showPRDHistory() {
+            alert("PRD History:\n- project-alpha.md (2 days ago)\n- feature-spec-v2.md (1 week ago)\n- requirements-doc.md (2 weeks ago)");
+        }
+
+        // Initialize the POC
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("🚀 Trilogy Task Allocation Engine POC Loaded");
+            initializeWebSocket();
+            
+            // Simulate some initial activity
+            setTimeout(() => addActivityLog("System initialized successfully"), 1000);
+            setTimeout(() => addActivityLog("WebSocket connection established"), 2000);
+        });
+    </script>
+</body>
+</html>

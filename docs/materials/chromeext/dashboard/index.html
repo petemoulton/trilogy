@@ -80,6 +80,33 @@
                     </div>
                 </div>
 
+                <!-- Trilogy AI System Integration -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2><i class="fas fa-robot"></i> Trilogy AI Progress</h2>
+                        <button class="refresh-btn" onclick="refreshTrilogyData()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="panel-content">
+                        <div class="trilogy-stats">
+                            <div class="trilogy-stat">
+                                <strong>Current PRD:</strong>
+                                <div id="trilogy-prd-title">Loading...</div>
+                            </div>
+                            <div class="trilogy-stat">
+                                <strong>Tasks:</strong>
+                                <span id="trilogy-tasks-approved">0</span> approved, 
+                                <span id="trilogy-tasks-rejected">0</span> rejected
+                            </div>
+                            <div class="trilogy-stat">
+                                <strong>System Status:</strong>
+                                <span id="trilogy-status">Checking...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="panel events-panel">
                     <div class="panel-header">
                         <h2><i class="fas fa-history"></i> Recent Events</h2>

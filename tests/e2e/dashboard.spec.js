@@ -144,7 +144,7 @@ test.describe('Trilogy AI Dashboard', () => {
     // Check for MCP Dashboard link
     const mcpLink = page.getByRole('link', { name: /Open MCP Dashboard/ });
     await expect(mcpLink).toBeVisible();
-    await expect(mcpLink).toHaveAttribute('href', 'http://localhost:3000/dashboard');
+    await expect(mcpLink).toHaveAttribute('href', 'http://localhost:3100/dashboard');
     await expect(mcpLink).toHaveAttribute('target', '_blank');
   });
 });
