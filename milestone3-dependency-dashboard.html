@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trilogy AI - Milestone 3: Dependency Resolution Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .milestone-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 20px;
+            height: calc(100vh - 200px);
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            overflow-y: auto;
+        }
+
+        .panel h2 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #4a5568;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+
+        /* Left Panel - Task Registration */
+        .task-form {
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .dependency-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #c53030 100%);
+        }
+
+        /* Middle Panel - Dependency Graph */
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .task-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .task-id {
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending { background: #fed7d7; color: #c53030; }
+        .status-running { background: #bee3f8; color: #2b6cb0; }
+        .status-blocked { background: #feebc8; color: #dd6b20; }
+        .status-completed { background: #c6f6d5; color: #25855a; }
+        .status-failed { background: #fed7d7; color: #c53030; }
+        .status-cancelled { background: #e2e8f0; color: #4a5568; }
+
+        .task-info {
+            font-size: 13px;
+            color: #718096;
+            margin-bottom: 8px;
+        }
+
+        .dependencies {
+            margin-top: 10px;
+        }
+
+        .dependency-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .dependency-tag {
+            background: #edf2f7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #4a5568;
+        }
+
+        /* Right Panel - System Status */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .status-card {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .status-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .status-label {
+            font-size: 0.8rem;
+            color: #718096;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        .activity-feed {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            padding: 8px;
+            margin-bottom: 8px;
+            background: #f7fafc;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+            font-size: 12px;
+        }
+
+        .activity-time {
+            color: #a0aec0;
+            font-size: 10px;
+        }
+
+        .demo-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .demo-button {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        /* Connection status indicator */
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .connection-online {
+            background: rgba(72, 187, 120, 0.9);
+            color: white;
+        }
+
+        .connection-offline {
+            background: rgba(245, 101, 101, 0.9);
+            color: white;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .panel {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔗 Trilogy AI System</h1>
+            <div class="milestone-badge">Milestone 3: Dependency Resolution Dashboard</div>
+        </header>
+
+        <div class="connection-status" id="connectionStatus">
+            🔴 Connecting...
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Left Panel: Task Registration -->
+            <div class="panel">
+                <h2>📋 Task Registration</h2>
+                
+                <form class="task-form" id="taskForm">
+                    <div class="form-group">
+                        <label for="taskId">Task ID</label>
+                        <input type="text" id="taskId" placeholder="e.g., parse-prd-001" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="agentId">Agent ID</label>
+                        <select id="agentId" required>
+                            <option value="">Select Agent</option>
+                            <option value="agent-sonnet">Sonnet Agent</option>
+                            <option value="agent-opus">Opus Agent</option>
+                            <option value="specialist-frontend">Frontend Specialist</option>
+                            <option value="specialist-backend">Backend Specialist</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" rows="3" placeholder="Task description..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Dependencies</label>
+                        <div id="dependencyList">
+                            <div class="dependency-input">
+                                <input type="text" placeholder="Dependency task ID" class="dependency-field">
+                                <button type="button" class="btn btn-small" onclick="addDependency()">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn">Register Task</button>
+                </form>
+
+                <div class="demo-section">
+                    <h3>🎮 Demo Scenarios</h3>
+                    <button class="btn demo-button" onclick="createDemoScenario1()">Simple Sequential Tasks</button>
+                    <button class="btn demo-button" onclick="createDemoScenario2()">Complex Dependencies</button>
+                    <button class="btn demo-button" onclick="clearAllTasks()">Clear All Tasks</button>
+                </div>
+            </div>
+
+            <!-- Middle Panel: Dependency Graph -->
+            <div class="panel">
+                <h2>🎯 Task Dependency Graph</h2>
+                <div class="task-grid" id="taskGrid">
+                    <div style="text-align: center; color: #a0aec0; padding: 40px;">
+                        No tasks registered yet. Register your first task to see the dependency graph!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: System Status -->
+            <div class="panel">
+                <h2>📊 System Status</h2>
+                
+                <div class="status-grid" id="statusGrid">
+                    <div class="status-card">
+                        <div class="status-number" id="totalTasks">0</div>
+                        <div class="status-label">Total Tasks</div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-number" id="activeTasks">0</div>
+                        <div class="status-label">Active</div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-number" id="completedTasks">0</div>
+                        <div class="status-label">Completed</div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-number" id="blockedTasks">0</div>
+                        <div class="status-label">Blocked</div>
+                    </div>
+                </div>
+
+                <h3>📝 Activity Feed</h3>
+                <div class="activity-feed" id="activityFeed">
+                    <div class="activity-item">
+                        <div>🚀 Dependency Resolution System initialized</div>
+                        <div class="activity-time">Just now</div>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <h3>🔧 Task Controls</h3>
+                    <select id="taskSelect" style="margin-bottom: 10px;">
+                        <option value="">Select a task...</option>
+                    </select>
+                    <button class="btn demo-button" onclick="startSelectedTask()">▶️ Start Task</button>
+                    <button class="btn demo-button" onclick="completeSelectedTask()">✅ Complete Task</button>
+                    <button class="btn btn-danger demo-button" onclick="failSelectedTask()">❌ Fail Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // WebSocket connection for real-time updates
+        let ws = null;
+        let tasks = new Map();
+        let systemStatus = {};
+
+        // Initialize WebSocket connection
+        function initWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.hostname}:8080`;
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = function() {
+                console.log('WebSocket connected');
+                updateConnectionStatus(true);
+                loadSystemStatus();
+            };
+            
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                handleWebSocketMessage(data);
+            };
+            
+            ws.onclose = function() {
+                console.log('WebSocket disconnected');
+                updateConnectionStatus(false);
+                setTimeout(initWebSocket, 3000); // Reconnect after 3 seconds
+            };
+            
+            ws.onerror = function(error) {
+                console.error('WebSocket error:', error);
+                updateConnectionStatus(false);
+            };
+        }
+
+        // Handle WebSocket messages
+        function handleWebSocketMessage(data) {
+            switch(data.type) {
+                case 'dependency:status_change':
+                    updateTaskStatus(data);
+                    addActivityItem(`Task ${data.taskId}: ${data.oldStatus} → ${data.newStatus}`);
+                    break;
+                case 'dependency:force_complete':
+                    addActivityItem(`⚠️ Task ${data.taskId} force completed`, 'warning');
+                    break;
+                default:
+                    console.log('Unknown WebSocket message:', data);
+            }
+        }
+
+        // Update connection status indicator
+        function updateConnectionStatus(connected) {
+            const status = document.getElementById('connectionStatus');
+            if (connected) {
+                status.textContent = '🟢 Connected';
+                status.className = 'connection-status connection-online';
+            } else {
+                status.textContent = '🔴 Disconnected';
+                status.className = 'connection-status connection-offline';
+            }
+        }
+
+        // Load system status
+        async function loadSystemStatus() {
+            try {
+                const response = await fetch('/dependencies/status');
+                const data = await response.json();
+                if (data.success) {
+                    systemStatus = data.dependencySystem;
+                    updateStatusDisplay();
+                }
+            } catch (error) {
+                console.error('Failed to load system status:', error);
+            }
+        }
+
+        // Update status display
+        function updateStatusDisplay() {
+            document.getElementById('totalTasks').textContent = systemStatus.totalTasks || 0;
+            document.getElementById('activeTasks').textContent = systemStatus.activeTasks || 0;
+            document.getElementById('completedTasks').textContent = systemStatus.statusCounts?.completed || 0;
+            document.getElementById('blockedTasks').textContent = systemStatus.statusCounts?.blocked || 0;
+        }
+
+        // Register task form submission
+        document.getElementById('taskForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const taskId = document.getElementById('taskId').value;
+            const agentId = document.getElementById('agentId').value;
+            const description = document.getElementById('description').value;
+            
+            // Collect dependencies
+            const dependencies = [];
+            document.querySelectorAll('.dependency-field').forEach(field => {
+                if (field.value.trim()) {
+                    dependencies.push(field.value.trim());
+                }
+            });
+            
+            try {
+                const response = await fetch('/dependencies/tasks/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        taskId,
+                        agentId,
+                        dependencies,
+                        taskData: { description }
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    addActivityItem(`✅ Task ${taskId} registered successfully`);
+                    document.getElementById('taskForm').reset();
+                    setTimeout(loadSystemStatus, 500);
+                } else {
+                    addActivityItem(`❌ Failed to register task: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('Failed to register task:', error);
+                addActivityItem(`❌ Network error: ${error.message}`, 'error');
+            }
+        });
+
+        // Add dependency input field
+        function addDependency() {
+            const container = document.getElementById('dependencyList');
+            const div = document.createElement('div');
+            div.className = 'dependency-input';
+            div.innerHTML = `
+                <input type="text" placeholder="Dependency task ID" class="dependency-field">
+                <button type="button" class="btn btn-small btn-danger" onclick="this.parentElement.remove()">-</button>
+            `;
+            container.appendChild(div);
+        }
+
+        // Add activity item
+        function addActivityItem(message, type = 'info') {
+            const feed = document.getElementById('activityFeed');
+            const div = document.createElement('div');
+            div.className = 'activity-item';
+            div.innerHTML = `
+                <div>${message}</div>
+                <div class="activity-time">${new Date().toLocaleTimeString()}</div>
+            `;
+            feed.insertBefore(div, feed.firstChild);
+            
+            // Keep only last 20 items
+            while (feed.children.length > 20) {
+                feed.removeChild(feed.lastChild);
+            }
+        }
+
+        // Demo scenarios
+        async function createDemoScenario1() {
+            // Simple sequential tasks
+            const tasks = [
+                { id: 'demo-parse-prd', agent: 'agent-sonnet', deps: [], desc: 'Parse PRD document' },
+                { id: 'demo-analyze-features', agent: 'agent-opus', deps: ['demo-parse-prd'], desc: 'Analyze features from PRD' },
+                { id: 'demo-create-tasks', agent: 'agent-opus', deps: ['demo-analyze-features'], desc: 'Create implementation tasks' }
+            ];
+            
+            for (const task of tasks) {
+                await registerTask(task.id, task.agent, task.deps, task.desc);
+            }
+            
+            addActivityItem('🎮 Demo Scenario 1: Sequential tasks created');
+        }
+
+        async function createDemoScenario2() {
+            // Complex dependencies
+            const tasks = [
+                { id: 'design-api', agent: 'specialist-backend', deps: [], desc: 'Design API endpoints' },
+                { id: 'design-ui', agent: 'specialist-frontend', deps: [], desc: 'Design user interface' },
+                { id: 'implement-backend', agent: 'specialist-backend', deps: ['design-api'], desc: 'Implement backend' },
+                { id: 'implement-frontend', agent: 'specialist-frontend', deps: ['design-ui', 'design-api'], desc: 'Implement frontend' },
+                { id: 'integration-test', agent: 'agent-opus', deps: ['implement-backend', 'implement-frontend'], desc: 'Run integration tests' }
+            ];
+            
+            for (const task of tasks) {
+                await registerTask(task.id, task.agent, task.deps, task.desc);
+            }
+            
+            addActivityItem('🎮 Demo Scenario 2: Complex dependency graph created');
+        }
+
+        // Helper function to register task
+        async function registerTask(taskId, agentId, dependencies, description) {
+            try {
+                const response = await fetch('/dependencies/tasks/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        taskId,
+                        agentId,
+                        dependencies,
+                        taskData: { description }
+                    })
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('Failed to register task:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Task control functions
+        async function startSelectedTask() {
+            const select = document.getElementById('taskSelect');
+            const taskId = select.value;
+            if (!taskId) return;
+            
+            try {
+                const response = await fetch(`/dependencies/tasks/${taskId}/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ agentId: 'manual-control' })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    addActivityItem(`▶️ Started task ${taskId}`);
+                }
+            } catch (error) {
+                console.error('Failed to start task:', error);
+            }
+        }
+
+        async function completeSelectedTask() {
+            const select = document.getElementById('taskSelect');
+            const taskId = select.value;
+            if (!taskId) return;
+            
+            try {
+                const response = await fetch(`/dependencies/tasks/${taskId}/complete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ result: 'Manual completion via dashboard' })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    addActivityItem(`✅ Completed task ${taskId}`);
+                }
+            } catch (error) {
+                console.error('Failed to complete task:', error);
+            }
+        }
+
+        async function failSelectedTask() {
+            const select = document.getElementById('taskSelect');
+            const taskId = select.value;
+            if (!taskId) return;
+            
+            try {
+                const response = await fetch(`/dependencies/tasks/${taskId}/fail`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ error: 'Manual failure via dashboard' })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    addActivityItem(`❌ Failed task ${taskId}`);
+                }
+            } catch (error) {
+                console.error('Failed to fail task:', error);
+            }
+        }
+
+        // Clear all tasks
+        async function clearAllTasks() {
+            if (confirm('Are you sure you want to clear all tasks? This action cannot be undone.')) {
+                // Note: This would require a backend endpoint to clear all tasks
+                addActivityItem('🗑️ Clear all tasks requested (not implemented yet)');
+            }
+        }
+
+        // Update task status from WebSocket
+        function updateTaskStatus(data) {
+            // Update local task state and refresh display
+            setTimeout(loadSystemStatus, 500);
+        }
+
+        // Initialize the dashboard
+        function init() {
+            initWebSocket();
+            loadSystemStatus();
+            
+            // Refresh status every 30 seconds
+            setInterval(loadSystemStatus, 30000);
+        }
+
+        // Start the dashboard when page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

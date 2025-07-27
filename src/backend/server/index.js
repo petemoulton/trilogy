@@ -9,6 +9,7 @@ const git = require('simple-git');
 const { v4: uuidv4 } = require('uuid');
 const PostgreSQLMemory = require('./database');
 const runnerBridge = require('../../shared/runner-bridge');
+const DependencyManager = require('../../shared/coordination/dependency-manager');
 
 const app = express();
 const server = http.createServer(app);
@@ -31,6 +32,8 @@ const CONFIG = {
 
 // Initialize Memory System
 let memorySystem;
+let dependencyManager;
+
 async function initMemorySystem() {
   if (CONFIG.memoryBackend === 'postgresql') {
     memorySystem = new PostgreSQLMemory(CONFIG.postgres);
@@ -45,6 +48,14 @@ async function initMemorySystem() {
   }
 }
 
+// Initialize Dependency Manager
+async function initDependencyManager() {
+  const memory = new TrilogyMemory();
+  dependencyManager = new DependencyManager(memory, broadcastToAllClients);
+  await dependencyManager.initializeDependencySystem();
+  console.log('🔗 Dependency Resolution System initialized');
+}
+
 // Initialize Git repository
 const gitRepo = git(CONFIG.logsPath);
 
@@ -57,7 +68,7 @@ class TrilogyMemory {
 
   async ensureDirectories() {
     const dirs = [
-      'prd', 'tasks/generated', 'tasks/final', 
+      'prd', 'tasks/generated', 'tasks/final', 'tasks/dependencies',
       'observations/sessions', 'observations/macros', 
       'observations/screenshots', 'agents/sonnet', 
       'agents/opus', 'agents/shared'
@@ -469,8 +480,180 @@ app.get('/teamlead/allocation-status', async (req, res) => {
 });
 
 // ===========================================
-// END MILESTONE 2 API ENDPOINTS
+// MILESTONE 3 API ENDPOINTS - DEPENDENCY RESOLUTION
 // ===========================================
+
+// Register a new task with dependencies
+app.post('/dependencies/tasks/register', async (req, res) => {
+  try {
+    const { taskId, dependencies = [], agentId, taskData = {} } = req.body;
+    
+    if (!taskId) {
+      return res.status(400).json({ success: false, error: 'taskId is required' });
+    }
+
+    // Don't await the task promise - it only resolves when the task completes
+    const taskPromise = dependencyManager.registerTask(taskId, dependencies, agentId, taskData);
+    
+    res.json({ 
+      success: true, 
+      taskId,
+      dependencies,
+      status: 'registered',
+      metadata: dependencyManager.getTaskMetadata(taskId)
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Start task execution
+app.post('/dependencies/tasks/:taskId/start', async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const { agentId } = req.body;
+    
+    if (!agentId) {
+      return res.status(400).json({ success: false, error: 'agentId is required' });
+    }
+
+    // Don't await the task promise - just start it
+    const taskPromise = dependencyManager.startTask(taskId, agentId);
+    
+    res.json({ 
+      success: true, 
+      taskId,
+      agentId,
+      status: 'started',
+      metadata: dependencyManager.getTaskMetadata(taskId)
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Complete a task
+app.post('/dependencies/tasks/:taskId/complete', async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const { result } = req.body;
+    
+    await dependencyManager.completeTask(taskId, result);
+    
+    res.json({ 
+      success: true, 
+      taskId,
+      status: 'completed',
+      metadata: dependencyManager.getTaskMetadata(taskId)
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Fail a task
+app.post('/dependencies/tasks/:taskId/fail', async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const { error: errorMessage } = req.body;
+    
+    await dependencyManager.failTask(taskId, new Error(errorMessage || 'Task failed'));
+    
+    res.json({ 
+      success: true, 
+      taskId,
+      status: 'failed',
+      metadata: dependencyManager.getTaskMetadata(taskId)
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get task status and metadata
+app.get('/dependencies/tasks/:taskId', async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const metadata = dependencyManager.getTaskMetadata(taskId);
+    
+    if (!metadata) {
+      return res.status(404).json({ success: false, error: 'Task not found' });
+    }
+    
+    res.json({ 
+      success: true, 
+      task: metadata,
+      canStart: await dependencyManager.canTaskStart(taskId)
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get dependency chain for a task
+app.get('/dependencies/tasks/:taskId/chain', async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const chain = dependencyManager.getDependencyChain(taskId);
+    
+    res.json({ 
+      success: true, 
+      chain
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get system status
+app.get('/dependencies/status', async (req, res) => {
+  try {
+    const status = dependencyManager.getSystemStatus();
+    
+    res.json({ 
+      success: true, 
+      dependencySystem: status
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Force complete a task (emergency override)
+app.post('/dependencies/tasks/:taskId/force-complete', async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const { result, reason } = req.body;
+    
+    console.warn(`[API] Force completing task ${taskId}. Reason: ${reason || 'Not provided'}`);
+    
+    await dependencyManager.forceCompleteTask(taskId, result);
+    
+    res.json({ 
+      success: true, 
+      taskId,
+      status: 'force-completed',
+      warning: 'Task was manually force-completed',
+      metadata: dependencyManager.getTaskMetadata(taskId)
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ===========================================
+// END MILESTONE 3 API ENDPOINTS
+// ===========================================
+
+// WebSocket broadcast function
+function broadcastToAllClients(data) {
+  const message = JSON.stringify(data);
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(message);
+    }
+  });
+}
 
 // WebSocket handling
 wss.on('connection', (ws) => {
@@ -504,6 +687,7 @@ wss.on('connection', (ws) => {
 async function start() {
   try {
     await initMemorySystem();
+    await initDependencyManager();
     await fs.ensureDir(CONFIG.logsPath);
     await gitRepo.init();
     
