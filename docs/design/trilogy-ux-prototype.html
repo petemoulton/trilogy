@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trilogy AI System - UX Flow Prototype</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: #2c5aa0;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-tabs {
+            background: white;
+            border-bottom: 1px solid #e1e8ed;
+            padding: 0 2rem;
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-tab {
+            padding: 1rem 0;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            color: #657786;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab.active {
+            color: #2c5aa0;
+            border-bottom-color: #2c5aa0;
+        }
+
+        .nav-tab:hover {
+            color: #2c5aa0;
+        }
+
+        .content {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .btn {
+            background: #2c5aa0;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #1e3d72;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #e1e8ed;
+            color: #2c3e50;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd6e2;
+        }
+
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .project-card {
+            background: #f8fafc;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .project-card.new-project {
+            border: 2px dashed #2c5aa0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+            color: #2c5aa0;
+        }
+
+        .project-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .status-active { background: #d4edda; color: #155724; }
+        .status-planning { background: #fff3cd; color: #856404; }
+        .status-completed { background: #cce5ff; color: #004085; }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .metric-card {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #2c5aa0;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c5aa0;
+        }
+
+        .metric-label {
+            color: #657786;
+            margin-top: 0.5rem;
+        }
+
+        .task-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .task-item {
+            background: #f8fafc;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .task-info h4 {
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+
+        .task-meta {
+            font-size: 0.9rem;
+            color: #657786;
+        }
+
+        .agent-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .agent-item {
+            background: #f8fafc;
+            border: 1px solid #e1e8ed;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .agent-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .agent-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .agent-status {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            border: 2px solid white;
+        }
+
+        .status-online { background: #28a745; }
+        .status-busy { background: #ffc107; }
+        .status-offline { background: #6c757d; }
+        .status-blocked { background: #dc3545; }
+
+        .agent-info {
+            flex: 1;
+        }
+
+        .agent-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.25rem;
+        }
+
+        .agent-model {
+            font-size: 0.9rem;
+            color: #657786;
+            margin-bottom: 0.5rem;
+        }
+
+        .agent-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .agent-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e1e8ed;
+        }
+
+        .agent-stat {
+            text-align: center;
+        }
+
+        .agent-stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c5aa0;
+        }
+
+        .agent-stat-label {
+            font-size: 0.8rem;
+            color: #657786;
+            text-transform: uppercase;
+        }
+
+        .agent-tasks {
+            margin-top: 1rem;
+        }
+
+        .agent-task {
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .task-blocked {
+            border-left: 4px solid #dc3545;
+            background: #fff5f5;
+        }
+
+        .task-active {
+            border-left: 4px solid #28a745;
+            background: #f0fff4;
+        }
+
+        .task-waiting {
+            border-left: 4px solid #ffc107;
+            background: #fffbf0;
+        }
+
+        .execution-pattern {
+            background: #f8fafc;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .execution-pattern.active {
+            border-color: #2c5aa0;
+            background: #f0f7ff;
+        }
+
+        .pattern-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .pattern-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .pattern-icon {
+            font-size: 1.5rem;
+        }
+
+        .pattern-description {
+            font-size: 0.9rem;
+            color: #657786;
+            margin-bottom: 1rem;
+        }
+
+        .pattern-flow {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .agent-node {
+            background: #2c5aa0;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .flow-arrow {
+            font-size: 1.2rem;
+            color: #657786;
+        }
+
+        .parallel-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .parallel-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .chart-period {
+            font-size: 0.9rem;
+            color: #657786;
+            background: #f8fafc;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-left: 4px solid #2c5aa0;
+        }
+
+        .kpi-value {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #2c5aa0;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-label {
+            color: #657786;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-change {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .kpi-change.positive {
+            color: #28a745;
+        }
+
+        .kpi-change.negative {
+            color: #dc3545;
+        }
+
+        .mock-chart {
+            height: 200px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e1e8ed 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #657786;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-bars {
+            display: flex;
+            align-items: end;
+            gap: 8px;
+            height: 120px;
+            margin: 20px;
+        }
+
+        .chart-bar {
+            background: linear-gradient(180deg, #2c5aa0 0%, #4facfe 100%);
+            border-radius: 4px 4px 0 0;
+            min-width: 20px;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .chart-bar:hover {
+            opacity: 1;
+        }
+
+        .trend-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .trend-up {
+            color: #28a745;
+        }
+
+        .trend-down {
+            color: #dc3545;
+        }
+
+        .trend-stable {
+            color: #ffc107;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e1e8ed;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #2c5aa0;
+            transition: width 0.3s ease;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+            .project-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">🤖 Trilogy AI System</div>
+        <div class="user-info">
+            <span>Peter Moulton</span>
+            <div style="width: 40px; height: 40px; background: #1e3d72; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">PM</div>
+        </div>
+    </header>
+
+    <nav class="nav-tabs">
+        <div class="nav-tab active" onclick="showSection('projects')">Projects</div>
+        <div class="nav-tab" onclick="showSection('create-project')">Create Project</div>
+        <div class="nav-tab" onclick="showSection('project-detail')">Project Dashboard</div>
+        <div class="nav-tab" onclick="showSection('task-management')">Task Management</div>
+        <div class="nav-tab" onclick="showSection('agent-coordination')">Agent Coordination</div>
+        <div class="nav-tab" onclick="showSection('team-management')">Team Management</div>
+        <div class="nav-tab" onclick="showSection('analytics')">Analytics</div>
+    </nav>
+
+    <div class="content">
+        <!-- SECTION 1: Projects Overview -->
+        <section id="projects" class="section active">
+            <div class="section-header">
+                <h2 class="section-title">Your Projects</h2>
+                <button class="btn" onclick="showSection('create-project')">+ New Project</button>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">8</div>
+                    <div class="metric-label">Active Projects</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">23</div>
+                    <div class="metric-label">Tasks This Week</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">6</div>
+                    <div class="metric-label">Agents Working</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">94%</div>
+                    <div class="metric-label">Success Rate</div>
+                </div>
+            </div>
+
+            <div class="project-grid">
+                <div class="project-card new-project" onclick="showSection('create-project')">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">+</div>
+                    <h3>Create New Project</h3>
+                    <p>Start a new AI-assisted project</p>
+                </div>
+
+                <div class="project-card" onclick="showSection('project-detail')">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                        <h3>E-commerce Platform</h3>
+                        <span class="project-status status-active">Active</span>
+                    </div>
+                    <p style="color: #657786; margin-bottom: 1rem;">Building a modern e-commerce platform with AI recommendations</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 65%"></div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; font-size: 0.9rem; color: #657786;">
+                        <div>
+                            <div>12 tasks remaining</div>
+                            <div>3 agents assigned</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="color: #2c5aa0; font-weight: 600;">$342 spent</div>
+                            <div>~147k tokens used</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                        <h3>Marketing Automation</h3>
+                        <span class="project-status status-planning">Planning</span>
+                    </div>
+                    <p style="color: #657786; margin-bottom: 1rem;">AI-powered marketing campaign automation system</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 25%"></div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; font-size: 0.9rem; color: #657786;">
+                        <div>
+                            <div>8 tasks pending</div>
+                            <div>1 agent assigned</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="color: #2c5aa0; font-weight: 600;">$89 spent</div>
+                            <div>~32k tokens used</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                        <h3>Data Analytics Dashboard</h3>
+                        <span class="project-status status-completed">Completed</span>
+                    </div>
+                    <p style="color: #657786; margin-bottom: 1rem;">Real-time analytics dashboard with AI insights</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%"></div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; font-size: 0.9rem; color: #657786;">
+                        <div>
+                            <div>All tasks completed</div>
+                            <div>Delivered on time</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="color: #28a745; font-weight: 600;">$247 total</div>
+                            <div>~98k tokens used</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: Create Project -->
+        <section id="create-project" class="section">
+            <div class="section-header">
+                <h2 class="section-title">Create New Project</h2>
+                <button class="btn-secondary btn" onclick="showSection('projects')">← Back to Projects</button>
+            </div>
+
+            <div class="two-column">
+                <div>
+                    <div class="form-group">
+                        <label class="form-label">Project Name</label>
+                        <input type="text" class="form-input" placeholder="Enter project name..." value="Mobile App Development">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Project Description</label>
+                        <textarea class="form-input form-textarea" placeholder="Describe what you want to build...">Build a React Native mobile app for task management with AI-powered suggestions and real-time collaboration features.</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Project Goals</label>
+                        <textarea class="form-input form-textarea" placeholder="What are your main objectives?">• Launch MVP within 8 weeks
+• Support 1000+ concurrent users
+• Integrate with existing task management systems
+• Implement AI-powered task prioritization</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Project Files & Context</label>
+                        <div style="border: 2px dashed #2c5aa0; border-radius: 8px; padding: 2rem; text-align: center; background: #f8fafc;">
+                            <div style="font-size: 2rem; margin-bottom: 1rem;">📁</div>
+                            <p style="margin-bottom: 1rem; color: #657786;">Drop files here or click to upload</p>
+                            <button class="btn-secondary btn">📄 Upload Files</button>
+                            <p style="font-size: 0.9rem; color: #657786; margin-top: 1rem;">
+                                PRDs, designs, code samples, documentation, images
+                            </p>
+                        </div>
+                        
+                        <div style="margin-top: 1rem;">
+                            <h4 style="margin-bottom: 0.5rem;">Uploaded Files:</h4>
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                <div style="background: white; border: 1px solid #e1e8ed; border-radius: 4px; padding: 0.5rem 1rem; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    📄 app-requirements.md
+                                    <span style="cursor: pointer; color: #dc3545;">×</span>
+                                </div>
+                                <div style="background: white; border: 1px solid #e1e8ed; border-radius: 4px; padding: 0.5rem 1rem; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    🎨 ui-mockups.html
+                                    <span style="cursor: pointer; color: #dc3545;">×</span>
+                                </div>
+                                <div style="background: white; border: 1px solid #e1e8ed; border-radius: 4px; padding: 0.5rem 1rem; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    📊 user-research.pdf
+                                    <span style="cursor: pointer; color: #dc3545;">×</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn" onclick="showSection('project-detail')">🤖 Generate AI Plan</button>
+                        <button class="btn-secondary btn">💾 Save Draft</button>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="margin-bottom: 1rem;">AI Suggestions</h3>
+                    <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #2c5aa0;">
+                        <h4 style="margin-bottom: 1rem;">Based on your description, I recommend:</h4>
+                        <ul style="margin-left: 1.5rem; color: #657786;">
+                            <li>Frontend Development Agent for React Native UI</li>
+                            <li>Backend Development Agent for API architecture</li>
+                            <li>AI Integration Agent for smart suggestions</li>
+                            <li>Testing Agent for automated QA</li>
+                        </ul>
+
+                        <h4 style="margin: 1.5rem 0 1rem 0;">Estimated Timeline:</h4>
+                        <div style="background: white; padding: 1rem; border-radius: 4px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>Phase 1: Setup & Architecture</span>
+                                <span style="color: #2c5aa0;">2 weeks</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>Phase 2: Core Features</span>
+                                <span style="color: #2c5aa0;">4 weeks</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>Phase 3: AI Integration</span>
+                                <span style="color: #2c5aa0;">1 week</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Phase 4: Testing & Launch</span>
+                                <span style="color: #2c5aa0;">1 week</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: Project Dashboard -->
+        <section id="project-detail" class="section">
+            <div class="section-header">
+                <h2 class="section-title">Mobile App Development</h2>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn-secondary btn">⚙️ Project Settings</button>
+                    <button class="btn">📊 View Analytics</button>
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">18</div>
+                    <div class="metric-label">Total Tasks</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">12</div>
+                    <div class="metric-label">Completed</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">4</div>
+                    <div class="metric-label">In Progress</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">67%</div>
+                    <div class="metric-label">Progress</div>
+                </div>
+            </div>
+
+            <div class="two-column">
+                <div>
+                    <h3 style="margin-bottom: 1rem;">Recent Activity</h3>
+                    <div class="task-list">
+                        <div class="task-item">
+                            <div class="task-info">
+                                <h4>✅ Authentication system completed</h4>
+                                <div class="task-meta">Frontend Agent • 2 hours ago</div>
+                            </div>
+                        </div>
+                        <div class="task-item">
+                            <div class="task-info">
+                                <h4>🔄 API integration in progress</h4>
+                                <div class="task-meta">Backend Agent • 4 hours ago</div>
+                            </div>
+                        </div>
+                        <div class="task-item">
+                            <div class="task-info">
+                                <h4>⏳ UI components being reviewed</h4>
+                                <div class="task-meta">AI Review Agent • 6 hours ago</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="margin-bottom: 1rem;">Active Agents</h3>
+                    <div class="agent-list">
+                        <div class="agent-item">
+                            <div class="agent-header">
+                                <div class="agent-avatar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                    FE
+                                    <div class="agent-status status-online"></div>
+                                </div>
+                                <div class="agent-info">
+                                    <div class="agent-name">Frontend Development Agent</div>
+                                    <div class="agent-model">Claude Sonnet 3.5 • React/TypeScript Specialist</div>
+                                    <div class="task-meta">Current: React Native component optimization</div>
+                                </div>
+                                <button class="btn-secondary btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">⚙️ Settings</button>
+                            </div>
+                            <div class="agent-tasks">
+                                <div class="agent-task task-active">
+                                    <strong>Active:</strong> Optimize user authentication components (2h remaining)
+                                </div>
+                                <div class="agent-task task-waiting">
+                                    <strong>Queued:</strong> Implement dashboard UI components
+                                </div>
+                            </div>
+                            <div class="agent-stats">
+                                <div class="agent-stat">
+                                    <div class="agent-stat-value">8</div>
+                                    <div class="agent-stat-label">Tasks Done</div>
+                                </div>
+                                <div class="agent-stat">
+                                    <div class="agent-stat-value">95%</div>
+                                    <div class="agent-stat-label">Success Rate</div>
+                                </div>
+                                <div class="agent-stat">
+                                    <div class="agent-stat-value">6.2h</div>
+                                    <div class="agent-stat-label">Avg Time</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="agent-item">
+                            <div class="agent-header">
+                                <div class="agent-avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                    BE
+                                    <div class="agent-status status-busy"></div>
+                                </div>
+                                <div class="agent-info">
+                                    <div class="agent-name">Backend Development Agent</div>
+                                    <div class="agent-model">Claude Opus • Node.js/Python Expert</div>
+                                    <div class="task-meta">Current: Database schema design & API implementation</div>
+                                </div>
+                                <button class="btn-secondary btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">⚙️ Settings</button>
+                            </div>
+                            <div class="agent-tasks">
+                                <div class="agent-task task-active">
+                                    <strong>Active:</strong> Design user authentication API endpoints (4h remaining)
+                                </div>
+                                <div class="agent-task task-blocked">
+                                    <strong>Blocked:</strong> Real-time features - waiting for Frontend completion
+                                </div>
+                            </div>
+                            <div class="agent-stats">
+                                <div class="agent-stat">
+                                    <div class="agent-stat-value">6</div>
+                                    <div class="agent-stat-label">Tasks Done</div>
+                                </div>
+                                <div class="agent-stat">
+                                    <div class="agent-stat-value">92%</div>
+                                    <div class="agent-stat-label">Success Rate</div>
+                                </div>
+                                <div class="agent-stat">
+                                    <div class="agent-stat-value">8.4h</div>
+                                    <div class="agent-stat-label">Avg Time</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="agent-item">
+                            <div class="agent-header">
+                                <div class="agent-avatar" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                    AI
+                                    <div class="agent-status status-offline"></div>
+                                </div>
+                                <div class="agent-info">
+                                    <div class="agent-name">AI Integration Agent</div>
+                                    <div class="agent-model">Claude Haiku • ML/AI Integration Specialist</div>
+                                    <div class="task-meta">Awaiting: Dependencies from core development team</div>
+                                </div>
+                                <button class="btn-secondary btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">⚙️ Settings</button>
+                            </div>
+                            <div class="agent-tasks">
+                                <div class="agent-task task-waiting">
+                                    <strong>Queued:</strong> Implement AI-powered task prioritization
+                                </div>
+                                <div class="agent-task task-waiting">
+                                    <strong>Queued:</strong> Set up recommendation engine
+                                </div>
+                            </div>
+                            <div class="agent-stats">
+                                <div class="agent-stat">
+                                    <div class="agent-stat-value">2</div>
+                                    <div class="agent-stat-label">Tasks Done</div>
+                                </div>
+                                <div class="agent-stat">
+                                    <div class="agent-stat-value">100%</div>
+                                    <div class="agent-stat-label">Success Rate</div>
+                                </div>
+                                <div class="agent-stat">
+                                    <div class="agent-stat-value">4.1h</div>
+                                    <div class="agent-stat-label">Avg Time</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- User as Agent -->
+                        <div class="agent-item" style="border: 2px solid #2c5aa0;">
+                            <div class="agent-header">
+                                <div class="agent-avatar" style="background: linear-gradient(135deg, #2c5aa0 0%, #1e3d72 100%);">
+                                    PM
+                                    <div class="agent-status status-online"></div>
+                                </div>
+                                <div class="agent-info">
+                                    <div class="agent-name">Peter Moulton (Team Lead)</div>
+                                    <div class="agent-model">Human • Product & Strategic Decisions</div>
+                                    <div class="task-meta">Available for: Approvals, strategic decisions, and complex questions</div>
+                                </div>
+                                <button class="btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">💬 Chat</button>
+                            </div>
+                            <div class="agent-tasks">
+                                <div class="agent-task task-active">
+                                    <strong>Pending:</strong> Approve database schema changes (Backend Agent)
+                                </div>
+                                <div class="agent-task task-waiting">
+                                    <strong>Scheduled:</strong> Review UI mockups before implementation
+                                </div>
+                            </div>
+                            <div class="agent-stats">
+                                <div class="agent-stat">
+                                    <div class="agent-stat-value">12</div>
+                                    <div class="agent-stat-label">Decisions</div>
+                                </div>
+                                <div class="agent-stat">
+                                    <div class="agent-stat-value">24h</div>
+                                    <div class="agent-stat-label">Avg Response</div>
+                                </div>
+                                <div class="agent-stat">
+                                    <div class="agent-stat-value">High</div>
+                                    <div class="agent-stat-label">Priority</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: Task Management -->
+        <section id="task-management" class="section">
+            <div class="section-header">
+                <h2 class="section-title">Task Management</h2>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn-secondary btn">🔄 Regenerate Plan</button>
+                    <button class="btn">➕ Add Manual Task</button>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem;">Execution Patterns</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+                    
+                    <!-- Parallel Execution -->
+                    <div class="execution-pattern active" onclick="selectPattern('parallel')">
+                        <div class="pattern-header">
+                            <div class="pattern-name">Parallel Execution</div>
+                            <div class="pattern-icon">⚡</div>
+                        </div>
+                        <div class="pattern-description">
+                            Multiple agents work simultaneously on independent tasks for maximum speed.
+                        </div>
+                        <div class="parallel-flow">
+                            <div class="parallel-group">
+                                <div class="agent-node">Frontend</div>
+                                <div class="agent-node">Backend</div>
+                                <div class="agent-node">Design</div>
+                            </div>
+                            <div style="text-align: center; color: #657786; font-size: 0.8rem;">
+                                ↓ All merge to
+                            </div>
+                            <div class="parallel-group" style="justify-content: center;">
+                                <div class="agent-node">QA Agent</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sequential Execution -->
+                    <div class="execution-pattern" onclick="selectPattern('sequential')">
+                        <div class="pattern-header">
+                            <div class="pattern-name">Sequential Execution</div>
+                            <div class="pattern-icon">📋</div>
+                        </div>
+                        <div class="pattern-description">
+                            Agents work one after another in a defined order to avoid conflicts.
+                        </div>
+                        <div class="pattern-flow">
+                            <div class="agent-node">Backend</div>
+                            <div class="flow-arrow">→</div>
+                            <div class="agent-node">Frontend</div>
+                            <div class="flow-arrow">→</div>
+                            <div class="agent-node">Testing</div>
+                            <div class="flow-arrow">→</div>
+                            <div class="agent-node">Deploy</div>
+                        </div>
+                    </div>
+
+                    <!-- Pipeline Execution -->
+                    <div class="execution-pattern" onclick="selectPattern('pipeline')">
+                        <div class="pattern-header">
+                            <div class="pattern-name">Pipeline Execution</div>
+                            <div class="pattern-icon">🏭</div>
+                        </div>
+                        <div class="pattern-description">
+                            Continuous flow where agents pass work down the line as they complete stages.
+                        </div>
+                        <div class="pattern-flow">
+                            <div class="agent-node">Design</div>
+                            <div class="flow-arrow">⤷</div>
+                            <div class="agent-node">Frontend</div>
+                            <div class="flow-arrow">⤷</div>
+                            <div class="agent-node">QA</div>
+                            <div class="flow-arrow">⤷</div>
+                            <div class="agent-node">Deploy</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: #f0f7ff; border: 1px solid #2c5aa0; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                    <strong>Current Selection: Parallel Execution</strong>
+                    <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: #657786;">
+                        ✅ <strong>Benefits:</strong> Fastest completion (estimated 3 days vs 7 days sequential)<br>
+                        ⚠️ <strong>Considerations:</strong> Requires coordination between Frontend and Backend agents for API contracts
+                    </p>
+                </div>
+            </div>
+
+            <div class="task-list">
+                <div class="task-item">
+                    <div class="task-info">
+                        <h4>Setup React Native project structure</h4>
+                        <div class="task-meta">Assigned to: Frontend Agent • Dependencies: None • Estimated: 4 hours</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <span class="project-status status-completed">Completed</span>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-info">
+                        <h4>Implement user authentication system</h4>
+                        <div class="task-meta">Assigned to: Backend Agent • Dependencies: Project setup • Estimated: 8 hours</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <span class="project-status status-completed">Completed</span>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-info">
+                        <h4>Create task management UI components</h4>
+                        <div class="task-meta">Assigned to: Frontend Agent • Dependencies: Authentication • Estimated: 12 hours</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    <span class="project-status status-active">In Progress</span>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-info">
+                        <h4>Develop real-time collaboration features</h4>
+                        <div class="task-meta">Assigned to: Backend Agent • Dependencies: UI components • Estimated: 16 hours</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 25%"></div>
+                        </div>
+                    </div>
+                    <span class="project-status status-active">In Progress</span>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-info">
+                        <h4>Integrate AI-powered task prioritization</h4>
+                        <div class="task-meta">Assigned to: AI Integration Agent • Dependencies: Core features • Estimated: 10 hours</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <span class="project-status status-planning">Pending</span>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-info">
+                        <h4>Comprehensive testing and QA</h4>
+                        <div class="task-meta">Assigned to: Testing Agent • Dependencies: All features • Estimated: 8 hours</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <span class="project-status status-planning">Pending</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: Agent Coordination -->
+        <section id="agent-coordination" class="section">
+            <div class="section-header">
+                <h2 class="section-title">Agent Coordination</h2>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn-secondary btn">🔄 Rebalance Workload</button>
+                    <button class="btn">🤖 Spawn New Agent</button>
+                </div>
+            </div>
+
+            <div class="two-column">
+                <div>
+                    <h3 style="margin-bottom: 1rem;">Pending Approvals</h3>
+                    <div class="task-list">
+                        <div class="task-item">
+                            <div class="task-info">
+                                <h4>🔴 High Priority: Architecture Decision</h4>
+                                <div class="task-meta">Backend Agent requesting approval for database schema changes</div>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Approve</button>
+                                <button class="btn-secondary btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Reject</button>
+                            </div>
+                        </div>
+
+                        <div class="task-item">
+                            <div class="task-info">
+                                <h4>🟡 Medium Priority: Library Addition</h4>
+                                <div class="task-meta">Frontend Agent wants to add new UI component library</div>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Approve</button>
+                                <button class="btn-secondary btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Reject</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="margin-bottom: 1rem;">Agent Performance</h3>
+                    <div class="agent-list">
+                        <div class="agent-item">
+                            <div>
+                                <h4>Frontend Development Agent</h4>
+                                <div class="task-meta">Tasks completed: 8 • Success rate: 95% • Avg time: 6.2 hours</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 95%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="agent-item">
+                            <div>
+                                <h4>Backend Development Agent</h4>
+                                <div class="task-meta">Tasks completed: 6 • Success rate: 92% • Avg time: 8.4 hours</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 92%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="agent-item">
+                            <div>
+                                <h4>AI Integration Agent</h4>
+                                <div class="task-meta">Tasks completed: 2 • Success rate: 100% • Avg time: 4.1 hours</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 100%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 6: Team Management -->
+        <section id="team-management" class="section">
+            <div class="section-header">
+                <h2 class="section-title">Team Management</h2>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn-secondary btn">🔄 Sync Team</button>
+                    <button class="btn">🤖 Spawn New Agent</button>
+                </div>
+            </div>
+
+            <div class="agent-list">
+                <!-- Frontend Agent Settings -->
+                <div class="agent-item">
+                    <div class="agent-header">
+                        <div class="agent-avatar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            FE
+                            <div class="agent-status status-online"></div>
+                        </div>
+                        <div class="agent-info">
+                            <div class="agent-name">Frontend Development Agent</div>
+                            <div class="agent-model">Claude Sonnet 3.5 • React/TypeScript Specialist</div>
+                            <div class="task-meta">Specializes in: React, TypeScript, UI/UX, Mobile Development</div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn-secondary btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">🔧 Configure</button>
+                            <button class="btn-secondary btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">⏸️ Pause</button>
+                        </div>
+                    </div>
+
+                    <div style="background: white; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                        <h4 style="margin-bottom: 1rem;">Agent Configuration</h4>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label class="form-label">Model</label>
+                                <select class="form-input">
+                                    <option selected>Claude Sonnet 3.5</option>
+                                    <option>Claude Opus</option>
+                                    <option>Claude Haiku</option>
+                                    <option>GPT-4</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label">Priority Level</label>
+                                <select class="form-input">
+                                    <option>Low</option>
+                                    <option selected>Medium</option>
+                                    <option>High</option>
+                                    <option>Critical</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 1rem;">
+                            <label class="form-label">Task Assignment Preferences</label>
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                <span style="background: #e1e8ed; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.9rem;">React Components ✅</span>
+                                <span style="background: #e1e8ed; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.9rem;">TypeScript ✅</span>
+                                <span style="background: #e1e8ed; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.9rem;">Mobile UI ✅</span>
+                                <span style="background: #e1e8ed; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.9rem;">Testing ❌</span>
+                                <span style="background: #e1e8ed; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.9rem;">Backend ❌</span>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 1rem;">
+                            <label class="form-label">Review & QA Settings</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <label style="font-size: 0.9rem; color: #657786;">Code Review Required</label>
+                                    <select class="form-input" style="margin-top: 0.25rem;">
+                                        <option>Never</option>
+                                        <option selected>QA Agent</option>
+                                        <option>Team Lead (PM)</option>
+                                        <option>Always</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.9rem; color: #657786;">Merge Approval</label>
+                                    <select class="form-input" style="margin-top: 0.25rem;">
+                                        <option>Auto-merge</option>
+                                        <option selected>QA Agent approval</option>
+                                        <option>Team Lead approval</option>
+                                        <option>Manual review</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 1rem;">
+                            <label class="form-label">Escalation Rules</label>
+                            <textarea class="form-input" style="min-height: 60px;" placeholder="When should this agent escalate to team lead or other agents?">• Escalate UI/UX decisions to Team Lead
+• Escalate complex state management to Backend Agent
+• Escalate accessibility questions to QA Agent</textarea>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem;">
+                            <button class="btn">💾 Save Configuration</button>
+                            <button class="btn-secondary btn">🔄 Reset to Defaults</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backend Agent Settings -->
+                <div class="agent-item">
+                    <div class="agent-header">
+                        <div class="agent-avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            BE
+                            <div class="agent-status status-busy"></div>
+                        </div>
+                        <div class="agent-info">
+                            <div class="agent-name">Backend Development Agent</div>
+                            <div class="agent-model">Claude Opus • Node.js/Python Expert</div>
+                            <div class="task-meta">Specializes in: APIs, Databases, Architecture, Security</div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn-secondary btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">🔧 Configure</button>
+                            <button class="btn-secondary btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">⏸️ Pause</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User as Team Lead -->
+                <div class="agent-item" style="border: 2px solid #2c5aa0;">
+                    <div class="agent-header">
+                        <div class="agent-avatar" style="background: linear-gradient(135deg, #2c5aa0 0%, #1e3d72 100%);">
+                            PM
+                            <div class="agent-status status-online"></div>
+                        </div>
+                        <div class="agent-info">
+                            <div class="agent-name">Peter Moulton (Team Lead)</div>
+                            <div class="agent-model">Human • Product & Strategic Decisions</div>
+                            <div class="task-meta">Role: Final approvals, strategic decisions, complex problem resolution</div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">💬 Chat Interface</button>
+                            <button class="btn-secondary btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">⚙️ Preferences</button>
+                        </div>
+                    </div>
+
+                    <div style="background: white; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                        <h4 style="margin-bottom: 1rem;">Team Lead Settings</h4>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label class="form-label">Notification Preferences</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" checked> High priority decisions
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" checked> Agent conflicts
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox"> Task completions
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" checked> Merge requests
+                                </label>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 1rem;">
+                            <label class="form-label">Availability Schedule</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <label style="font-size: 0.9rem; color: #657786;">Working Hours</label>
+                                    <input type="text" class="form-input" value="9:00 AM - 6:00 PM PST" style="margin-top: 0.25rem;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.9rem; color: #657786;">Response Time</label>
+                                    <select class="form-input" style="margin-top: 0.25rem;">
+                                        <option>Immediate</option>
+                                        <option selected>Within 2 hours</option>
+                                        <option>Within 24 hours</option>
+                                        <option>Next business day</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 1rem;">
+                            <label class="form-label">Decision Authority</label>
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                <span style="background: #d4edda; color: #155724; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.9rem;">Architecture Changes ✅</span>
+                                <span style="background: #d4edda; color: #155724; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.9rem;">Budget Decisions ✅</span>
+                                <span style="background: #d4edda; color: #155724; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.9rem;">Timeline Changes ✅</span>
+                                <span style="background: #d4edda; color: #155724; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.9rem;">Strategic Direction ✅</span>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem;">
+                            <button class="btn">💾 Update Preferences</button>
+                            <button class="btn-secondary btn">📞 Set Up Claude Code Integration</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 7: Analytics Dashboard -->
+        <section id="analytics" class="section">
+            <div class="section-header">
+                <h2 class="section-title">Analytics Dashboard</h2>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <select style="padding: 0.5rem; border-radius: 6px; border: 1px solid #e1e8ed;">
+                        <option>Last 7 days</option>
+                        <option>Last 30 days</option>
+                        <option>Last 90 days</option>
+                        <option>All time</option>
+                    </select>
+                    <button class="btn-secondary btn">📊 Export Report</button>
+                    <button class="btn">🔄 Refresh Data</button>
+                </div>
+            </div>
+
+            <!-- Key Performance Indicators -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">94.2%</div>
+                    <div class="kpi-label">Project Success Rate</div>
+                    <div class="kpi-change positive">↗ +2.3% vs last month</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">6.4h</div>
+                    <div class="kpi-label">Avg Task Completion Time</div>
+                    <div class="kpi-change positive">↗ -1.2h improvement</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">$247</div>
+                    <div class="kpi-label">Cost per Project</div>
+                    <div class="kpi-change negative">↘ +$23 vs target</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">89%</div>
+                    <div class="kpi-label">Agent Utilization</div>
+                    <div class="kpi-change positive">↗ +5% efficiency gain</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">2.1</div>
+                    <div class="kpi-label">Avg Human Interventions</div>
+                    <div class="kpi-change positive">↗ -0.8 reduction</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">156</div>
+                    <div class="kpi-label">Tasks Completed</div>
+                    <div class="kpi-change positive">↗ +24 this week</div>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="analytics-grid">
+                <!-- Project Completion Trends -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Project Completion Trends</div>
+                        <div class="chart-period">Last 30 days</div>
+                    </div>
+                    <div class="mock-chart">
+                        <div class="chart-bars">
+                            <div class="chart-bar" style="height: 60%;" title="Week 1: 12 projects"></div>
+                            <div class="chart-bar" style="height: 75%;" title="Week 2: 15 projects"></div>
+                            <div class="chart-bar" style="height: 90%;" title="Week 3: 18 projects"></div>
+                            <div class="chart-bar" style="height: 100%;" title="Week 4: 20 projects"></div>
+                        </div>
+                    </div>
+                    <div class="trend-indicator trend-up">
+                        <span>↗</span> 25% increase in project completions
+                    </div>
+                </div>
+
+                <!-- Agent Productivity -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Agent Productivity Analysis</div>
+                        <div class="chart-period">Current month</div>
+                    </div>
+                    <div style="display: grid; gap: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #f8fafc; border-radius: 6px;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="width: 12px; height: 12px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                                <span>Frontend Agent</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="width: 100px; height: 8px; background: #e1e8ed; border-radius: 4px; overflow: hidden;">
+                                    <div style="width: 95%; height: 100%; background: #28a745;"></div>
+                                </div>
+                                <span style="font-weight: 600; color: #2c5aa0;">95%</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #f8fafc; border-radius: 6px;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="width: 12px; height: 12px; border-radius: 50%; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
+                                <span>Backend Agent</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="width: 100px; height: 8px; background: #e1e8ed; border-radius: 4px; overflow: hidden;">
+                                    <div style="width: 88%; height: 100%; background: #28a745;"></div>
+                                </div>
+                                <span style="font-weight: 600; color: #2c5aa0;">88%</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #f8fafc; border-radius: 6px;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="width: 12px; height: 12px; border-radius: 50%; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></div>
+                                <span>AI Integration Agent</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="width: 100px; height: 8px; background: #e1e8ed; border-radius: 4px; overflow: hidden;">
+                                    <div style="width: 92%; height: 100%; background: #28a745;"></div>
+                                </div>
+                                <span style="font-weight: 600; color: #2c5aa0;">92%</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #fff3cd; border-radius: 6px; border: 1px solid #ffc107;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="width: 12px; height: 12px; border-radius: 50%; background: linear-gradient(135deg, #2c5aa0 0%, #1e3d72 100%);"></div>
+                                <span>Peter (Team Lead)</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="width: 100px; height: 8px; background: #e1e8ed; border-radius: 4px; overflow: hidden;">
+                                    <div style="width: 78%; height: 100%; background: #ffc107;"></div>
+                                </div>
+                                <span style="font-weight: 600; color: #2c5aa0;">78%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; font-size: 0.9rem; color: #657786;">
+                        Human availability: Available for approvals 9AM-6PM PST
+                    </div>
+                </div>
+
+                <!-- Cost Analysis -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Cost Breakdown Analysis</div>
+                        <div class="chart-period">This month</div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: center;">
+                        <div>
+                            <div style="width: 120px; height: 120px; border-radius: 50%; background: conic-gradient(#2c5aa0 0deg 144deg, #4facfe 144deg 216deg, #667eea 216deg 288deg, #e1e8ed 288deg 360deg); margin: 0 auto; position: relative;">
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #2c5aa0;">$1,847</div>
+                            </div>
+                        </div>
+                        <div style="display: grid; gap: 0.75rem; font-size: 0.9rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="width: 12px; height: 12px; background: #2c5aa0; border-radius: 2px;"></div>
+                                <span>Claude API (40%)</span>
+                                <span style="margin-left: auto; font-weight: 600;">$738</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="width: 12px; height: 12px; background: #4facfe; border-radius: 2px;"></div>
+                                <span>Infrastructure (20%)</span>
+                                <span style="margin-left: auto; font-weight: 600;">$369</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="width: 12px; height: 12px; background: #667eea; border-radius: 2px;"></div>
+                                <span>Storage & Data (20%)</span>
+                                <span style="margin-left: auto; font-weight: 600;">$369</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="width: 12px; height: 12px; background: #e1e8ed; border-radius: 2px;"></div>
+                                <span>Other (20%)</span>
+                                <span style="margin-left: auto; font-weight: 600;">$371</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="trend-indicator trend-down" style="margin-top: 1rem;">
+                        <span>↘</span> 12% cost reduction vs last month
+                    </div>
+                </div>
+
+                <!-- Task Success Rates -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Task Success Rates by Type</div>
+                        <div class="chart-period">Last 90 days</div>
+                    </div>
+                    <div style="display: grid; gap: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 500;">Frontend Development</span>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="width: 100px; height: 8px; background: #e1e8ed; border-radius: 4px; overflow: hidden;">
+                                    <div style="width: 96%; height: 100%; background: #28a745;"></div>
+                                </div>
+                                <span style="font-weight: 600; color: #28a745;">96%</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 500;">Backend Development</span>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="width: 100px; height: 8px; background: #e1e8ed; border-radius: 4px; overflow: hidden;">
+                                    <div style="width: 91%; height: 100%; background: #28a745;"></div>
+                                </div>
+                                <span style="font-weight: 600; color: #28a745;">91%</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 500;">Testing & QA</span>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="width: 100px; height: 8px; background: #e1e8ed; border-radius: 4px; overflow: hidden;">
+                                    <div style="width: 88%; height: 100%; background: #ffc107;"></div>
+                                </div>
+                                <span style="font-weight: 600; color: #ffc107;">88%</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 500;">AI Integration</span>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="width: 100px; height: 8px; background: #e1e8ed; border-radius: 4px; overflow: hidden;">
+                                    <div style="width: 94%; height: 100%; background: #28a745;"></div>
+                                </div>
+                                <span style="font-weight: 600; color: #28a745;">94%</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 500;">Deployment</span>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="width: 100px; height: 8px; background: #e1e8ed; border-radius: 4px; overflow: hidden;">
+                                    <div style="width: 83%; height: 100%; background: #dc3545;"></div>
+                                </div>
+                                <span style="font-weight: 600; color: #dc3545;">83%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; padding: 0.75rem; background: #fff5f5; border-radius: 6px; border-left: 4px solid #dc3545;">
+                        <strong style="color: #dc3545;">Action Required:</strong> Deployment success rate below target (90%). Consider additional testing protocols.
+                    </div>
+                </div>
+
+                <!-- Timeline Performance -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Timeline Performance</div>
+                        <div class="chart-period">Project delivery accuracy</div>
+                    </div>
+                    <div class="mock-chart">
+                        <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; width: 100%; height: 80%; align-items: end; padding: 20px;">
+                            <div style="background: #28a745; height: 80%; border-radius: 2px;" title="On Time: 8 projects"></div>
+                            <div style="background: #ffc107; height: 60%; border-radius: 2px;" title="1-2 days late: 6 projects"></div>
+                            <div style="background: #dc3545; height: 40%; border-radius: 2px;" title="3+ days late: 4 projects"></div>
+                            <div style="background: #28a745; height: 90%; border-radius: 2px;" title="Early: 9 projects"></div>
+                            <div style="background: #28a745; height: 75%; border-radius: 2px;" title="On Time: 7 projects"></div>
+                            <div style="background: #ffc107; height: 50%; border-radius: 2px;" title="1-2 days late: 5 projects"></div>
+                            <div style="background: #28a745; height: 85%; border-radius: 2px;" title="On Time: 8 projects"></div>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #657786; margin-top: 0.5rem;">
+                        <span>📊 68% on-time delivery</span>
+                        <span>🎯 Target: 85%</span>
+                    </div>
+                </div>
+
+                <!-- Resource Utilization -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Resource Utilization Trends</div>
+                        <div class="chart-period">Real-time monitoring</div>
+                    </div>
+                    <div style="display: grid; gap: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f0fff4; border-radius: 8px; border: 1px solid #28a745;">
+                            <div>
+                                <div style="font-weight: 600; color: #2c3e50;">CPU Usage</div>
+                                <div style="font-size: 0.9rem; color: #657786;">Across all agents</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #28a745;">64%</div>
+                                <div style="font-size: 0.8rem; color: #28a745;">Optimal range</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #fff3cd; border-radius: 8px; border: 1px solid #ffc107;">
+                            <div>
+                                <div style="font-weight: 600; color: #2c3e50;">Memory Usage</div>
+                                <div style="font-size: 0.9rem; color: #657786;">System-wide allocation</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #ffc107;">82%</div>
+                                <div style="font-size: 0.8rem; color: #ffc107;">Approaching limit</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f0f7ff; border-radius: 8px; border: 1px solid #2c5aa0;">
+                            <div>
+                                <div style="font-weight: 600; color: #2c3e50;">API Calls</div>
+                                <div style="font-size: 0.9rem; color: #657786;">Daily usage vs limits</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #2c5aa0;">2,847</div>
+                                <div style="font-size: 0.8rem; color: #2c5aa0;">of 10,000 limit</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insights and Recommendations -->
+            <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-top: 2rem;">
+                <h3 style="margin-bottom: 1.5rem; color: #2c3e50;">🔍 AI-Powered Insights & Recommendations</h3>
+                <div style="display: grid; gap: 1rem;">
+                    <div style="padding: 1rem; background: #f0fff4; border-radius: 8px; border-left: 4px solid #28a745;">
+                        <strong style="color: #28a745;">✅ Optimization Opportunity</strong>
+                        <p style="margin: 0.5rem 0 0 0; color: #2c3e50;">Frontend Agent shows 95% efficiency. Consider spawning additional Frontend specialist for parallel UI development to reduce bottlenecks.</p>
+                    </div>
+                    <div style="padding: 1rem; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
+                        <strong style="color: #856404;">⚠️ Performance Alert</strong>
+                        <p style="margin: 0.5rem 0 0 0; color: #2c3e50;">Deployment success rate (83%) is below target. Recommend implementing automated pre-deployment validation checks.</p>
+                    </div>
+                    <div style="padding: 1rem; background: #f0f7ff; border-radius: 8px; border-left: 4px solid #2c5aa0;">
+                        <strong style="color: #2c5aa0;">💡 Cost Optimization</strong>
+                        <p style="margin: 0.5rem 0 0 0; color: #2c3e50;">Consider switching to Claude Haiku for routine tasks to reduce API costs by ~30% while maintaining quality for simple operations.</p>
+                    </div>
+                    <div style="padding: 1rem; background: #e7f3ff; border-radius: 8px; border-left: 4px solid #0066cc;">
+                        <strong style="color: #0066cc;">🎯 Strategic Insight</strong>
+                        <p style="margin: 0.5rem 0 0 0; color: #2c3e50;">Projects using parallel execution patterns complete 40% faster. Consider defaulting to parallel for non-dependent tasks.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Add active class to corresponding tab
+            event.target.classList.add('active');
+        }
+
+        function selectPattern(patternType) {
+            // Remove active class from all patterns
+            document.querySelectorAll('.execution-pattern').forEach(pattern => {
+                pattern.classList.remove('active');
+            });
+            
+            // Add active class to selected pattern
+            event.target.closest('.execution-pattern').classList.add('active');
+            
+            // Update selection info
+            const selections = {
+                'parallel': {
+                    name: 'Parallel Execution',
+                    benefits: 'Fastest completion (estimated 3 days vs 7 days sequential)',
+                    considerations: 'Requires coordination between Frontend and Backend agents for API contracts'
+                },
+                'sequential': {
+                    name: 'Sequential Execution',
+                    benefits: 'No conflicts, clear dependencies, predictable timeline',
+                    considerations: 'Slower overall completion, agents may be idle waiting for dependencies'
+                },
+                'pipeline': {
+                    name: 'Pipeline Execution',
+                    benefits: 'Continuous flow, optimal resource utilization, minimal idle time',
+                    considerations: 'Bottlenecks can slow entire pipeline, requires well-defined handoff points'
+                }
+            };
+            
+            const selection = selections[patternType];
+            const infoBox = document.querySelector('#task-management .section').querySelector('[style*="background: #f0f7ff"]');
+            
+            if (infoBox && selection) {
+                infoBox.innerHTML = `
+                    <strong>Current Selection: ${selection.name}</strong>
+                    <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: #657786;">
+                        ✅ <strong>Benefits:</strong> ${selection.benefits}<br>
+                        ⚠️ <strong>Considerations:</strong> ${selection.considerations}
+                    </p>
+                `;
+            }
+        }
+
+        // Simulate real-time updates
+        setInterval(() => {
+            const progressBars = document.querySelectorAll('.progress-fill');
+            progressBars.forEach(bar => {
+                const currentWidth = parseInt(bar.style.width);
+                if (currentWidth < 100 && Math.random() > 0.8) {
+                    bar.style.width = (currentWidth + 1) + '%';
+                }
+            });
+        }, 3000);
+    </script>
+</body>
+</html>

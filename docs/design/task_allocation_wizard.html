@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trilogy AI - Task Allocation Wizard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .wizard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .wizard-header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .wizard-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #4f46e5;
+            margin-bottom: 8px;
+        }
+
+        .wizard-subtitle {
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 24px;
+        }
+
+        .progress-bar {
+            background: #e5e7eb;
+            border-radius: 20px;
+            height: 8px;
+            margin-bottom: 16px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            height: 100%;
+            border-radius: 20px;
+            transition: width 0.5s ease;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .step.active {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+        }
+
+        .step.completed {
+            background: #10b981;
+            color: white;
+        }
+
+        .wizard-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            margin-bottom: 24px;
+        }
+
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            background: #f9fafb;
+            margin-bottom: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: #4f46e5;
+            background: #f3f4f6;
+        }
+
+        .upload-area.dragover {
+            border-color: #4f46e5;
+            background: #eef2ff;
+        }
+
+        .analysis-preview {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .task-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .task-description {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+
+        .task-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .agent-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .agent-option {
+            background: #f8fafc;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .agent-option:hover {
+            border-color: #4f46e5;
+            background: #eef2ff;
+        }
+
+        .agent-option.selected {
+            border-color: #4f46e5;
+            background: #eef2ff;
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.2);
+        }
+
+        .agent-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .agent-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1f2937;
+        }
+
+        .agent-skills {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .agent-workload {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background: #10b981;
+            color: white;
+            display: inline-block;
+        }
+
+        .allocation-summary {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .allocation-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .allocation-row:last-child {
+            border-bottom: none;
+        }
+
+        .task-batch {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .assigned-agent {
+            font-size: 14px;
+            color: #4f46e5;
+            font-weight: 500;
+        }
+
+        .wizard-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 20px 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn.primary {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+        }
+
+        .nav-btn.primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .nav-btn.secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .nav-btn.secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .dependency-visualization {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #d1d5db;
+        }
+
+        .success-animation {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .success-icon {
+            font-size: 64px;
+            color: #10b981;
+            margin-bottom: 16px;
+            animation: bounce 0.6s ease-in-out;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .confidence-score {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #10b981;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .wizard-container {
+                padding: 20px 10px;
+            }
+            
+            .task-grid,
+            .agent-selection {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wizard-container">
+        <div class="wizard-header">
+            <div class="wizard-title">🧠 Intelligent Task Allocation Wizard</div>
+            <div class="wizard-subtitle">Transform your PRD into optimized multi-agent workflows</div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 20%"></div>
+            </div>
+            
+            <div class="step-indicator">
+                <div class="step active" id="step1">
+                    <span>📄</span>
+                    <span>PRD Analysis</span>
+                </div>
+                <div class="step" id="step2">
+                    <span>🔍</span>
+                    <span>Task Breakdown</span>
+                </div>
+                <div class="step" id="step3">
+                    <span>🤖</span>
+                    <span>Agent Selection</span>
+                </div>
+                <div class="step" id="step4">
+                    <span>🔗</span>
+                    <span>Dependencies</span>
+                </div>
+                <div class="step" id="step5">
+                    <span>✅</span>
+                    <span>Deployment</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="wizard-content">
+            <!-- Step 1: PRD Analysis -->
+            <div class="step-content active" id="content1">
+                <div class="section-title">
+                    <span>📄</span>
+                    Upload & Analyze PRD
+                </div>
+                
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📁</div>
+                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">
+                        Upload your Product Requirements Document
+                    </div>
+                    <div style="color: #6b7280;">
+                        Drag & drop or click to browse (.md, .pdf, .txt)
+                    </div>
+                    <input type="file" id="fileInput" class="file-input" accept=".md,.pdf,.txt" onchange="handleFileUpload(event)">
+                </div>
+
+                <div class="analysis-preview" id="analysisPreview" style="display: none;">
+                    <div style="font-weight: 600; margin-bottom: 12px; color: #1f2937;">
+                        📊 AI Analysis Complete
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <strong>Project Type:</strong> <span class="confidence-score">Web Application</span>
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <strong>Complexity Score:</strong> <span class="confidence-score">7/10</span>
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <strong>Estimated Tasks:</strong> <span class="confidence-score">15 Tasks</span>
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <strong>Required Specialists:</strong> Frontend, Backend, DevOps, QA
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <strong>Confidence Level:</strong> <span class="confidence-score">92%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Task Breakdown -->
+            <div class="step-content" id="content2">
+                <div class="section-title">
+                    <span>🔍</span>
+                    Intelligent Task Breakdown
+                </div>
+                
+                <div class="task-grid">
+                    <div class="task-card">
+                        <div class="task-title">T1-T5: Frontend Components</div>
+                        <div class="task-description">React components, styling, responsive design, user interface implementation</div>
+                        <div class="task-meta">
+                            <span>Complexity: Medium</span>
+                            <span>Est: 8-12 hours</span>
+                        </div>
+                    </div>
+                    
+                    <div class="task-card">
+                        <div class="task-title">T6-T10: Backend Services</div>
+                        <div class="task-description">API development, database design, authentication, business logic</div>
+                        <div class="task-meta">
+                            <span>Complexity: High</span>
+                            <span>Est: 12-16 hours</span>
+                        </div>
+                    </div>
+                    
+                    <div class="task-card">
+                        <div class="task-title">T11-T13: DevOps Setup</div>
+                        <div class="task-description">CI/CD pipeline, deployment configuration, monitoring setup</div>
+                        <div class="task-meta">
+                            <span>Complexity: Medium</span>
+                            <span>Est: 6-8 hours</span>
+                        </div>
+                    </div>
+                    
+                    <div class="task-card">
+                        <div class="task-title">T14-T15: Quality Assurance</div>
+                        <div class="task-description">Test automation, integration testing, performance validation</div>
+                        <div class="task-meta">
+                            <span>Complexity: Medium</span>
+                            <span>Est: 4-6 hours</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: #eef2ff; border-radius: 8px; padding: 16px; border-left: 4px solid #4f46e5;">
+                    <div style="font-weight: 600; color: #4f46e5; margin-bottom: 8px;">
+                        🧠 AI Recommendations
+                    </div>
+                    <div style="font-size: 14px; color: #374151;">
+                        • Consider parallel execution for T1-T5 and T6-T10
+                        <br>
+                        • T11-T13 should wait for T6-T10 completion
+                        <br>
+                        • T14-T15 can run continuously as components are delivered
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Agent Selection -->
+            <div class="step-content" id="content3">
+                <div class="section-title">
+                    <span>🤖</span>
+                    Select Optimal Agents
+                </div>
+                
+                <div class="agent-selection">
+                    <div class="agent-option selected" onclick="selectAgent(this)">
+                        <div class="agent-icon">⚛️</div>
+                        <div class="agent-name">React Specialist</div>
+                        <div class="agent-skills">React, TypeScript, CSS, Testing</div>
+                        <div class="agent-workload">Available</div>
+                    </div>
+                    
+                    <div class="agent-option selected" onclick="selectAgent(this)">
+                        <div class="agent-icon">🔧</div>
+                        <div class="agent-name">Node.js Expert</div>
+                        <div class="agent-skills">Node.js, Express, MongoDB, APIs</div>
+                        <div class="agent-workload">Light Load</div>
+                    </div>
+                    
+                    <div class="agent-option selected" onclick="selectAgent(this)">
+                        <div class="agent-icon">☁️</div>
+                        <div class="agent-name">DevOps Engineer</div>
+                        <div class="agent-skills">Docker, AWS, CI/CD, Monitoring</div>
+                        <div class="agent-workload">Available</div>
+                    </div>
+                    
+                    <div class="agent-option selected" onclick="selectAgent(this)">
+                        <div class="agent-icon">🧪</div>
+                        <div class="agent-name">QA Automation</div>
+                        <div class="agent-skills">Jest, Cypress, Load Testing</div>
+                        <div class="agent-workload">Available</div>
+                    </div>
+                </div>
+
+                <div style="background: #f0fdf4; border-radius: 8px; padding: 16px; border-left: 4px solid #10b981;">
+                    <div style="font-weight: 600; color: #10b981; margin-bottom: 8px;">
+                        ✅ Optimal Agent Configuration Detected
+                    </div>
+                    <div style="font-size: 14px; color: #374151;">
+                        This agent combination provides 94% skill coverage for your project requirements.
+                        Estimated completion time: 18-24 hours with parallel execution.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Dependencies -->
+            <div class="step-content" id="content4">
+                <div class="section-title">
+                    <span>🔗</span>
+                    Dependency Resolution
+                </div>
+                
+                <div class="dependency-visualization">
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; margin-bottom: 16px;">🌐</div>
+                        <div style="font-size: 18px; font-weight: 600; margin-bottom: 12px;">
+                            Task Dependency Graph
+                        </div>
+                        <div style="color: #6b7280; margin-bottom: 16px;">
+                            Interactive visualization showing task relationships and blocking conditions
+                        </div>
+                        <div style="font-size: 14px; background: white; padding: 12px; border-radius: 8px; display: inline-block;">
+                            Critical Path: T1 → T6 → T11 → T14 (16 hours)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="allocation-summary">
+                    <div style="font-weight: 600; margin-bottom: 16px; color: #1f2937;">
+                        📋 Final Task Allocation
+                    </div>
+                    
+                    <div class="allocation-row">
+                        <div class="task-batch">T1-T5: Frontend Components</div>
+                        <div class="assigned-agent">→ React Specialist</div>
+                    </div>
+                    
+                    <div class="allocation-row">
+                        <div class="task-batch">T6-T10: Backend Services</div>
+                        <div class="assigned-agent">→ Node.js Expert</div>
+                    </div>
+                    
+                    <div class="allocation-row">
+                        <div class="task-batch">T11-T13: DevOps Setup</div>
+                        <div class="assigned-agent">→ DevOps Engineer</div>
+                    </div>
+                    
+                    <div class="allocation-row">
+                        <div class="task-batch">T14-T15: Quality Assurance</div>
+                        <div class="assigned-agent">→ QA Automation</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5: Deployment -->
+            <div class="step-content" id="content5">
+                <div class="success-animation">
+                    <div class="success-icon">🚀</div>
+                    <div style="font-size: 24px; font-weight: 600; margin-bottom: 16px; color: #1f2937;">
+                        Task Allocation Complete!
+                    </div>
+                    <div style="font-size: 16px; color: #6b7280; margin-bottom: 24px;">
+                        Your multi-agent workflow has been optimized and deployed
+                    </div>
+                    
+                    <div style="background: #f8fafc; border-radius: 12px; padding: 24px; text-align: left; max-width: 500px; margin: 0 auto;">
+                        <div style="font-weight: 600; margin-bottom: 12px;">📊 Deployment Summary</div>
+                        <div style="margin-bottom: 8px;">✅ 4 Agents Activated</div>
+                        <div style="margin-bottom: 8px;">✅ 15 Tasks Allocated</div>
+                        <div style="margin-bottom: 8px;">✅ Dependencies Resolved</div>
+                        <div style="margin-bottom: 8px;">✅ Monitoring Active</div>
+                        <div style="margin-bottom: 16px;">✅ Team Lead Notified</div>
+                        
+                        <div style="background: #eef2ff; padding: 12px; border-radius: 8px; border-left: 4px solid #4f46e5;">
+                            <div style="font-size: 14px; color: #4f46e5; font-weight: 600;">
+                                Next: Monitor progress in the main dashboard
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="wizard-navigation">
+            <button class="nav-btn secondary" id="prevBtn" onclick="previousStep()" disabled>
+                ← Previous
+            </button>
+            
+            <div style="color: #6b7280; font-size: 14px;">
+                Step <span id="currentStep">1</span> of 5
+            </div>
+            
+            <button class="nav-btn primary" id="nextBtn" onclick="nextStep()">
+                Next →
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentStepIndex = 1;
+        const totalSteps = 5;
+
+        function updateProgress() {
+            const progress = (currentStepIndex / totalSteps) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('currentStep').textContent = currentStepIndex;
+            
+            // Update step indicators
+            for (let i = 1; i <= totalSteps; i++) {
+                const step = document.getElementById(`step${i}`);
+                const content = document.getElementById(`content${i}`);
+                
+                if (i < currentStepIndex) {
+                    step.className = 'step completed';
+                    content.classList.remove('active');
+                } else if (i === currentStepIndex) {
+                    step.className = 'step active';
+                    content.classList.add('active');
+                } else {
+                    step.className = 'step';
+                    content.classList.remove('active');
+                }
+            }
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = currentStepIndex === 1;
+            
+            if (currentStepIndex === totalSteps) {
+                document.getElementById('nextBtn').textContent = 'Complete';
+            } else {
+                document.getElementById('nextBtn').textContent = 'Next →';
+            }
+        }
+
+        function nextStep() {
+            if (currentStepIndex < totalSteps) {
+                currentStepIndex++;
+                updateProgress();
+                
+                // Simulate processing when moving to certain steps
+                if (currentStepIndex === 2) {
+                    setTimeout(() => {
+                        // Simulate task breakdown processing
+                    }, 500);
+                } else if (currentStepIndex === 5) {
+                    // Simulate deployment
+                    setTimeout(() => {
+                        console.log('🚀 Deployment complete!');
+                    }, 1000);
+                }
+            } else {
+                // Complete the wizard
+                alert('🎉 Task allocation wizard completed! Redirecting to main dashboard...');
+            }
+        }
+
+        function previousStep() {
+            if (currentStepIndex > 1) {
+                currentStepIndex--;
+                updateProgress();
+            }
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById('analysisPreview').style.display = 'block';
+                
+                // Simulate file processing
+                setTimeout(() => {
+                    alert('✅ PRD analysis complete! Ready to proceed to task breakdown.');
+                }, 1500);
+            }
+        }
+
+        function selectAgent(element) {
+            element.classList.toggle('selected');
+        }
+
+        // Drag and drop functionality
+        const uploadArea = document.querySelector('.upload-area');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('analysisPreview').style.display = 'block';
+                setTimeout(() => {
+                    alert('✅ PRD analysis complete! Ready to proceed to task breakdown.');
+                }, 1500);
+            }
+        });
+    </script>
+</body>
+</html>

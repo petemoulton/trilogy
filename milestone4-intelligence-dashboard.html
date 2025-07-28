@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trilogy AI - Milestone 4: Intelligence Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 0;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .milestone-badge {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            display: grid;
+            grid-template-columns: 350px 1fr 350px;
+            gap: 30px;
+            min-height: calc(100vh - 120px);
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .panel h2 {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: #2d3748;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+
+        .intelligence-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .control-group {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #4299e1;
+        }
+
+        .control-group h3 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #2b6cb0;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4299e1, #3182ce);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(66, 153, 225, 0.4);
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+        }
+
+        .btn.warning {
+            background: linear-gradient(135deg, #ed8936, #dd6b20);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus, .input-group textarea:focus {
+            outline: none;
+            border-color: #4299e1;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .intelligence-display {
+            background: #1a202c;
+            color: #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .task-breakdown {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .breakdown-level {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #4299e1;
+        }
+
+        .breakdown-level h4 {
+            color: #2b6cb0;
+            margin-bottom: 10px;
+        }
+
+        .task-item {
+            background: #edf2f7;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid #38a169;
+        }
+
+        .task-item .task-title {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .task-item .task-meta {
+            font-size: 0.8rem;
+            color: #718096;
+            margin-top: 5px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .metric-card {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2b6cb0;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-top: 5px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-active { background: #48bb78; }
+        .status-idle { background: #ed8936; }
+        .status-error { background: #f56565; }
+        .status-processing { background: #4299e1; }
+
+        .intelligence-log {
+            background: #1a202c;
+            color: #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .log-timestamp {
+            color: #a0aec0;
+            margin-right: 10px;
+            min-width: 80px;
+        }
+
+        .log-message {
+            flex: 1;
+        }
+
+        .log-level-info { color: #63b3ed; }
+        .log-level-success { color: #68d391; }
+        .log-level-warning { color: #f6ad55; }
+        .log-level-error { color: #fc8181; }
+
+        .predictive-agents {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .agent-prediction {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid #4299e1;
+        }
+
+        .agent-info {
+            flex: 1;
+        }
+
+        .agent-type {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .agent-confidence {
+            font-size: 0.8rem;
+            color: #718096;
+        }
+
+        .spawn-timing {
+            background: #e6fffa;
+            color: #319795;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .learning-patterns {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .pattern-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #38a169;
+        }
+
+        .pattern-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .pattern-description {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-bottom: 8px;
+        }
+
+        .pattern-confidence {
+            font-size: 0.8rem;
+            color: #38a169;
+            font-weight: 500;
+        }
+
+        .ws-status {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #718096;
+        }
+
+        .connection-indicator {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>🧠 Intelligence Dashboard</h1>
+            <div class="milestone-badge">Milestone 4: Intelligence Enhancement</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Left Panel: Intelligence Controls -->
+        <div class="panel">
+            <h2>🎛️ Intelligence Controls</h2>
+            
+            <div class="intelligence-controls">
+                <div class="control-group">
+                    <h3>🔍 Complex Task Breakdown</h3>
+                    <div class="input-group">
+                        <label>Task Description:</label>
+                        <textarea id="taskDescription" rows="3" placeholder="Describe the complex task to break down...">Build a real-time collaborative document editor with AI-powered suggestions</textarea>
+                    </div>
+                    <button class="btn" onclick="performComplexBreakdown()">🧠 Analyze Task</button>
+                </div>
+
+                <div class="control-group">
+                    <h3>🌳 Intelligent Decision Making</h3>
+                    <div class="input-group">
+                        <label>Decision Context:</label>
+                        <input type="text" id="decisionContext" placeholder="e.g., architecture choice, technology stack">
+                    </div>
+                    <button class="btn success" onclick="makeIntelligentDecision()">🎯 Optimize Decision</button>
+                </div>
+
+                <div class="control-group">
+                    <h3>🔮 Predictive Agent Spawning</h3>
+                    <button class="btn warning" onclick="predictAgentNeeds()">🚀 Predict Agents</button>
+                    <button class="btn" onclick="analyzePatterns()">📊 Analyze Patterns</button>
+                </div>
+
+                <div class="control-group">
+                    <h3>🎓 Learning Optimization</h3>
+                    <button class="btn success" onclick="optimizeWithLearning()">✨ Apply Learning</button>
+                    <button class="btn" onclick="viewLearningHistory()">📚 View History</button>
+                </div>
+            </div>
+
+            <div class="ws-status">
+                <span class="status-indicator status-active connection-indicator"></span>
+                <span id="connectionStatus">Connected to Intelligence Engine</span>
+            </div>
+        </div>
+
+        <!-- Main Content: Intelligence Display -->
+        <div class="panel main-content">
+            <h2>🧠 Intelligence Analysis</h2>
+            
+            <div class="intelligence-display" id="intelligenceDisplay">
+                <div class="log-entry">
+                    <span class="log-timestamp">12:00:00</span>
+                    <span class="log-message log-level-info">Intelligence Engine initialized and ready</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">12:00:01</span>
+                    <span class="log-message log-level-success">Learning patterns loaded: 156 historical projects</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">12:00:02</span>
+                    <span class="log-message log-level-info">Predictive models ready: 94% accuracy rate</span>
+                </div>
+            </div>
+
+            <div class="task-breakdown" id="taskBreakdown" style="display: none;">
+                <h3>📋 Task Decomposition Levels</h3>
+                <!-- Dynamic content will be populated here -->
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value" id="complexityScore">7.8</div>
+                    <div class="metric-label">Complexity Score</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="confidenceLevel">92%</div>
+                    <div class="metric-label">AI Confidence</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="patternsFound">47</div>
+                    <div class="metric-label">Patterns Identified</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="optimizationGains">23%</div>
+                    <div class="metric-label">Efficiency Gain</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Intelligence Insights -->
+        <div class="panel">
+            <h2>🔮 Intelligence Insights</h2>
+            
+            <div class="predictive-agents" id="predictiveAgents">
+                <h3>🚀 Predicted Agent Needs</h3>
+                <div class="agent-prediction">
+                    <div class="agent-info">
+                        <div class="agent-type">Frontend Specialist</div>
+                        <div class="agent-confidence">Confidence: 87%</div>
+                    </div>
+                    <div class="spawn-timing">+2 hours</div>
+                </div>
+                <div class="agent-prediction">
+                    <div class="agent-info">
+                        <div class="agent-type">API Developer</div>
+                        <div class="agent-confidence">Confidence: 92%</div>
+                    </div>
+                    <div class="spawn-timing">+4 hours</div>
+                </div>
+                <div class="agent-prediction">
+                    <div class="agent-info">
+                        <div class="agent-type">DevOps Engineer</div>
+                        <div class="agent-confidence">Confidence: 76%</div>
+                    </div>
+                    <div class="spawn-timing">+1 day</div>
+                </div>
+            </div>
+
+            <div class="learning-patterns" id="learningPatterns">
+                <h3>🎓 Learning Patterns</h3>
+                <div class="pattern-item">
+                    <div class="pattern-title">Real-time Feature Pattern</div>
+                    <div class="pattern-description">Projects with real-time features typically require 40% more WebSocket expertise</div>
+                    <div class="pattern-confidence">Applied with 89% confidence</div>
+                </div>
+                <div class="pattern-item">
+                    <div class="pattern-title">Collaborative System Pattern</div>
+                    <div class="pattern-description">Collaborative features benefit from early conflict resolution planning</div>
+                    <div class="pattern-confidence">Applied with 76% confidence</div>
+                </div>
+                <div class="pattern-item">
+                    <div class="pattern-title">AI Integration Pattern</div>
+                    <div class="pattern-description">AI-powered features need dedicated ML pipeline architecture</div>
+                    <div class="pattern-confidence">Applied with 94% confidence</div>
+                </div>
+            </div>
+
+            <div class="intelligence-log" id="intelligenceLog">
+                <div class="log-entry">
+                    <span class="log-timestamp">12:05:23</span>
+                    <span class="log-message log-level-success">Pattern recognition: 3 matching projects found</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">12:05:24</span>
+                    <span class="log-message log-level-info">Complexity analysis: High (8.2/10)</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">12:05:25</span>
+                    <span class="log-message log-level-warning">Risk identified: Real-time scalability concerns</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">12:05:26</span>
+                    <span class="log-message log-level-success">Optimization applied: 23% efficiency improvement</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // WebSocket connection (mock for now)
+        let ws = null;
+        let intelligenceMetrics = {
+            complexityScore: 7.8,
+            confidenceLevel: 92,
+            patternsFound: 47,
+            optimizationGains: 23
+        };
+
+        // Initialize connection
+        function initializeConnection() {
+            // In production, this would connect to the actual WebSocket server
+            // ws = new WebSocket('ws://localhost:8080');
+            
+            // Mock connection for demo
+            updateConnectionStatus('Connected to Intelligence Engine', 'active');
+            
+            // Simulate real-time updates
+            setInterval(updateMetrics, 5000);
+            setInterval(addLogEntry, 3000);
+        }
+
+        function updateConnectionStatus(message, status) {
+            const statusElement = document.getElementById('connectionStatus');
+            const indicator = document.querySelector('.connection-indicator');
+            
+            statusElement.textContent = message;
+            indicator.className = `status-indicator status-${status} connection-indicator`;
+        }
+
+        function addLogEntry(message, level = 'info') {
+            const logContainer = document.getElementById('intelligenceDisplay');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            if (!message) {
+                const messages = [
+                    'Processing task dependencies...',
+                    'Analyzing historical patterns...',
+                    'Optimizing agent allocation...',
+                    'Learning from completed tasks...',
+                    'Updating prediction models...'
+                ];
+                message = messages[Math.floor(Math.random() * messages.length)];
+            }
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `
+                <span class="log-timestamp">${timestamp}</span>
+                <span class="log-message log-level-${level}">${message}</span>
+            `;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            // Keep only last 50 entries
+            const entries = logContainer.querySelectorAll('.log-entry');
+            if (entries.length > 50) {
+                entries[0].remove();
+            }
+        }
+
+        function updateMetrics() {
+            // Simulate metric updates
+            intelligenceMetrics.complexityScore += (Math.random() - 0.5) * 0.2;
+            intelligenceMetrics.confidenceLevel += (Math.random() - 0.5) * 2;
+            intelligenceMetrics.patternsFound += Math.floor(Math.random() * 3);
+            intelligenceMetrics.optimizationGains += (Math.random() - 0.5) * 1;
+            
+            // Keep values in reasonable ranges
+            intelligenceMetrics.complexityScore = Math.max(1, Math.min(10, intelligenceMetrics.complexityScore));
+            intelligenceMetrics.confidenceLevel = Math.max(70, Math.min(99, intelligenceMetrics.confidenceLevel));
+            intelligenceMetrics.patternsFound = Math.max(0, intelligenceMetrics.patternsFound);
+            intelligenceMetrics.optimizationGains = Math.max(0, Math.min(50, intelligenceMetrics.optimizationGains));
+            
+            // Update display
+            document.getElementById('complexityScore').textContent = intelligenceMetrics.complexityScore.toFixed(1);
+            document.getElementById('confidenceLevel').textContent = Math.round(intelligenceMetrics.confidenceLevel) + '%';
+            document.getElementById('patternsFound').textContent = Math.round(intelligenceMetrics.patternsFound);
+            document.getElementById('optimizationGains').textContent = Math.round(intelligenceMetrics.optimizationGains) + '%';
+        }
+
+        // Intelligence control functions
+        function performComplexBreakdown() {
+            const taskDescription = document.getElementById('taskDescription').value;
+            if (!taskDescription.trim()) {
+                alert('Please enter a task description');
+                return;
+            }
+            
+            addLogEntry(`Starting complex breakdown for: "${taskDescription.substring(0, 50)}..."`, 'info');
+            
+            // Simulate breakdown process
+            setTimeout(() => {
+                addLogEntry('Task decomposition complete: 3 levels, 12 subtasks identified', 'success');
+                displayTaskBreakdown(taskDescription);
+                updateMetrics();
+            }, 2000);
+        }
+
+        function displayTaskBreakdown(taskDescription) {
+            const breakdownContainer = document.getElementById('taskBreakdown');
+            breakdownContainer.style.display = 'block';
+            
+            // Mock breakdown data
+            const breakdown = {
+                levels: [
+                    {
+                        level: 1,
+                        name: 'Architecture & Design',
+                        tasks: [
+                            { title: 'System Architecture Design', complexity: 'HIGH', hours: 16 },
+                            { title: 'Database Schema Planning', complexity: 'MEDIUM', hours: 8 },
+                            { title: 'API Design Specification', complexity: 'MEDIUM', hours: 12 }
+                        ]
+                    },
+                    {
+                        level: 2,
+                        name: 'Core Implementation',
+                        tasks: [
+                            { title: 'Real-time Engine Development', complexity: 'HIGH', hours: 24 },
+                            { title: 'Document Storage System', complexity: 'MEDIUM', hours: 16 },
+                            { title: 'Collaboration Layer', complexity: 'HIGH', hours: 20 }
+                        ]
+                    },
+                    {
+                        level: 3,
+                        name: 'AI & Integration',
+                        tasks: [
+                            { title: 'AI Suggestion Engine', complexity: 'HIGH', hours: 18 },
+                            { title: 'WebSocket Implementation', complexity: 'MEDIUM', hours: 10 },
+                            { title: 'Frontend Integration', complexity: 'MEDIUM', hours: 14 }
+                        ]
+                    }
+                ]
+            };
+            
+            let html = '<h3>📋 Task Decomposition Levels</h3>';
+            
+            breakdown.levels.forEach(level => {
+                html += `
+                    <div class="breakdown-level">
+                        <h4>Level ${level.level}: ${level.name}</h4>
+                `;
+                
+                level.tasks.forEach(task => {
+                    html += `
+                        <div class="task-item">
+                            <div class="task-title">${task.title}</div>
+                            <div class="task-meta">Complexity: ${task.complexity} | Estimated: ${task.hours}h</div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            });
+            
+            breakdownContainer.innerHTML = html;
+        }
+
+        function makeIntelligentDecision() {
+            const context = document.getElementById('decisionContext').value;
+            addLogEntry(`Analyzing decision context: "${context}"`, 'info');
+            
+            setTimeout(() => {
+                addLogEntry('Decision optimization complete: Recommended option identified with 89% confidence', 'success');
+                updateMetrics();
+            }, 1500);
+        }
+
+        function predictAgentNeeds() {
+            addLogEntry('Running predictive agent spawning analysis...', 'info');
+            
+            setTimeout(() => {
+                addLogEntry('Prediction complete: 4 agents recommended with staggered spawn timing', 'success');
+                updatePredictiveAgents();
+                updateMetrics();
+            }, 2000);
+        }
+
+        function updatePredictiveAgents() {
+            const predictions = [
+                { type: 'React Specialist', confidence: 91, timing: '+1 hour' },
+                { type: 'Node.js Developer', confidence: 87, timing: '+3 hours' },
+                { type: 'WebSocket Expert', confidence: 94, timing: '+5 hours' },
+                { type: 'ML Engineer', confidence: 82, timing: '+8 hours' }
+            ];
+            
+            const container = document.getElementById('predictiveAgents');
+            let html = '<h3>🚀 Predicted Agent Needs</h3>';
+            
+            predictions.forEach(pred => {
+                html += `
+                    <div class="agent-prediction">
+                        <div class="agent-info">
+                            <div class="agent-type">${pred.type}</div>
+                            <div class="agent-confidence">Confidence: ${pred.confidence}%</div>
+                        </div>
+                        <div class="spawn-timing">${pred.timing}</div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function analyzePatterns() {
+            addLogEntry('Analyzing historical patterns for optimization opportunities...', 'info');
+            
+            setTimeout(() => {
+                addLogEntry('Pattern analysis complete: 7 optimization patterns identified', 'success');
+                updateMetrics();
+            }, 1800);
+        }
+
+        function optimizeWithLearning() {
+            addLogEntry('Applying machine learning optimizations...', 'info');
+            
+            setTimeout(() => {
+                addLogEntry('Learning optimization applied: 31% efficiency improvement predicted', 'success');
+                intelligenceMetrics.optimizationGains += 8;
+                updateMetrics();
+            }, 2200);
+        }
+
+        function viewLearningHistory() {
+            addLogEntry('Loading learning history and pattern database...', 'info');
+            
+            setTimeout(() => {
+                addLogEntry('History loaded: 156 projects, 2,347 patterns, 94% prediction accuracy', 'info');
+            }, 1000);
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeConnection();
+            
+            // Start with some initial log entries
+            setTimeout(() => addLogEntry('Intelligence dashboard ready for complex analysis', 'success'), 500);
+            setTimeout(() => addLogEntry('Learning patterns loaded from historical data', 'info'), 1000);
+            setTimeout(() => addLogEntry('Predictive models calibrated and active', 'info'), 1500);
+        });
+    </script>
+</body>
+</html>

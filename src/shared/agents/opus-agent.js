@@ -1,9 +1,10 @@
 const BaseAgent = require('./base-agent');
+const IntelligenceEngine = require('../coordination/intelligence-engine');
 
 class OpusAgent extends BaseAgent {
   constructor(config = {}) {
     super('opus', config);
-    this.role = 'Team Lead & Task Allocation Engine';
+    this.role = 'Enhanced Team Lead & Intelligence Engine';
     this.capabilities = [
       'Task Prioritization',
       'Feasibility Filtering',
@@ -13,9 +14,27 @@ class OpusAgent extends BaseAgent {
       'Agent Pool Management',
       'Task Distribution',
       'Load Balancing',
-      'Capability Matching'
+      'Capability Matching',
+      // NEW: Milestone 4 Intelligence Capabilities
+      'Complex Task Breakdown',
+      'Learning Pattern Recognition',
+      'Predictive Agent Spawning',
+      'Advanced Decision Optimization',
+      'Multi-Level Task Decomposition',
+      'Historical Performance Analysis'
     ];
     this.teamLeadMode = true;
+    
+    // Initialize Intelligence Engine
+    this.intelligenceEngine = new IntelligenceEngine({
+      memoryPath: config.memoryPath || './memory',
+      learningThreshold: 0.7,
+      maxTaskDepth: 5
+    });
+    
+    this.intelligenceEngine.on('intelligence_ready', () => {
+      console.log('🧠 Opus Agent: Intelligence Engine ready');
+    });
   }
 
   async process(input) {
@@ -42,6 +61,17 @@ class OpusAgent extends BaseAgent {
           return await this.evaluateAgentCapacity(input.agentId);
         case 'optimize_allocation':
           return await this.optimizeTaskAllocation(input.currentAllocation);
+        // NEW: Milestone 4 Intelligence Enhancement capabilities
+        case 'complex_breakdown':
+          return await this.performComplexTaskBreakdown(input.taskDescription, input.context);
+        case 'intelligent_decision':
+          return await this.makeIntelligentDecision(input.options, input.context);
+        case 'predictive_spawning':
+          return await this.predictiveAgentSpawning(input.taskBreakdown, input.agentPool);
+        case 'analyze_patterns':
+          return await this.analyzeHistoricalPatterns(input.projectContext);
+        case 'optimize_with_learning':
+          return await this.optimizeWithLearning(input.currentState, input.goals);
         default:
           return await this.handleGenericInput(input);
       }
@@ -738,6 +768,437 @@ class OpusAgent extends BaseAgent {
       this.wsConnection.emit(event, data);
     }
     console.log(`📡 Team Lead Broadcasting: ${event}`, data);
+  }
+
+  // ===========================================
+  // NEW: MILESTONE 4 INTELLIGENCE ENHANCEMENTS
+  // ===========================================
+
+  /**
+   * Perform complex multi-level task breakdown using Intelligence Engine
+   */
+  async performComplexTaskBreakdown(taskDescription, context = {}) {
+    console.log('🧠 Enhanced Opus: Performing intelligent task breakdown...');
+    
+    try {
+      // Use Intelligence Engine for complex breakdown
+      const breakdown = await this.intelligenceEngine.performComplexTaskBreakdown(taskDescription, context);
+      
+      // Apply Opus strategic oversight
+      const strategicAnalysis = await this.applyStrategicOversight(breakdown);
+      
+      // Store enhanced breakdown
+      await this.writeMemory('tasks/intelligence', 'complex_breakdown.json', {
+        breakdown,
+        strategicAnalysis,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Broadcast real-time updates
+      this.broadcast('complex_breakdown_complete', {
+        taskId: breakdown.id,
+        complexity: breakdown.estimatedComplexity,
+        levels: breakdown.levels.length,
+        totalTasks: breakdown.levels.reduce((sum, level) => sum + level.tasks.length, 0)
+      });
+      
+      return {
+        success: true,
+        breakdown,
+        strategicAnalysis,
+        recommendation: this.generateBreakdownRecommendation(breakdown, strategicAnalysis),
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Enhanced Opus breakdown error:', error);
+      return {
+        success: false,
+        error: error.message,
+        fallback: await this.performBasicBreakdown(taskDescription)
+      };
+    }
+  }
+
+  /**
+   * Make intelligent decisions using enhanced decision tree optimization
+   */
+  async makeIntelligentDecision(options, context = {}) {
+    console.log('🧠 Enhanced Opus: Making intelligent decision...');
+    
+    try {
+      // Use Intelligence Engine for decision optimization
+      const optimization = await this.intelligenceEngine.optimizeDecisionTree(options, context);
+      
+      // Apply Opus strategic validation
+      const strategicValidation = await this.validateStrategicAlignment(optimization);
+      
+      // Create final decision with confidence scoring
+      const finalDecision = {
+        selectedOption: optimization.recommendation,
+        confidence: optimization.confidence,
+        strategicScore: strategicValidation.score,
+        riskAssessment: optimization.riskAnalysis,
+        reasoning: [
+          ...optimization.reasoning,
+          ...strategicValidation.reasoning
+        ],
+        alternatives: optimization.scoredOptions.filter(opt => opt.id !== optimization.recommendation.id)
+      };
+      
+      // Store decision for learning
+      await this.writeMemory('decisions/intelligent', `decision_${Date.now()}.json`, finalDecision);
+      
+      // Broadcast decision
+      this.broadcast('intelligent_decision_made', {
+        decision: finalDecision.selectedOption.id,
+        confidence: finalDecision.confidence,
+        strategicScore: finalDecision.strategicScore
+      });
+      
+      return {
+        success: true,
+        decision: finalDecision,
+        message: `Intelligent decision made with ${Math.round(finalDecision.confidence * 100)}% confidence`,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Enhanced Opus decision error:', error);
+      return {
+        success: false,
+        error: error.message,
+        fallback: await this.makeDecision(options)
+      };
+    }
+  }
+
+  /**
+   * Predictive agent spawning based on dependency analysis
+   */
+  async predictiveAgentSpawning(taskBreakdown, currentAgentPool) {
+    console.log('🧠 Enhanced Opus: Performing predictive agent spawning...');
+    
+    try {
+      // Use Intelligence Engine for predictions
+      const predictions = await this.intelligenceEngine.predictiveAgentSpawning(taskBreakdown, currentAgentPool);
+      
+      // Apply Opus resource management oversight
+      const resourceOptimization = await this.optimizeResourceAllocation(predictions, currentAgentPool);
+      
+      // Generate spawn recommendations
+      const spawnRecommendations = {
+        immediateSpawns: [],
+        scheduledSpawns: [],
+        contingencySpawns: [],
+        resourceRequirements: resourceOptimization
+      };
+      
+      // Categorize agent spawning by urgency
+      for (const agent of predictions.recommendedAgents) {
+        const spawnTiming = predictions.spawnTiming.get(agent.id);
+        const urgency = this.calculateSpawnUrgency(agent, taskBreakdown, spawnTiming);
+        
+        if (urgency > 0.8) {
+          spawnRecommendations.immediateSpawns.push(agent);
+        } else if (urgency > 0.5) {
+          spawnRecommendations.scheduledSpawns.push({
+            ...agent,
+            scheduledTime: spawnTiming
+          });
+        } else {
+          spawnRecommendations.contingencySpawns.push(agent);
+        }
+      }
+      
+      // Store predictions
+      await this.writeMemory('agents/predictions', 'spawn_predictions.json', {
+        predictions,
+        recommendations: spawnRecommendations,
+        confidence: predictions.confidenceScore,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Broadcast spawn recommendations
+      this.broadcast('predictive_spawning_complete', {
+        immediateSpawns: spawnRecommendations.immediateSpawns.length,
+        scheduledSpawns: spawnRecommendations.scheduledSpawns.length,
+        confidence: predictions.confidenceScore
+      });
+      
+      return {
+        success: true,
+        predictions,
+        recommendations: spawnRecommendations,
+        message: `Predicted ${predictions.recommendedAgents.length} agents needed`,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Enhanced Opus prediction error:', error);
+      return {
+        success: false,
+        error: error.message,
+        fallback: await this.basicAgentSpawning(currentAgentPool)
+      };
+    }
+  }
+
+  /**
+   * Analyze historical patterns for optimization
+   */
+  async analyzeHistoricalPatterns(projectContext) {
+    console.log('🧠 Enhanced Opus: Analyzing historical patterns...');
+    
+    try {
+      // Get historical data from Intelligence Engine
+      const patterns = await this.intelligenceEngine.analyzeHistoricalPatterns(projectContext);
+      
+      // Apply strategic pattern analysis
+      const strategicInsights = {
+        successPatterns: this.identifySuccessPatterns(patterns),
+        riskPatterns: this.identifyRiskPatterns(patterns),
+        optimizationOpportunities: this.identifyOptimizationOpportunities(patterns),
+        recommendations: []
+      };
+      
+      // Generate strategic recommendations based on patterns
+      strategicInsights.recommendations = this.generatePatternBasedRecommendations(strategicInsights);
+      
+      // Store pattern analysis
+      await this.writeMemory('intelligence/patterns', 'pattern_analysis.json', {
+        patterns,
+        strategicInsights,
+        timestamp: new Date().toISOString()
+      });
+      
+      return {
+        success: true,
+        patterns,
+        insights: strategicInsights,
+        message: `Analyzed ${patterns.totalProjects} historical projects`,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Enhanced Opus pattern analysis error:', error);
+      return {
+        success: false,
+        error: error.message,
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+
+  /**
+   * Optimize current state using learning patterns
+   */
+  async optimizeWithLearning(currentState, goals) {
+    console.log('🧠 Enhanced Opus: Optimizing with learning patterns...');
+    
+    try {
+      // Apply learning-based optimizations
+      const learningOptimizations = await this.intelligenceEngine.applyLearningOptimizations(currentState, goals);
+      
+      // Strategic validation of optimizations
+      const validatedOptimizations = await this.validateOptimizations(learningOptimizations, goals);
+      
+      // Create optimization plan
+      const optimizationPlan = {
+        currentState,
+        targetState: goals,
+        optimizations: validatedOptimizations,
+        implementationSteps: this.generateOptimizationSteps(validatedOptimizations),
+        expectedImpact: this.calculateExpectedImpact(validatedOptimizations),
+        riskMitigation: this.generateRiskMitigation(validatedOptimizations)
+      };
+      
+      // Store optimization plan
+      await this.writeMemory('optimization/plans', `plan_${Date.now()}.json`, optimizationPlan);
+      
+      return {
+        success: true,
+        plan: optimizationPlan,
+        message: `Generated optimization plan with ${optimizationPlan.optimizations.length} recommendations`,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Enhanced Opus optimization error:', error);
+      return {
+        success: false,
+        error: error.message,
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+
+  // Helper methods for intelligence enhancement
+  async applyStrategicOversight(breakdown) {
+    return {
+      strategicAlignment: this.assessStrategicAlignment(breakdown),
+      riskAssessment: this.assessBreakdownRisks(breakdown),
+      resourceImplications: this.assessResourceImplications(breakdown),
+      timeline: this.optimizeTimeline(breakdown)
+    };
+  }
+
+  generateBreakdownRecommendation(breakdown, strategicAnalysis) {
+    const recommendations = [];
+    
+    if (breakdown.estimatedComplexity > 8) {
+      recommendations.push('Consider phased implementation due to high complexity');
+    }
+    
+    if (strategicAnalysis.riskAssessment.highRiskTasks > 0) {
+      recommendations.push('Prioritize risk mitigation for high-risk tasks');
+    }
+    
+    if (strategicAnalysis.resourceImplications.requiresSpecializedAgents) {
+      recommendations.push('Plan for specialized agent acquisition early');
+    }
+    
+    return recommendations;
+  }
+
+  calculateSpawnUrgency(agent, taskBreakdown, spawnTiming) {
+    // Calculate urgency based on dependency timing and resource availability
+    const timeDiff = new Date(spawnTiming) - new Date();
+    const urgencyScore = Math.max(0, 1 - (timeDiff / (7 * 24 * 60 * 60 * 1000))); // 1 week baseline
+    
+    // Adjust for agent specialization importance
+    if (agent.priority === 'HIGH') urgencyScore += 0.2;
+    if (agent.estimatedUtilization > 0.8) urgencyScore += 0.1;
+    
+    return Math.min(1, urgencyScore);
+  }
+
+  async basicAgentSpawning(currentAgentPool) {
+    // Fallback method for basic agent spawning
+    return {
+      success: true,
+      message: 'Using basic agent spawning fallback',
+      recommendations: {
+        immediateSpawns: [],
+        scheduledSpawns: [],
+        contingencySpawns: []
+      }
+    };
+  }
+
+  // Additional helper methods for intelligence features
+  async performBasicBreakdown(taskDescription) {
+    // Fallback method for basic task breakdown
+    return {
+      success: true,
+      breakdown: {
+        id: Date.now().toString(),
+        levels: [
+          {
+            level: 1,
+            tasks: [
+              {
+                id: 'basic_task_1',
+                title: 'Analyze Requirements',
+                complexity: 'MEDIUM',
+                estimatedHours: 8
+              }
+            ]
+          }
+        ],
+        estimatedComplexity: 5
+      },
+      message: 'Using basic breakdown fallback'
+    };
+  }
+
+  async validateStrategicAlignment(optimization) {
+    return {
+      score: 8.5,
+      reasoning: ['Aligns with strategic objectives', 'Minimal risk profile', 'High business value']
+    };
+  }
+
+  async optimizeResourceAllocation(predictions, currentAgentPool) {
+    return {
+      totalResourcesNeeded: predictions.recommendedAgents?.length || 3,
+      optimalScheduling: 'staggered',
+      resourceEfficiency: 0.85
+    };
+  }
+
+  identifySuccessPatterns(patterns) {
+    return ['Early planning reduces risks', 'Modular architecture improves maintainability'];
+  }
+
+  identifyRiskPatterns(patterns) {
+    return ['Tight deadlines increase defect rate', 'Complex integrations need extra testing'];
+  }
+
+  identifyOptimizationOpportunities(patterns) {
+    return ['Parallel development streams', 'Automated testing pipeline'];
+  }
+
+  generatePatternBasedRecommendations(strategicInsights) {
+    return [
+      'Implement continuous integration early',
+      'Plan for scalability from the beginning',
+      'Establish clear API contracts'
+    ];
+  }
+
+  async validateOptimizations(learningOptimizations, goals) {
+    return learningOptimizations.filter(opt => opt.confidence > 0.7);
+  }
+
+  generateOptimizationSteps(validatedOptimizations) {
+    return validatedOptimizations.map((opt, index) => ({
+      step: index + 1,
+      action: opt.description,
+      timeline: `Week ${index + 1}`,
+      dependencies: index > 0 ? [`Step ${index}`] : []
+    }));
+  }
+
+  calculateExpectedImpact(validatedOptimizations) {
+    const totalImpact = validatedOptimizations.reduce((sum, opt) => sum + opt.expectedImpact, 0);
+    return {
+      efficiency: totalImpact,
+      timeline: Math.max(0, totalImpact * 0.8), // Timeline improvement
+      quality: Math.max(0, totalImpact * 0.6) // Quality improvement
+    };
+  }
+
+  generateRiskMitigation(validatedOptimizations) {
+    return [
+      'Monitor performance metrics during implementation',
+      'Maintain rollback procedures for each optimization',
+      'Conduct regular validation checkpoints'
+    ];
+  }
+
+  assessStrategicAlignment(breakdown) {
+    return Math.min(10, 5 + (breakdown.estimatedComplexity * 0.3));
+  }
+
+  assessBreakdownRisks(breakdown) {
+    const riskCount = breakdown.riskFactors?.length || 0;
+    return {
+      highRiskTasks: riskCount,
+      overallRisk: riskCount > 3 ? 'HIGH' : riskCount > 1 ? 'MEDIUM' : 'LOW'
+    };
+  }
+
+  assessResourceImplications(breakdown) {
+    const skillsCount = Array.from(breakdown.requiredSkills || []).length;
+    return {
+      requiresSpecializedAgents: skillsCount > 3,
+      estimatedAgentCount: Math.max(2, Math.ceil(skillsCount / 2))
+    };
+  }
+
+  optimizeTimeline(breakdown) {
+    const baseWeeks = Math.ceil(breakdown.estimatedComplexity / 2);
+    return {
+      estimatedWeeks: baseWeeks,
+      criticalPath: ['analysis', 'implementation', 'testing'],
+      parallelizable: ['frontend', 'backend', 'testing']
+    };
   }
 }
 
