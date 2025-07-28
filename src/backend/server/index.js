@@ -10,6 +10,7 @@ const { v4: uuidv4 } = require('uuid');
 const PostgreSQLMemory = require('./database');
 const runnerBridge = require('../../shared/runner-bridge');
 const DependencyManager = require('../../shared/coordination/dependency-manager');
+const TrilogyLangGraphCheckpointer = require('../../shared/coordination/langgraph-checkpointer');
 
 const app = express();
 const server = http.createServer(app);
@@ -17,7 +18,7 @@ const wss = new WebSocket.Server({ server });
 
 // Configuration
 const CONFIG = {
-  port: process.env.PORT || 8080,
+  port: process.env.PORT || 3100, // Use allocated port range 3100-3109
   memoryBackend: process.env.MEMORY_BACKEND || 'postgresql',
   memoryPath: path.join(__dirname, '../../../memory'),
   logsPath: path.join(__dirname, '../../../logs'),
@@ -33,6 +34,7 @@ const CONFIG = {
 // Initialize Memory System
 let memorySystem;
 let dependencyManager;
+let langGraphCheckpointer;
 
 async function initMemorySystem() {
   if (CONFIG.memoryBackend === 'postgresql') {
@@ -54,6 +56,42 @@ async function initDependencyManager() {
   dependencyManager = new DependencyManager(memory, broadcastToAllClients);
   await dependencyManager.initializeDependencySystem();
   console.log('🔗 Dependency Resolution System initialized');
+}
+
+// Initialize LangGraph Checkpointer
+async function initLangGraphCheckpointer() {
+  if (CONFIG.memoryBackend === 'postgresql') {
+    langGraphCheckpointer = new TrilogyLangGraphCheckpointer(CONFIG.postgres, {
+      enableTimeTravel: true,
+      enableHumanApproval: true,
+      maxConnections: 5
+    });
+    
+    const initialized = await langGraphCheckpointer.initialize();
+    if (initialized) {
+      console.log('🧠 LangGraph PostgreSQL Checkpointer initialized');
+      
+      // Set up event handlers
+      langGraphCheckpointer.on('thread:created', (data) => {
+        broadcastToAllClients('langgraph:thread_created', data);
+      });
+      
+      langGraphCheckpointer.on('checkpoint:saved', (data) => {
+        broadcastToAllClients('langgraph:checkpoint_saved', data);
+      });
+      
+      langGraphCheckpointer.on('approval:requested', (data) => {
+        broadcastToAllClients('langgraph:approval_requested', data);
+      });
+      
+    } else {
+      console.log('⚠️ LangGraph checkpointer initialization failed, continuing without');
+      langGraphCheckpointer = null;
+    }
+  } else {
+    console.log('⚠️ LangGraph requires PostgreSQL backend');
+    langGraphCheckpointer = null;
+  }
 }
 
 // Initialize Git repository
@@ -645,6 +683,137 @@ app.post('/dependencies/tasks/:taskId/force-complete', async (req, res) => {
 // END MILESTONE 3 API ENDPOINTS
 // ===========================================
 
+// ===========================================
+// LANGGRAPH CHECKPOINTER API ENDPOINTS
+// ===========================================
+
+// Create a new LangGraph thread
+app.post('/langgraph/threads', async (req, res) => {
+  try {
+    if (!langGraphCheckpointer) {
+      return res.status(503).json({ success: false, error: 'LangGraph checkpointer not available' });
+    }
+    
+    const { namespace, metadata } = req.body;
+    const thread = await langGraphCheckpointer.createThread({ namespace, metadata });
+    
+    res.json({ 
+      success: true, 
+      thread 
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get thread statistics
+app.get('/langgraph/threads/stats', async (req, res) => {
+  try {
+    if (!langGraphCheckpointer) {
+      return res.status(503).json({ success: false, error: 'LangGraph checkpointer not available' });
+    }
+    
+    const stats = await langGraphCheckpointer.getThreadStats();
+    
+    res.json({ 
+      success: true, 
+      stats 
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get checkpoint history for a thread
+app.get('/langgraph/threads/:threadId/checkpoints', async (req, res) => {
+  try {
+    if (!langGraphCheckpointer) {
+      return res.status(503).json({ success: false, error: 'LangGraph checkpointer not available' });
+    }
+    
+    const { threadId } = req.params;
+    const { limit = 10 } = req.query;
+    
+    const history = await langGraphCheckpointer.getCheckpointHistory(threadId, parseInt(limit));
+    
+    res.json({ 
+      success: true, 
+      threadId,
+      history
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Revert thread to previous checkpoint
+app.post('/langgraph/threads/:threadId/revert/:checkpointId', async (req, res) => {
+  try {
+    if (!langGraphCheckpointer) {
+      return res.status(503).json({ success: false, error: 'LangGraph checkpointer not available' });
+    }
+    
+    const { threadId, checkpointId } = req.params;
+    
+    const checkpoint = await langGraphCheckpointer.revertToCheckpoint(threadId, checkpointId);
+    
+    res.json({ 
+      success: true, 
+      threadId,
+      checkpointId,
+      checkpoint
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Approve pending action
+app.post('/langgraph/approvals/:approvalId/approve', async (req, res) => {
+  try {
+    if (!langGraphCheckpointer) {
+      return res.status(503).json({ success: false, error: 'LangGraph checkpointer not available' });
+    }
+    
+    const { approvalId } = req.params;
+    const { feedback = '' } = req.body;
+    
+    const approval = await langGraphCheckpointer.approveAction(approvalId, feedback);
+    
+    res.json({ 
+      success: true, 
+      approval
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Reject pending action
+app.post('/langgraph/approvals/:approvalId/reject', async (req, res) => {
+  try {
+    if (!langGraphCheckpointer) {
+      return res.status(503).json({ success: false, error: 'LangGraph checkpointer not available' });
+    }
+    
+    const { approvalId } = req.params;
+    const { reason = '' } = req.body;
+    
+    const approval = await langGraphCheckpointer.rejectAction(approvalId, reason);
+    
+    res.json({ 
+      success: true, 
+      approval
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ===========================================
+// END LANGGRAPH API ENDPOINTS
+// ===========================================
+
 // WebSocket broadcast function
 function broadcastToAllClients(data) {
   const message = JSON.stringify(data);
@@ -688,6 +857,7 @@ async function start() {
   try {
     await initMemorySystem();
     await initDependencyManager();
+    await initLangGraphCheckpointer();
     await fs.ensureDir(CONFIG.logsPath);
     await gitRepo.init();
     

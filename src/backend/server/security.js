@@ -136,7 +136,7 @@ class SecurityManager {
 
   // CORS Configuration
   getCorsOptions() {
-    const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3100,http://localhost:8080')
+    const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3100,http://localhost:3101')
       .split(',')
       .map(origin => origin.trim());
 

@@ -10,12 +10,12 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:3000", "chrome-extension://*"],
+    origin: ["http://localhost:3101", "chrome-extension://*"],
     methods: ["GET", "POST"]
   }
 });
 
-const PORT = process.env.MCP_PORT || 3000;
+const PORT = process.env.MCP_PORT || 3101; // Use allocated port 3101 for MCP server
 
 // Security middleware
 app.use(cors({
