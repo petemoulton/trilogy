@@ -219,6 +219,26 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../../frontend/dashboard')));
 
+// Route for professional dashboard
+app.get('/professional', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/dashboard/professional.html'));
+});
+
+// Set professional dashboard as default
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/dashboard/professional.html'));
+});
+
+// Route for agent orchestration dashboard
+app.get('/orchestration', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/dashboard/orchestration.html'));
+});
+
+// Route for intelligence analytics dashboard
+app.get('/analytics', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/dashboard/analytics.html'));
+});
+
 // API Routes
 app.get('/health', async (req, res) => {
   const stats = memorySystem ? await memorySystem.getStats() : null;

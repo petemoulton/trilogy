@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trilogy AI - Agent Orchestration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .orchestration-dashboard {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            min-height: 100vh;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 16px 24px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+
+        .breadcrumb {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .agent-workflow {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .workflow-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .step-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-right: 16px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-prd {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+
+        .step-opus {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+        }
+
+        .step-agents {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .step-tasks {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .step-qa {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .step-content {
+            flex: 1;
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #4f46e5;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .step-description {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .step-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-complete {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .workflow-connector {
+            position: absolute;
+            left: 23px;
+            top: 48px;
+            bottom: -24px;
+            width: 2px;
+            background: linear-gradient(to bottom, #e2e8f0, #cbd5e1);
+            z-index: 1;
+        }
+
+        .agent-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .agent-card:hover {
+            border-color: #4f46e5;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+        }
+
+        .agent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .agent-name {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .agent-role {
+            font-size: 12px;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .agent-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 8px;
+            background: #f8fafc;
+            border-radius: 4px;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 14px;
+        }
+
+        .metric-label {
+            font-size: 10px;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        .task-item {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .task-title {
+            font-weight: 500;
+            color: #1e293b;
+            font-size: 14px;
+        }
+
+        .task-priority {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .priority-high {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .priority-medium {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .priority-low {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .task-assigned {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: #4338ca;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #64748b;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .control-group {
+            margin-bottom: 16px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .control-group select,
+        .control-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .intelligence-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-radius: 8px;
+            border: 1px solid #0ea5e9;
+        }
+
+        .intelligence-icon {
+            font-size: 18px;
+        }
+
+        .orchestration-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #4f46e5;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        @media (max-width: 1200px) {
+            .orchestration-dashboard {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="orchestration-dashboard">
+        <div class="header">
+            <div class="logo">🧠 Trilogy AI - Agent Orchestration</div>
+            <div class="breadcrumb">
+                <a href="/" style="color: #4f46e5; text-decoration: none;">Dashboard</a> / Agent Orchestration
+            </div>
+        </div>
+
+        <!-- Left Panel: Team Lead Controls -->
+        <div class="panel">
+            <h2 class="panel-title">Team Lead Controls</h2>
+            
+            <div class="intelligence-indicator">
+                <span class="intelligence-icon">🧠</span>
+                <div>
+                    <div style="font-weight: 600; color: #0f172a;">Intelligence Active</div>
+                    <div style="font-size: 12px; color: #64748b;">Enhanced decision making enabled</div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Project Complexity</label>
+                <select id="complexity-level">
+                    <option value="low">Low - Simple tasks</option>
+                    <option value="medium" selected>Medium - Standard project</option>
+                    <option value="high">High - Complex architecture</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Agent Pool Size</label>
+                <select id="pool-size">
+                    <option value="3">Small (3 agents)</option>
+                    <option value="5" selected>Medium (5 agents)</option>
+                    <option value="8">Large (8 agents)</option>
+                    <option value="12">Enterprise (12 agents)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Orchestration Mode</label>
+                <select id="orchestration-mode">
+                    <option value="sequential">Sequential Execution</option>
+                    <option value="parallel" selected>Parallel Processing</option>
+                    <option value="adaptive">Adaptive (AI-driven)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <button class="btn" onclick="optimizeWorkflow()" style="width: 100%; margin-bottom: 8px;">
+                    🎯 Optimize Workflow
+                </button>
+                <button class="btn btn-secondary" onclick="resetOrchestration()" style="width: 100%;">
+                    🔄 Reset Configuration
+                </button>
+            </div>
+
+            <div class="orchestration-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="efficiency-score">92%</div>
+                    <div class="stat-label">Efficiency</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="parallel-tasks">3</div>
+                    <div class="stat-label">Parallel Tasks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="predicted-time">2.4h</div>
+                    <div class="stat-label">Est. Time</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="resource-usage">68%</div>
+                    <div class="stat-label">Resources</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center Panel: Workflow Visualization -->
+        <div class="panel">
+            <h2 class="panel-title">Agent Workflow</h2>
+            
+            <div class="agent-workflow">
+                <div class="workflow-step">
+                    <div class="workflow-connector"></div>
+                    <div class="step-icon step-prd">📋</div>
+                    <div class="step-content">
+                        <div class="step-title">PRD Analysis</div>
+                        <div class="step-description">Project requirements analyzed and broken down into actionable tasks</div>
+                        <div class="step-status status-complete">Complete</div>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="workflow-connector"></div>
+                    <div class="step-icon step-opus">🧠</div>
+                    <div class="step-content">
+                        <div class="step-title">Team Lead Intelligence</div>
+                        <div class="step-description">Enhanced Opus Agent with intelligence engine creates optimized task allocation plan</div>
+                        <div class="step-status status-active">Active</div>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="workflow-connector"></div>
+                    <div class="step-icon step-agents">👥</div>
+                    <div class="step-content">
+                        <div class="step-title">Specialist Agent Pool</div>
+                        <div class="step-description">Dynamic agents spawned based on task requirements and dependencies</div>
+                        <div class="step-status status-pending">Pending</div>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="workflow-connector"></div>
+                    <div class="step-icon step-tasks">⚡</div>
+                    <div class="step-content">
+                        <div class="step-title">Parallel Task Execution</div>
+                        <div class="step-description">Tasks executed in parallel with LangGraph fault tolerance and human approval gates</div>
+                        <div class="step-status status-pending">Pending</div>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-icon step-qa">✅</div>
+                    <div class="step-content">
+                        <div class="step-title">Quality Assurance</div>
+                        <div class="step-description">Automated testing and human review checkpoints before delivery</div>
+                        <div class="step-status status-pending">Pending</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Active Agents & Tasks -->
+        <div class="panel">
+            <h2 class="panel-title">Active Orchestration</h2>
+            
+            <div style="margin-bottom: 24px;">
+                <h3 style="font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">Active Agents</h3>
+                
+                <div class="agent-card">
+                    <div class="agent-header">
+                        <span class="agent-name">Enhanced Opus</span>
+                        <span class="agent-role">Team Lead</span>
+                    </div>
+                    <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">
+                        Intelligence-enabled orchestration
+                    </div>
+                    <div class="agent-metrics">
+                        <div class="metric">
+                            <div class="metric-value">3</div>
+                            <div class="metric-label">Tasks</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">92%</div>
+                            <div class="metric-label">Efficiency</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">2.1s</div>
+                            <div class="metric-label">Avg Time</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="agent-card">
+                    <div class="agent-header">
+                        <span class="agent-name">Sonnet Analyst</span>
+                        <span class="agent-role">Analysis</span>
+                    </div>
+                    <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">
+                        Code analysis and review specialist
+                    </div>
+                    <div class="agent-metrics">
+                        <div class="metric">
+                            <div class="metric-value">0</div>
+                            <div class="metric-label">Tasks</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">--</div>
+                            <div class="metric-label">Efficiency</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">Idle</div>
+                            <div class="metric-label">Status</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="dynamic-agents"></div>
+            </div>
+
+            <div>
+                <h3 style="font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">Task Queue</h3>
+                
+                <div id="task-queue">
+                    <div class="task-item">
+                        <div class="task-header">
+                            <div class="task-title">Initialize Project Structure</div>
+                            <div class="task-priority priority-high">High</div>
+                        </div>
+                        <div class="task-assigned">Assigned to: Enhanced Opus Agent</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="btn btn-sm" onclick="spawnSpecialistAgent()" style="width: 100%; margin-bottom: 8px;">
+                    ➕ Spawn Specialist
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="refreshOrchestration()" style="width: 100%;">
+                    🔄 Refresh Status
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws;
+        let orchestrationData = {
+            activeAgents: 2,
+            pendingTasks: 1,
+            efficiency: 92,
+            parallelTasks: 3,
+            predictedTime: '2.4h',
+            resourceUsage: 68
+        };
+
+        // Initialize orchestration dashboard
+        function initOrchestration() {
+            connectWebSocket();
+            updateOrchestrationStats();
+            loadActiveAgents();
+            loadTaskQueue();
+            
+            // Update every 5 seconds
+            setInterval(updateOrchestrationStats, 5000);
+            setInterval(loadActiveAgents, 10000);
+        }
+
+        // WebSocket connection
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}`;
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = function() {
+                console.log('Connected to Trilogy AI Orchestration');
+            };
+            
+            ws.onmessage = function(event) {
+                const message = JSON.parse(event.data);
+                handleOrchestrationMessage(message);
+            };
+            
+            ws.onclose = function() {
+                console.log('Disconnected from orchestration server');
+                setTimeout(connectWebSocket, 3000);
+            };
+        }
+
+        function handleOrchestrationMessage(message) {
+            const data = typeof message === 'string' ? JSON.parse(message) : message;
+            
+            switch(data.type) {
+                case 'pool_agent_spawned':
+                    addDynamicAgent(data.data);
+                    updateOrchestrationStats();
+                    break;
+                case 'task_allocated':
+                    addTaskToQueue(data.data);
+                    break;
+                case 'task_completed':
+                    updateTaskProgress(data.data);
+                    break;
+            }
+        }
+
+        function updateOrchestrationStats() {
+            document.getElementById('efficiency-score').textContent = orchestrationData.efficiency + '%';
+            document.getElementById('parallel-tasks').textContent = orchestrationData.parallelTasks;
+            document.getElementById('predicted-time').textContent = orchestrationData.predictedTime;
+            document.getElementById('resource-usage').textContent = orchestrationData.resourceUsage + '%';
+        }
+
+        function loadActiveAgents() {
+            fetch('/agents/pool/status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateDynamicAgents(data.agents);
+                        orchestrationData.activeAgents = data.agents.length + 2; // +2 for default agents
+                    }
+                })
+                .catch(error => console.error('Failed to load agents:', error));
+        }
+
+        function updateDynamicAgents(agents) {
+            const container = document.getElementById('dynamic-agents');
+            container.innerHTML = '';
+            
+            agents.forEach(agent => {
+                const agentCard = document.createElement('div');
+                agentCard.className = 'agent-card';
+                agentCard.innerHTML = `
+                    <div class="agent-header">
+                        <span class="agent-name">${agent.id}</span>
+                        <span class="agent-role">${agent.role || 'Specialist'}</span>
+                    </div>
+                    <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">
+                        Dynamic agent - ${agent.status}
+                    </div>
+                    <div class="agent-metrics">
+                        <div class="metric">
+                            <div class="metric-value">${agent.tasksCompleted || 0}</div>
+                            <div class="metric-label">Tasks</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${agent.utilization || 0}%</div>
+                            <div class="metric-label">Usage</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${agent.status}</div>
+                            <div class="metric-label">Status</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(agentCard);
+            });
+        }
+
+        function loadTaskQueue() {
+            // Simulate task loading - in real implementation, this would fetch from API
+            const tasks = [
+                {
+                    title: 'Initialize Project Structure',
+                    priority: 'high',
+                    assigned: 'Enhanced Opus Agent',
+                    progress: 0
+                }
+            ];
+            
+            updateTaskQueue(tasks);
+        }
+
+        function updateTaskQueue(tasks) {
+            const container = document.getElementById('task-queue');
+            container.innerHTML = '';
+            
+            tasks.forEach(task => {
+                const taskItem = document.createElement('div');
+                taskItem.className = 'task-item';
+                taskItem.innerHTML = `
+                    <div class="task-header">
+                        <div class="task-title">${task.title}</div>
+                        <div class="task-priority priority-${task.priority}">${task.priority}</div>
+                    </div>
+                    <div class="task-assigned">Assigned to: ${task.assigned}</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${task.progress}%;"></div>
+                    </div>
+                `;
+                container.appendChild(taskItem);
+            });
+        }
+
+        // Control functions
+        function optimizeWorkflow() {
+            const complexity = document.getElementById('complexity-level').value;
+            const poolSize = document.getElementById('pool-size').value;
+            const mode = document.getElementById('orchestration-mode').value;
+            
+            console.log('Optimizing workflow:', { complexity, poolSize, mode });
+            
+            // Simulate optimization
+            orchestrationData.efficiency = Math.min(100, orchestrationData.efficiency + Math.random() * 10);
+            orchestrationData.parallelTasks = Math.max(1, parseInt(poolSize) - 2);
+            orchestrationData.resourceUsage = Math.max(20, Math.min(95, orchestrationData.resourceUsage + (Math.random() - 0.5) * 20));
+            
+            updateOrchestrationStats();
+            
+            // Show feedback
+            showNotification('Workflow optimized based on configuration', 'success');
+        }
+
+        function resetOrchestration() {
+            document.getElementById('complexity-level').value = 'medium';
+            document.getElementById('pool-size').value = '5';
+            document.getElementById('orchestration-mode').value = 'parallel';
+            
+            orchestrationData = {
+                activeAgents: 2,
+                pendingTasks: 1,
+                efficiency: 92,
+                parallelTasks: 3,
+                predictedTime: '2.4h',
+                resourceUsage: 68
+            };
+            
+            updateOrchestrationStats();
+            showNotification('Configuration reset to defaults', 'info');
+        }
+
+        function spawnSpecialistAgent() {
+            fetch('/agents/pool/spawn', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role: 'specialist' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Specialist agent spawned successfully', 'success');
+                    loadActiveAgents();
+                } else {
+                    showNotification('Failed to spawn specialist agent', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Failed to spawn agent:', error);
+                showNotification('Error spawning specialist agent', 'error');
+            });
+        }
+
+        function refreshOrchestration() {
+            loadActiveAgents();
+            loadTaskQueue();
+            updateOrchestrationStats();
+            showNotification('Orchestration status refreshed', 'info');
+        }
+
+        function showNotification(message, type) {
+            // Simple notification system
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                border-radius: 6px;
+                color: white;
+                font-weight: 500;
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            switch(type) {
+                case 'success':
+                    notification.style.background = '#10b981';
+                    break;
+                case 'error':
+                    notification.style.background = '#ef4444';
+                    break;
+                case 'info':
+                default:
+                    notification.style.background = '#3b82f6';
+                    break;
+            }
+            
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 3000);
+        }
+
+        // Add CSS animation for notifications
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initOrchestration);
+    </script>
+</body>
+</html>
