@@ -1,6 +1,6 @@
 // Popup script for MCP Chrome Agent
 
-const MCP_SERVER_URL = 'http://localhost:3000';
+const MCP_SERVER_URL = 'http://localhost:3101';
 
 let isTracking = true;
 let currentSessionId = null;

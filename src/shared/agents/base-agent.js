@@ -6,7 +6,7 @@ class BaseAgent {
     this.name = name;
     this.id = uuidv4();
     this.config = {
-      serverUrl: config.serverUrl || 'ws://localhost:8080',
+      serverUrl: config.serverUrl || 'ws://localhost:3100',
       maxRetries: config.maxRetries || 3,
       retryDelay: config.retryDelay || 1000,
       ...config

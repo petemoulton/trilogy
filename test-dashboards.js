@@ -11,12 +11,12 @@ async function testDashboards() {
   });
   
   try {
-    // Test Main Dashboard (port 8080)
-    console.log('📊 Testing Main Dashboard on port 8080...');
+    // Test Main Dashboard (port 3100)
+    console.log('📊 Testing Main Dashboard on port 3100...');
     const page1 = await browser.newPage();
     
     try {
-      await page1.goto('http://localhost:8080', { waitUntil: 'networkidle2', timeout: 10000 });
+      await page1.goto('http://localhost:3100', { waitUntil: 'networkidle2', timeout: 10000 });
       const title1 = await page1.title();
       console.log(`✅ Main Dashboard loaded: "${title1}"`);
       
@@ -40,11 +40,11 @@ async function testDashboards() {
     }
     
     // Test MCP Dashboard (port 3000)
-    console.log('\n🌐 Testing MCP Dashboard on port 3000...');
+    console.log('\n🌐 Testing MCP Dashboard on port 3101...');
     const page2 = await browser.newPage();
     
     try {
-      await page2.goto('http://localhost:3000/dashboard', { waitUntil: 'networkidle2', timeout: 10000 });
+      await page2.goto('http://localhost:3101/dashboard', { waitUntil: 'networkidle2', timeout: 10000 });
       const title2 = await page2.title();
       console.log(`✅ MCP Dashboard loaded: "${title2}"`);
       
@@ -81,7 +81,7 @@ async function testDashboards() {
       console.log('✅ Agent pool status:', poolResponse.success ? 'Connected' : 'Disconnected');
       
       // Test MCP server health
-      await page3.goto('http://localhost:3000/health', { waitUntil: 'networkidle2' });
+      await page3.goto('http://localhost:3101/health', { waitUntil: 'networkidle2' });
       const mcpHealthResponse = await page3.evaluate(() => JSON.parse(document.body.innerText));
       console.log('✅ MCP server health:', mcpHealthResponse.status);
       

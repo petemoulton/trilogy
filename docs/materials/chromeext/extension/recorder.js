@@ -219,7 +219,7 @@ class MacroRecorder {
     // Send macro to server
     async sendMacroToServer(macro) {
         try {
-            const response = await fetch('http://localhost:3000/macros', {
+            const response = await fetch('http://localhost:3101/macros', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(macro)

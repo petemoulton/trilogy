@@ -322,7 +322,7 @@
                     <div class="metric-value" id="chrome-sessions">--</div>
                     <div class="metric-label">Active Sessions</div>
                 </div>
-                <a href="http://localhost:3000/dashboard" target="_blank" class="btn btn-primary" style="width: 100%; text-align: center;">
+                <a href="http://localhost:3101/dashboard" target="_blank" class="btn btn-primary" style="width: 100%; text-align: center;">
                     Open MCP Dashboard
                 </a>
             </div>
@@ -364,7 +364,20 @@
 
     <script>
         let ws;
-        let startTime = Date.now();
+        
+        // Initialize start time with persistence
+        let startTime;
+        function initializeStartTime() {
+            const storedStartTime = localStorage.getItem('trilogy_start_time');
+            if (storedStartTime) {
+                startTime = parseInt(storedStartTime);
+            } else {
+                startTime = Date.now();
+                localStorage.setItem('trilogy_start_time', startTime.toString());
+            }
+        }
+        
+        initializeStartTime();
 
         // Initialize dashboard
         function initDashboard() {
