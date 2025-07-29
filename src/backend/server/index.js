@@ -179,6 +179,24 @@ class TrilogyMemory {
     }
   }
 
+  getDataPreview(data) {
+    try {
+      if (data === null || data === undefined) {
+        return '[null/undefined]';
+      }
+      if (typeof data === 'string') {
+        return data.length > 200 ? data.substring(0, 200) + '...' : data;
+      }
+      if (typeof data === 'object') {
+        const jsonString = JSON.stringify(data);
+        return jsonString.length > 200 ? jsonString.substring(0, 200) + '...' : jsonString;
+      }
+      return String(data).substring(0, 200);
+    } catch (error) {
+      return '[preview error]';
+    }
+  }
+
   async logToGit(namespace, key, action, data) {
     try {
       const timestamp = new Date().toISOString();
@@ -187,7 +205,7 @@ class TrilogyMemory {
         namespace,
         key,
         action,
-        dataPreview: typeof data === 'string' ? data.substring(0, 200) : JSON.stringify(data).substring(0, 200)
+        dataPreview: this.getDataPreview(data)
       };
 
       const logFile = path.join(CONFIG.logsPath, `${namespace}_${key.replace(/[/\\]/g, '_')}.log`);
