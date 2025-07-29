@@ -46,7 +46,7 @@ function checkServerHealth(retries = 30) {
     const check = (attempt) => {
       const req = http.request({
         hostname: 'localhost',
-        port: 8080,
+        port: 3100,
         path: '/health',
         method: 'GET',
         timeout: 1000
@@ -152,21 +152,21 @@ async function startSystem() {
     setTimeout(async () => {
       try {
         // Test agent pool API to ensure runners are attached
-        const response = await fetch('http://localhost:8080/agents/pool/status');
+        const response = await fetch('http://localhost:3100/agents/pool/status');
         const data = await response.json();
         
         console.log('\n🎉 Trilogy System Started Successfully!');
-        console.log('📊 Dashboard: http://localhost:8080');
+        console.log('📊 Dashboard: http://localhost:3100');
         console.log('🌐 MCP Dashboard: http://localhost:3000/dashboard');
-        console.log('🔗 API Health: http://localhost:8080/health');
-        console.log('🤖 Agent Pool: http://localhost:8080/agents/pool/status');
+        console.log('🔗 API Health: http://localhost:3100/health');
+        console.log('🤖 Agent Pool: http://localhost:3100/agents/pool/status');
         console.log(`🏊 Agent Pool Status: ${data.success ? 'Connected' : 'Disconnected'}`);
         console.log('\n💡 Try spawning an agent:');
-        console.log('curl -X POST http://localhost:8080/agents/pool/spawn -H "Content-Type: application/json" -d \'{"role":"test-specialist","capabilities":["testing"]}\'');
+        console.log('curl -X POST http://localhost:3100/agents/pool/spawn -H "Content-Type: application/json" -d \'{"role":"test-specialist","capabilities":["testing"]}\'');
         console.log('\nPress Ctrl+C to shutdown');
       } catch (error) {
         console.log('\n⚠️ System started but agent pool may not be ready');
-        console.log('🔗 Dashboard: http://localhost:8080');
+        console.log('🔗 Dashboard: http://localhost:3100');
         console.log('🌐 MCP Dashboard: http://localhost:3000/dashboard');
         console.log('\nPress Ctrl+C to shutdown');
       }
