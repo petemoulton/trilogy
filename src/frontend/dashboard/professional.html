@@ -389,265 +389,44 @@
         </div>
     </div>
 
+    <!-- Dashboard JavaScript Modules -->
+    <script src="js/utils.js"></script>
+    <script src="js/data-manager.js"></script>
+    <script src="js/ui-components.js"></script>
+    <script src="js/sample-data.js"></script>
+    <script src="js/tab-manager.js"></script>
+    <script src="js/dashboard-core.js"></script>
+    
+    <!-- Initialize global state -->
     <script>
-        console.log('[Trilogy] DOM ready - initializing dashboard');
-        
-        // Global variables
+        // Global state variables
         window.projectsData = [];
         window.currentTab = 'overview';
         window.useSampleData = false;
-
-        // Initialize dashboard
-        function initDashboard() {
-            console.log('[Trilogy] Initializing dashboard');
-            document.getElementById('init-time').textContent = new Date().toLocaleTimeString();
-            
-            // Load initial data
-            loadTabData('overview');
-            
-            // Check URL parameters
-            const urlParams = new URLSearchParams(window.location.search);
-            const tabParam = urlParams.get('tab');
-            if (tabParam) {
-                const validTabs = ['overview', 'projects', 'agents', 'intelligence', 'logs', 'settings'];
-                if (validTabs.includes(tabParam)) {
-                    showTabByName(tabParam);
-                }
-            }
-        }
-
-        // Show tab by name (for URL parameter support)
-        function showTabByName(tabName) {
-            const tabElements = document.querySelectorAll('.nav-tab');
-            tabElements.forEach(function(tab) {
-                if (tab.textContent.toLowerCase().includes(tabName)) {
-                    tab.click();
-                }
-            });
-        }
-
-        // Tab switching function
+        
+        // Global function wrappers for HTML onclick handlers
         function showTab(event, tabName) {
-            console.log('[Trilogy] Switching to tab:', tabName);
-            
-            // Update active tab styling
-            var tabs = document.querySelectorAll('.nav-tab');
-            tabs.forEach(function(tab) {
-                tab.classList.remove('active');
-            });
-            
-            if (event && event.target) {
-                event.target.classList.add('active');
-            }
-            
-            // Hide all tab contents
-            var contents = document.querySelectorAll('.tab-content');
-            contents.forEach(function(content) {
-                content.classList.remove('active');
-            });
-            
-            // Show selected tab
-            var selectedTab = document.getElementById(tabName);
-            if (selectedTab) {
-                selectedTab.classList.add('active');
-                window.currentTab = tabName;
-                
-                // Load tab-specific data
-                loadTabData(tabName);
+            if (window.TabManager) {
+                window.TabManager.showTab(event, tabName);
             }
         }
-
-        // Load data based on active tab
-        function loadTabData(tabName) {
-            console.log('[Trilogy] Loading data for tab:', tabName);
-            
-            if (tabName === 'projects') {
-                loadProjectsData();
-            } else if (tabName === 'overview') {
-                updateActivityFeed('Tab switched to: ' + tabName);
-            }
-        }
-
-        // Load projects data
-        function loadProjectsData() {
-            console.log('[Trilogy] Loading projects...');
-            var projectsGrid = document.getElementById('projects-grid');
-            
-            if (!projectsGrid) {
-                console.error('[Trilogy] projects-grid element not found!');
-                return;
-            }
-            
-            projectsGrid.innerHTML = '<div class="empty-state">Loading projects...</div>';
-            
-            fetch('/api/projects')
-                .then(function(response) {
-                    return response.json();
-                })
-                .then(function(data) {
-                    console.log('[Trilogy] API response:', data);
-                    
-                    if (data.success && data.data && data.data.length > 0) {
-                        console.log('[Trilogy] API returned ' + data.data.length + ' projects');
-                        window.projectsData = data.data;
-                        renderProjects(data.data);
-                        updateActivityFeed('Loaded ' + data.data.length + ' projects successfully');
-                    } else {
-                        console.log('[Trilogy] No projects found in API response');
-                        projectsGrid.innerHTML = '<div class="empty-state">No projects found</div>';
-                        updateActivityFeed('No projects found');
-                    }
-                })
-                .catch(function(error) {
-                    console.error('[Trilogy] Error loading projects:', error);
-                    projectsGrid.innerHTML = '<div class="empty-state">Error loading projects</div>';
-                    updateActivityFeed('Error loading projects: ' + error.message);
-                });
-        }
-
-        // Render projects
-        function renderProjects(projects) {
-            console.log('[Trilogy] Rendering ' + projects.length + ' projects');
-            var projectsGrid = document.getElementById('projects-grid');
-            
-            if (!projectsGrid) {
-                console.error('[Trilogy] projects-grid element not found!');
-                return;
-            }
-            
-            var html = '';
-            projects.forEach(function(project) {
-                var status = project.status || 'active';
-                var description = project.description || 'No description';
-                
-                // Generate random stats for demo
-                var taskCount = Math.floor(Math.random() * 15) + 1;
-                var agentCount = Math.floor(Math.random() * 5) + 1;
-                var progress = Math.floor(Math.random() * 90) + 10;
-                
-                html += '<div class="project-card">' +
-                    '<div class="project-header">' +
-                        '<h3>' + project.name + '</h3>' +
-                        '<span class="status-badge ' + status + '">' + status + '</span>' +
-                    '</div>' +
-                    '<p style="color: #94a3b8; margin-bottom: 1rem;">' + description + '</p>' +
-                    '<div class="project-stats">' +
-                        '<span>' + taskCount + ' tasks</span>' +
-                        '<span>•</span>' +
-                        '<span>' + agentCount + ' agents</span>' +
-                        '<span>•</span>' +
-                        '<span>' + progress + '% complete</span>' +
-                    '</div>' +
-                '</div>';
-            });
-            
-            projectsGrid.innerHTML = html;
-            
-            // Update project count in overview
-            var countElement = document.getElementById('active-projects-count');
-            if (countElement) {
-                countElement.textContent = projects.length;
-            }
-        }
-
-        // Update activity feed
-        function updateActivityFeed(message) {
-            var feed = document.getElementById('activity-feed');
-            if (feed) {
-                var time = new Date().toLocaleTimeString();
-                var newItem = '<div class="activity-item">✅ ' + message + ' - ' + time + '</div>';
-                feed.innerHTML = newItem + feed.innerHTML;
-                
-                // Keep only last 10 items
-                var items = feed.querySelectorAll('.activity-item');
-                if (items.length > 10) {
-                    for (var i = 10; i < items.length; i++) {
-                        items[i].remove();
-                    }
-                }
-            }
-        }
-
-        // Force load projects (for debugging)
-        function forceLoadProjects() {
-            console.log('[Trilogy] Force loading projects...');
-            updateActivityFeed('Force loading projects from API');
-            loadProjectsData();
-        }
-
-        // Create new project (placeholder)
-        function createNewProject() {
-            alert('Project creation coming soon!');
-        }
-
-        // Sample data for demonstration
-        const sampleProjects = [
-            {
-                name: "AI Content Generator",
-                description: "Automated content creation system using advanced language models",
-                status: "active"
-            },
-            {
-                name: "Smart Task Scheduler",
-                description: "Intelligent task allocation and scheduling system",
-                status: "active"
-            },
-            {
-                name: "Data Analysis Pipeline",
-                description: "Automated data processing and insight generation",
-                status: "created"
-            },
-            {
-                name: "Voice Assistant Integration",
-                description: "Multi-modal voice interface for system control",
-                status: "active"
-            },
-            {
-                name: "Security Monitoring",
-                description: "Real-time threat detection and response system",
-                status: "created"
-            }
-        ];
-
-        // Toggle between sample data and live data
+        
         function toggleSampleData() {
-            console.log('[Trilogy] Toggling sample data mode');
-            window.useSampleData = !window.useSampleData;
-            
-            const toggleButton = document.getElementById('sample-data-toggle');
-            if (window.useSampleData) {
-                toggleButton.textContent = '📊 Use Live Data';
-                toggleButton.style.background = '#dc2626';
-                updateActivityFeed('Switched to sample data mode');
-                
-                // Load sample data
-                renderProjects(sampleProjects);
-                
-                // Update counts with sample data
-                const countElement = document.getElementById('active-projects-count');
-                if (countElement) {
-                    countElement.textContent = sampleProjects.length;
-                }
-            } else {
-                toggleButton.textContent = '📊 Toggle Sample Data';
-                toggleButton.style.background = '#059669';
-                updateActivityFeed('Switched to live data mode');
-                
-                // Reload live data
-                if (window.currentTab === 'projects') {
-                    loadProjectsData();
-                } else {
-                    // Update overview with live data
-                    loadProjectsData();
-                }
+            if (window.SampleDataManager) {
+                window.SampleDataManager.toggleSampleData();
             }
         }
-
-        // Initialize on DOM ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initDashboard);
-        } else {
-            initDashboard();
+        
+        function forceLoadProjects() {
+            if (window.DataManager) {
+                window.DataManager.forceLoadProjects();
+            }
+        }
+        
+        function createNewProject() {
+            if (window.UIComponents) {
+                window.UIComponents.createNewProject();
+            }
         }
     </script>
 </body>
