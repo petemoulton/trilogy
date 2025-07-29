@@ -242,6 +242,11 @@ app.get('/professional', (req, res) => {
   res.sendFile(path.join(__dirname, '../../frontend/dashboard/professional.html'));
 });
 
+// Handle favicon requests to prevent 404 errors
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).send(); // No content, prevents 404
+});
+
 // Set professional dashboard as default
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../../frontend/dashboard/professional.html'));
