@@ -13,103 +13,64 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f7fa;
-            color: #2c3e50;
-            line-height: 1.6;
-            transition: all 0.3s ease;
-        }
-
-        body.dark-mode {
-            background: #1a202c;
+            background: #0a0b14;
             color: #e2e8f0;
+            line-height: 1.6;
         }
 
         .header {
-            background: #2c5aa0;
+            background: #1a1b26;
             color: white;
             padding: 1.5rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .dark-mode .header {
-            background: #2d3748;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid #2d3748;
         }
 
         .logo {
             font-size: 1.8rem;
             font-weight: bold;
+            color: #3182ce;
         }
 
-        .system-status {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            font-size: 1.1rem;
-        }
-
-        .status-indicator {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #27ae60;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
         }
 
         .nav-tabs {
-            background: white;
-            border-bottom: 1px solid #e1e8ed;
-            padding: 0 2rem;
             display: flex;
-            gap: 3rem;
-        }
-
-        .dark-mode .nav-tabs {
-            background: #2d3748;
-            border-bottom-color: #4a5568;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #2d3748;
+            padding-bottom: 0;
         }
 
         .nav-tab {
-            padding: 1.2rem 0;
+            padding: 1rem 2rem;
+            background: transparent;
+            color: #94a3b8;
+            border: none;
             cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
+            font-size: 1rem;
             font-weight: 500;
-            font-size: 1.1rem;
-            color: #64748b;
-        }
-
-        .nav-tab.active {
-            border-bottom-color: #2c5aa0;
-            color: #2c5aa0;
+            transition: all 0.2s ease;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
         }
 
         .nav-tab:hover {
-            color: #2c5aa0;
+            color: #e2e8f0;
+            background: rgba(56, 189, 248, 0.1);
         }
 
-        .dark-mode .nav-tab {
-            color: #a0aec0;
-        }
-
-        .dark-mode .nav-tab.active,
-        .dark-mode .nav-tab:hover {
-            color: #63b3ed;
-            border-bottom-color: #63b3ed;
-        }
-
-        .dashboard-container {
-            padding: 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
+        .nav-tab.active {
+            color: #38bdf8;
+            border-bottom-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
         }
 
         .tab-content {
@@ -126,1513 +87,568 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .content-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
             margin-bottom: 2rem;
         }
 
-        .content-header h2 {
-            font-size: 2rem;
-            font-weight: 600;
-            color: #2c3e50;
+        .stat-card {
+            background: #1a1b26;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid #2d3748;
         }
 
-        .dark-mode .content-header h2 {
-            color: #e2e8f0;
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-
-        .metric-card {
-            background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            text-align: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            border: 1px solid #e1e8ed;
-            transition: all 0.3s ease;
-        }
-
-        .metric-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-        }
-
-        .dark-mode .metric-card {
-            background: #2d3748;
-            border-color: #4a5568;
-        }
-
-        .metric-value {
-            font-size: 3rem;
-            font-weight: 700;
-            color: #2c5aa0;
+        .stat-card h3 {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            font-weight: 500;
             margin-bottom: 0.5rem;
         }
 
-        .dark-mode .metric-value {
-            color: #63b3ed;
-        }
-
-        .metric-label {
-            font-size: 1.1rem;
-            color: #64748b;
-            font-weight: 500;
-        }
-
-        .dark-mode .metric-label {
-            color: #a0aec0;
+        .stat-card .value {
+            color: #e2e8f0;
+            font-size: 2rem;
+            font-weight: 700;
         }
 
         .project-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
         }
 
         .project-card {
-            background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            border: 1px solid #e1e8ed;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            background: #1a1b26;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid #2d3748;
+            transition: all 0.2s ease;
         }
 
         .project-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
-        }
-
-        .dark-mode .project-card {
-            background: #2d3748;
-            border-color: #4a5568;
-        }
-
-        .project-card.create-new {
-            border: 2px dashed #2c5aa0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 280px;
-            background: #f8fafc;
-        }
-
-        .dark-mode .project-card.create-new {
-            border-color: #63b3ed;
-            background: #2a4365;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-color: #38bdf8;
         }
 
         .project-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
             margin-bottom: 1rem;
+            gap: 1rem;
+        }
+
+        .project-header h3 {
+            color: #e2e8f0;
+            font-size: 1.25rem;
+            margin: 0;
         }
 
         .status-badge {
-            padding: 0.5rem 1rem;
+            padding: 0.25rem 0.75rem;
             border-radius: 20px;
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .status-badge.created {
+            background: rgba(56, 189, 248, 0.2);
+            color: #38bdf8;
         }
 
         .status-badge.active {
-            background: #dcfce7;
-            color: #16a34a;
-        }
-
-        .status-badge.planning {
-            background: #fef3c7;
-            color: #d97706;
-        }
-
-        .status-badge.completed {
-            background: #dbeafe;
-            color: #2563eb;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e5e7eb;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #2c5aa0, #3b82f6);
-            border-radius: 4px;
-            transition: width 0.3s ease;
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
         }
 
         .project-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
             gap: 1rem;
-            margin-top: 1rem;
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+
+        .activity-feed {
+            background: #1a1b26;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #2d3748;
+        }
+
+        .activity-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #2d3748;
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
         }
 
         .btn {
-            background: #2c5aa0;
-            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
             border: none;
-            padding: 1rem 2rem;
-            border-radius: 12px;
-            cursor: pointer;
             font-weight: 600;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .btn:hover {
-            background: #1e3d72;
-            transform: translateY(-2px);
-        }
-
-        .btn.primary {
-            background: linear-gradient(135deg, #2c5aa0, #3b82f6);
-        }
-
-        .dark-mode .btn {
-            background: #3182ce;
-        }
-
-        .dark-mode .btn:hover {
-            background: #2c5282;
-        }
-
-        .panel {
-            background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            border: 1px solid #e1e8ed;
-            margin-bottom: 2rem;
-        }
-
-        .dark-mode .panel {
-            background: #2d3748;
-            border-color: #4a5568;
-        }
-
-        .panel h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            color: #2c3e50;
-        }
-
-        .dark-mode .panel h3 {
-            color: #e2e8f0;
-        }
-
-        .settings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
-        .setting-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 0;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .dark-mode .setting-item {
-            border-bottom-color: #4a5568;
-        }
-
-        .setting-label {
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: #374151;
-        }
-
-        .dark-mode .setting-label {
-            color: #d1d5db;
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 60px;
-            height: 30px;
-            background: #e5e7eb;
-            border-radius: 15px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            text-decoration: none;
+            display: inline-block;
         }
 
-        .toggle-switch.active {
-            background: #2c5aa0;
+        .btn-primary {
+            background: #3182ce;
+            color: white;
         }
 
-        .toggle-slider {
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 24px;
-            height: 24px;
-            background: white;
-            border-radius: 50%;
-            transition: all 0.3s ease;
+        .btn-primary:hover {
+            background: #2563eb;
         }
 
-        .toggle-switch.active .toggle-slider {
-            transform: translateX(30px);
-        }
-
-        .agent-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
-        .agent-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid #e5e7eb;
-            transition: all 0.3s ease;
-        }
-
-        .agent-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        }
-
-        .dark-mode .agent-card {
-            background: #2d3748;
-            border-color: #4a5568;
-        }
-
-        .agent-header {
+        .quick-actions {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .alternative-dashboards {
+            background: #1a1b26;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #2d3748;
+            margin-top: 2rem;
+        }
+
+        .alternative-dashboards h3 {
+            color: #e2e8f0;
             margin-bottom: 1rem;
         }
 
-        .agent-name {
-            font-weight: 600;
-            font-size: 1.1rem;
-            color: #2c3e50;
-        }
-
-        .dark-mode .agent-name {
-            color: #e2e8f0;
-        }
-
-        .status-active {
-            color: #16a34a;
-            font-weight: 600;
-        }
-
-        .status-idle {
-            color: #6b7280;
-            font-weight: 600;
-        }
-
-        .task-grid {
+        .dashboard-links {
             display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
         }
 
-        .task-item {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid #e5e7eb;
-            transition: all 0.3s ease;
+        .dashboard-link {
+            padding: 1rem;
+            background: #0a0b14;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #94a3b8;
+            transition: all 0.2s ease;
         }
 
-        .task-item:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        .dashboard-link:hover {
+            background: #1a1b26;
+            color: #38bdf8;
+            border-color: #38bdf8;
         }
 
-        .dark-mode .task-item {
-            background: #2d3748;
-            border-color: #4a5568;
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
         }
 
-        .task-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: #2c3e50;
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
-        .dark-mode .task-title {
-            color: #e2e8f0;
-        }
-
-        .task-meta {
-            font-size: 0.9rem;
-            color: #6b7280;
-            margin-bottom: 1rem;
-        }
-
-        .dark-mode .task-meta {
-            color: #9ca3af;
-        }
-
-        @media (max-width: 768px) {
-            .dashboard-container {
-                padding: 1rem;
-            }
-
-            .nav-tabs {
-                gap: 1rem;
-                overflow-x: auto;
-            }
-
-            .metrics-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1rem;
-            }
-
-            .project-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .content-header h2 {
-                font-size: 1.5rem;
-            }
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #22c55e;
         }
     </style>
 </head>
 <body>
-    <div class="header">
+    <header class="header">
         <div class="logo">🤖 Trilogy AI System</div>
-        <div class="system-status agent-status">
-            <div class="status-indicator system-health" id="status-indicator"></div>
-            <span id="connection-status">System Operational</span>
-            <span>•</span>
-            <span>Uptime: <span id="uptime">0h 0m</span></span>
+        <div class="system-status">
+            <span class="status-indicator"></span>
+            <span>System Online</span>
         </div>
-    </div>
+    </header>
 
-    <div class="nav-tabs navbar">
-        <div class="nav-tab active" onclick="showTab('overview')">Overview</div>
-        <div class="nav-tab" onclick="showTab('projects')">Projects</div>
-        <div class="nav-tab" onclick="showTab('agents')">Agent Pool</div>
-        <div class="nav-tab" onclick="showTab('tasks')">Task Management</div>
-        <div class="nav-tab" onclick="showTab('intelligence')">Intelligence</div>
-        <div class="nav-tab" onclick="showTab('settings')">Settings</div>
-    </div>
+    <div class="main-container">
+        <nav class="nav-tabs">
+            <div class="nav-tab active" onclick="showTab(event, 'overview')">Overview</div>
+            <div class="nav-tab" onclick="showTab(event, 'projects')">Projects</div>
+            <div class="nav-tab" onclick="showTab(event, 'agents')">Agent Pool</div>
+            <div class="nav-tab" onclick="showTab(event, 'intelligence')">Intelligence</div>
+            <div class="nav-tab" onclick="showTab(event, 'logs')">Logs</div>
+            <div class="nav-tab" onclick="showTab(event, 'settings')">Settings</div>
+        </nav>
 
-    <div class="dashboard-container dashboard-content">
         <!-- Overview Tab -->
         <div id="overview" class="tab-content active">
-            <div class="content-header">
-                <h2>System Overview</h2>
-                <div style="display: flex; gap: 1rem;">
-                    <button class="btn" onclick="window.open('/orchestration', '_blank')">🧠 Agent Orchestration</button>
-                    <button class="btn" onclick="window.open('/analytics', '_blank')">📊 Intelligence Analytics</button>
-                </div>
-            </div>
+            <h2 style="color: #e2e8f0; margin-bottom: 1.5rem;">System Overview</h2>
             
-            <div class="metrics-grid metrics">
-                <div class="metric-card">
-                    <div class="metric-value" id="active-agents">0</div>
-                    <div class="metric-label">Active Agents</div>
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <h3>Active Projects</h3>
+                    <div class="value" id="active-projects-count">14</div>
                 </div>
-                <div class="metric-card">
-                    <div class="metric-value" id="pending-tasks">0</div>
-                    <div class="metric-label">Pending Tasks</div>
+                <div class="stat-card">
+                    <h3>Total Agents</h3>
+                    <div class="value">25</div>
                 </div>
-                <div class="metric-card">
-                    <div class="metric-value" id="completed-tasks">0</div>
-                    <div class="metric-label">Completed Tasks</div>
+                <div class="stat-card">
+                    <h3>Tasks Completed</h3>
+                    <div class="value">142</div>
                 </div>
-                <div class="metric-card">
-                    <div class="metric-value" id="system-efficiency">95%</div>
-                    <div class="metric-label">System Efficiency</div>
-                </div>
-            </div>
-
-            <div class="panel">
-                <h3>Quick Start</h3>
-                <div class="action-buttons" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                    <button class="btn" onclick="showTab('projects')">📁 Upload PRD or Start Project</button>
-                    <button class="btn" onclick="spawnAgent()">🤖 Spawn Specialist Agent</button>
-                    <button class="btn" onclick="showTab('intelligence')">🧠 View Intelligence Analytics</button>
-                    <button class="btn" onclick="window.open('/orchestration', '_blank')">⚡ Open Agent Orchestration</button>
+                <div class="stat-card">
+                    <h3>System Efficiency</h3>
+                    <div class="value">94%</div>
                 </div>
             </div>
 
-            <div class="panel">
-                <h3>Recent Activity</h3>
-                <div class="recent-activity" id="activity-feed" style="max-height: 300px; overflow-y: auto;">
-                    <div style="color: #6b7280; text-align: center; padding: 2rem;">
-                        Monitoring system activity...
-                    </div>
+            <h3 style="color: #e2e8f0; margin-bottom: 1rem;">Quick Actions</h3>
+            <div class="quick-actions">
+                <button class="btn btn-primary" onclick="createNewProject()">Create Project</button>
+                <button class="btn btn-primary" onclick="showTab(event, 'projects')">View Projects</button>
+                <button class="btn btn-primary" onclick="showTab(event, 'agents')">Manage Agents</button>
+                <button class="btn btn-primary" onclick="forceLoadProjects()" style="background: #dc2626;">🔄 Force Load Projects</button>
+                <button class="btn btn-primary" id="sample-data-toggle" onclick="toggleSampleData()" style="background: #059669;">📊 Toggle Sample Data</button>
+            </div>
+
+            <div class="alternative-dashboards">
+                <h3>Alternative Dashboards</h3>
+                <div class="dashboard-links">
+                    <a href="/working-projects.html" class="dashboard-link">
+                        <strong>Simple Projects View</strong><br>
+                        <small>Lightweight project listing</small>
+                    </a>
+                    <a href="/debug-tools/debug-complete.html" class="dashboard-link">
+                        <strong>Debug Dashboard</strong><br>
+                        <small>API testing and debugging</small>
+                    </a>
+                    <a href="/orchestration" class="dashboard-link">
+                        <strong>Agent Orchestration</strong><br>
+                        <small>Advanced agent management</small>
+                    </a>
+                    <a href="/analytics" class="dashboard-link">
+                        <strong>Intelligence Analytics</strong><br>
+                        <small>Performance insights</small>
+                    </a>
                 </div>
+            </div>
+
+            <h3 style="color: #e2e8f0; margin: 2rem 0 1rem;">Recent Activity</h3>
+            <div class="activity-feed" id="activity-feed">
+                <div class="activity-item">✅ System initialized - <span id="init-time"></span></div>
             </div>
         </div>
 
         <!-- Projects Tab -->
         <div id="projects" class="tab-content">
-            <div class="content-header">
-                <h2>Projects</h2>
-                <button class="btn primary" onclick="showCreateProjectWizard()">+ New Project</button>
-            </div>
-            
-            <div class="metrics-grid" id="projects-metrics">
-                <!-- Metrics will be populated by JavaScript -->
-            </div>
-
+            <h2 style="color: #e2e8f0; margin-bottom: 1.5rem;">Projects</h2>
             <div class="project-grid" id="projects-grid">
-                <!-- Projects will be populated by JavaScript -->
+                <div class="empty-state">Loading projects...</div>
             </div>
         </div>
 
-        <!-- Agents Tab -->
+        <!-- Agent Pool Tab -->
         <div id="agents" class="tab-content">
-            <div class="content-header">
-                <h2>Agent Pool</h2>
-                <button class="btn primary" onclick="spawnAgent()">+ Spawn Agent</button>
-            </div>
-            
-            <div class="agent-grid agent-pool-status" id="agent-list">
-                <div class="agent-card">
-                    <div class="agent-header">
-                        <span class="agent-name">Team Lead Agent</span>
-                        <span class="status-active">Active</span>
-                    </div>
-                    <div style="font-size: 0.95rem; color: #64748b; margin-bottom: 1rem;">Enhanced Opus - Strategic oversight and coordination</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 85%;"></div>
-                    </div>
-                </div>
-
-                <div class="agent-card">
-                    <div class="agent-header">
-                        <span class="agent-name">Development Agent</span>
-                        <span class="status-active">Active</span>
-                    </div>
-                    <div style="font-size: 0.95rem; color: #64748b; margin-bottom: 1rem;">Sonnet - Code implementation and review</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 72%;"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tasks Tab -->
-        <div id="tasks" class="tab-content">
-            <div class="content-header">
-                <h2>Task Management</h2>
-                <button class="btn primary" onclick="createTask()">+ Create Task</button>
-            </div>
-            
-            <div class="task-grid" id="task-list">
-                <div class="task-item">
-                    <div class="task-title">Initialize Project Structure</div>
-                    <div class="task-meta">Assigned to: Team Lead Agent • Priority: High • Estimated: 2h</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 100%;"></div>
-                    </div>
-                </div>
-
-                <div class="task-item">
-                    <div class="task-title">Implement Authentication System</div>
-                    <div class="task-meta">Assigned to: Development Agent • Priority: High • Estimated: 4h</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 60%;"></div>
-                    </div>
-                </div>
-
-                <div class="task-item">
-                    <div class="task-title">Design User Interface Components</div>
-                    <div class="task-meta">Assigned to: Development Agent • Priority: Medium • Estimated: 6h</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 25%;"></div>
-                    </div>
-                </div>
-            </div>
+            <h2 style="color: #e2e8f0; margin-bottom: 1.5rem;">Agent Pool</h2>
+            <div class="empty-state">Agent management coming soon...</div>
         </div>
 
         <!-- Intelligence Tab -->
         <div id="intelligence" class="tab-content">
-            <div class="content-header">
-                <h2>Intelligence Analytics</h2>
-                <button class="btn primary" onclick="window.open('/analytics', '_blank')">📊 Open Full Analytics</button>
-            </div>
-            
-            <div class="metrics-grid metrics">
-                <div class="metric-card">
-                    <div class="metric-value">94</div>
-                    <div class="metric-label">Intelligence Score</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value">156</div>
-                    <div class="metric-label">Patterns Learned</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value">82%</div>
-                    <div class="metric-label">Prediction Accuracy</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value">2.1s</div>
-                    <div class="metric-label">Avg Decision Time</div>
-                </div>
-            </div>
+            <h2 style="color: #e2e8f0; margin-bottom: 1.5rem;">Intelligence Analytics</h2>
+            <div class="empty-state">Analytics dashboard coming soon...</div>
+        </div>
 
-            <div class="panel">
-                <h3>AI Insights</h3>
-                <div style="display: grid; gap: 1rem;">
-                    <div style="padding: 1rem; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #3b82f6;">
-                        <strong>🎯 Optimization Opportunity</strong>
-                        <p style="margin: 0.5rem 0 0 0; color: #1e40af;">Current workload suggests 5-7 agents for optimal performance</p>
-                    </div>
-                    <div style="padding: 1rem; background: #f0fdf4; border-radius: 8px; border-left: 4px solid #22c55e;">
-                        <strong>⚡ Performance Insight</strong>
-                        <p style="margin: 0.5rem 0 0 0; color: #15803d;">Task allocation could be 15% faster with parallel processing</p>
-                    </div>
-                    <div style="padding: 1rem; background: #fefce8; border-radius: 8px; border-left: 4px solid #eab308;">
-                        <strong>🔍 Pattern Recognition</strong>
-                        <p style="margin: 0.5rem 0 0 0; color: #a16207;">Similar projects completed 23% faster with early testing</p>
-                    </div>
-                </div>
-            </div>
+        <!-- Logs Tab -->
+        <div id="logs" class="tab-content">
+            <h2 style="color: #e2e8f0; margin-bottom: 1.5rem;">System Logs</h2>
+            <div class="empty-state">Log viewer coming soon...</div>
         </div>
 
         <!-- Settings Tab -->
         <div id="settings" class="tab-content">
-            <div class="content-header">
-                <h2>Settings</h2>
-            </div>
-            
-            <div class="settings-grid">
-                <div class="panel">
-                    <h3>Appearance</h3>
-                    <div class="setting-item">
-                        <div class="setting-label">Dark Mode</div>
-                        <div class="toggle-switch" id="dark-mode-toggle" onclick="toggleDarkMode()">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                    <div class="setting-item">
-                        <div class="setting-label">Animations</div>
-                        <div class="toggle-switch active">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <h3>System</h3>
-                    <div class="setting-item">
-                        <div class="setting-label">Sample Data Mode</div>
-                        <div class="toggle-switch active sample-data-toggle" id="sample-data-toggle" onclick="toggleSampleData()" role="button" tabindex="0" aria-label="Toggle sample data mode" style="cursor: pointer;">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                    <div class="setting-item">
-                        <div class="setting-label">Auto-save Projects</div>
-                        <div class="toggle-switch active">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                    <div class="setting-item">
-                        <div class="setting-label">Real-time Updates</div>
-                        <div class="toggle-switch active">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                    <div class="setting-item">
-                        <div class="setting-label">Notification Sounds</div>
-                        <div class="toggle-switch">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <h3>Intelligence</h3>
-                    <div class="setting-item">
-                        <div class="setting-label">Predictive Spawning</div>
-                        <div class="toggle-switch active">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                    <div class="setting-item">
-                        <div class="setting-label">Learning Mode</div>
-                        <div class="toggle-switch active">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                    <div class="setting-item">
-                        <div class="setting-label">Pattern Recognition</div>
-                        <div class="toggle-switch active">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <h2 style="color: #e2e8f0; margin-bottom: 1.5rem;">Settings</h2>
+            <div class="empty-state">Settings panel coming soon...</div>
         </div>
     </div>
 
     <script>
-        let ws;
-        let startTime = Date.now();
+        console.log('[Trilogy] DOM ready - initializing dashboard');
+        
+        // Global variables
+        window.projectsData = [];
+        window.currentTab = 'overview';
+        window.useSampleData = false;
 
-        // Initialize localStorage for start time persistence
-        function initializeStartTime() {
-            const storedStartTime = localStorage.getItem('trilogy_start_time');
-            if (storedStartTime) {
-                startTime = parseInt(storedStartTime);
-            } else {
-                startTime = Date.now();
-                localStorage.setItem('trilogy_start_time', startTime.toString());
+        // Initialize dashboard
+        function initDashboard() {
+            console.log('[Trilogy] Initializing dashboard');
+            document.getElementById('init-time').textContent = new Date().toLocaleTimeString();
+            
+            // Load initial data
+            loadTabData('overview');
+            
+            // Check URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            if (tabParam) {
+                const validTabs = ['overview', 'projects', 'agents', 'intelligence', 'logs', 'settings'];
+                if (validTabs.includes(tabParam)) {
+                    showTabByName(tabParam);
+                }
             }
         }
 
-        // Initialize dark mode from localStorage
-        function initializeDarkMode() {
-            const darkMode = localStorage.getItem('trilogy_dark_mode') === 'true';
-            if (darkMode) {
-                document.body.classList.add('dark-mode');
-                document.getElementById('dark-mode-toggle').classList.add('active');
+        // Show tab by name (for URL parameter support)
+        function showTabByName(tabName) {
+            const tabElements = document.querySelectorAll('.nav-tab');
+            tabElements.forEach(function(tab) {
+                if (tab.textContent.toLowerCase().includes(tabName)) {
+                    tab.click();
+                }
+            });
+        }
+
+        // Tab switching function
+        function showTab(event, tabName) {
+            console.log('[Trilogy] Switching to tab:', tabName);
+            
+            // Update active tab styling
+            var tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(function(tab) {
+                tab.classList.remove('active');
+            });
+            
+            if (event && event.target) {
+                event.target.classList.add('active');
             }
-        }
-
-        // Initialize sample data mode from localStorage
-        function initializeSampleDataMode() {
-            const sampleDataMode = localStorage.getItem('trilogy_sample_data') !== 'false'; // Default to true
-            const toggle = document.getElementById('sample-data-toggle');
-            if (toggle) {
-                toggle.classList.toggle('active', sampleDataMode);
-            }
-        }
-
-        function toggleDarkMode() {
-            const toggle = document.getElementById('dark-mode-toggle');
-            const isDark = document.body.classList.toggle('dark-mode');
-            toggle.classList.toggle('active', isDark);
-            localStorage.setItem('trilogy_dark_mode', isDark.toString());
-        }
-
-        function toggleSampleData() {
-            const toggle = document.getElementById('sample-data-toggle');
-            const isSampleData = toggle.classList.toggle('active');
-            localStorage.setItem('trilogy_sample_data', isSampleData.toString());
             
-            // Show notification about the change
-            const message = isSampleData ? 
-                '🎭 Sample data mode enabled - showing demo projects and metrics' : 
-                '🔧 Production mode enabled - showing real system data';
+            // Hide all tab contents
+            var contents = document.querySelectorAll('.tab-content');
+            contents.forEach(function(content) {
+                content.classList.remove('active');
+            });
             
-            addActivityEntry(message);
-            
-            // Refresh current tab to show updated data
-            const activeTab = document.querySelector('.nav-tab.active');
-            if (activeTab) {
-                const tabName = activeTab.onclick.toString().match(/showTab\('([^']+)'\)/)[1];
+            // Show selected tab
+            var selectedTab = document.getElementById(tabName);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+                window.currentTab = tabName;
+                
+                // Load tab-specific data
                 loadTabData(tabName);
             }
         }
 
-        function isSampleDataMode() {
-            return localStorage.getItem('trilogy_sample_data') !== 'false'; // Default to true
-        }
-
-        function showTab(tabName, event) {
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
+        // Load data based on active tab
+        function loadTabData(tabName) {
+            console.log('[Trilogy] Loading data for tab:', tabName);
             
-            // Remove active class from all tabs
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Show selected tab content
-            document.getElementById(tabName).classList.add('active');
-            
-            // Add active class to clicked tab (safely)
-            if (event && event.target) {
-                event.target.classList.add('active');
-            } else {
-                // Fallback: find the tab by matching onclick attribute
-                document.querySelectorAll('.nav-tab').forEach(tab => {
-                    if (tab.getAttribute('onclick').includes(`'${tabName}'`)) {
-                        tab.classList.add('active');
-                    }
-                });
-            }
-            
-            // Load tab-specific data
-            console.log('🎯 Loading data for tab:', tabName);
-            switch(tabName) {
-                case 'agents':
-                    console.log('👥 Loading agents');
-                    loadAgentPool();
-                    break;
-                case 'tasks':
-                    console.log('📋 Loading tasks');
-                    loadTasks();
-                    break;
-                case 'intelligence':
-                    console.log('🧠 Loading intelligence');
-                    loadIntelligenceStats();
-                    break;
-                case 'projects':
-                    console.log('📁 Loading projects');
-                    loadProjectsData();
-                    break;
+            if (tabName === 'projects') {
+                loadProjectsData();
+            } else if (tabName === 'overview') {
+                updateActivityFeed('Tab switched to: ' + tabName);
             }
         }
 
-        function initDashboard() {
-            initializeStartTime();
-            initializeDarkMode();
-            initializeSampleDataToggle();
-            connectWebSocket();
-            updateSystemMetrics();
-            loadAgentPool();
-            loadTabData(); // Load initial data based on toggle state
-            
-            // Update timers
-            setInterval(updateUptime, 1000);
-            setInterval(updateSystemMetrics, 5000);
-        }
-
-        function initializeSampleDataToggle() {
-            const toggle = document.getElementById('sample-data-toggle');
-            const isSampleData = localStorage.getItem('trilogy_sample_data') !== 'false'; // Default to sample data
-            
-            if (isSampleData) {
-                toggle.classList.add('active');
-            } else {
-                toggle.classList.remove('active');
-            }
-        }
-
-        function connectWebSocket() {
-            // RESOLVED: Bug #13 - Dynamic WebSocket URL with proper error handling
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsUrl = `${protocol}//${window.location.host}`;
-            
-            try {
-                ws = new WebSocket(wsUrl);
-            } catch (error) {
-                console.error('WebSocket connection failed:', error);
-                updateConnectionStatus(false);
-                return;
-            }
-            
-            ws.onopen = function() {
-                console.log('Connected to Trilogy AI System');
-                updateConnectionStatus(true);
-            };
-            
-            ws.onmessage = function(event) {
-                const message = JSON.parse(event.data);
-                handleWebSocketMessage(message);
-            };
-            
-            ws.onclose = function() {
-                console.log('Disconnected from server');
-                updateConnectionStatus(false);
-                setTimeout(connectWebSocket, 3000);
-            };
-        }
-
-        function handleWebSocketMessage(message) {
-            const data = typeof message === 'string' ? JSON.parse(message) : message;
-            
-            switch(data.type) {
-                case 'agent_trigger':
-                    addActivityEntry(`🤖 Agent ${data.data.agent} triggered`);
-                    break;
-                case 'pool_agent_spawned':
-                    addActivityEntry(`🎯 Agent spawned: ${data.data.role}`);
-                    loadAgentPool();
-                    break;
-            }
-        }
-
-        function updateConnectionStatus(connected) {
-            const indicator = document.getElementById('status-indicator');
-            const status = document.getElementById('connection-status');
-            
-            if (connected) {
-                indicator.style.background = '#27ae60';
-                status.textContent = 'System Operational';
-            } else {
-                indicator.style.background = '#e74c3c';
-                status.textContent = 'Disconnected';
-            }
-        }
-
-        function updateUptime() {
-            const uptime = Math.floor((Date.now() - startTime) / 1000);
-            const hours = Math.floor(uptime / 3600);
-            const minutes = Math.floor((uptime % 3600) / 60);
-            document.getElementById('uptime').textContent = `${hours}h ${minutes}m`;
-        }
-
-        function updateSystemMetrics() {
-            fetch('/health')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.stats) {
-                        document.getElementById('completed-tasks').textContent = data.stats.totalTasks || 0;
-                    }
-                })
-                .catch(error => console.error('Failed to fetch health:', error));
-        }
-
-        function loadAgentPool() {
-            fetch('/agents/pool/status')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById('active-agents').textContent = data.agents.length + 2; // +2 for default agents
-                        updateAgentList(data.agents);
-                    }
-                })
-                .catch(error => console.error('Failed to load agent pool:', error));
-        }
-
-        function updateAgentList(agents) {
-            const agentList = document.getElementById('agent-list');
-            
-            // Add dynamic agents to existing static ones
-            agents.forEach(agent => {
-                const agentCard = document.createElement('div');
-                agentCard.className = 'agent-card';
-                agentCard.innerHTML = `
-                    <div class="agent-header">
-                        <span class="agent-name">${agent.id}</span>
-                        <span class="${agent.status === 'active' ? 'status-active' : 'status-idle'}">${agent.status}</span>
-                    </div>
-                    <div style="font-size: 0.95rem; color: #64748b; margin-bottom: 1rem;">${agent.role || 'Dynamic Agent'}</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${agent.utilization || 0}%;"></div>
-                    </div>
-                `;
-                agentList.appendChild(agentCard);
-            });
-        }
-
-        function loadTasks() {
-            // Simulate task loading
-            console.log('Loading tasks...');
-        }
-
-        function loadIntelligenceStats() {
-            // Simulate intelligence stats loading
-            console.log('Loading intelligence stats...');
-        }
-
-        function addActivityEntry(message) {
-            const feed = document.getElementById('activity-feed');
-            const entry = document.createElement('div');
-            entry.style.cssText = 'padding: 0.75rem; border-bottom: 1px solid #e5e7eb; font-size: 0.95rem;';
-            entry.innerHTML = `
-                <div>${message}</div>
-                <div style="font-size: 0.8rem; color: #6b7280; margin-top: 0.25rem;">${new Date().toLocaleTimeString()}</div>
-            `;
-            feed.insertBefore(entry, feed.firstChild);
-            
-            // Keep only last 10 entries
-            while (feed.children.length > 10) {
-                feed.removeChild(feed.lastChild);
-            }
-        }
-
-        function spawnAgent() {
-            showModelSelectionDialog();
-        }
-
-        function showModelSelectionDialog() {
-            // Create modal overlay
-            const overlay = document.createElement('div');
-            overlay.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 1000;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            `;
-
-            // Create modal content
-            const modal = document.createElement('div');
-            modal.style.cssText = `
-                background: white;
-                border-radius: 16px;
-                padding: 2rem;
-                max-width: 600px;
-                width: 90%;
-                max-height: 80vh;
-                overflow-y: auto;
-                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            `;
-
-            if (document.body.classList.contains('dark-mode')) {
-                modal.style.background = '#2d3748';
-                modal.style.color = '#e2e8f0';
-            }
-
-            modal.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                    <h3 style="font-size: 1.5rem; margin: 0;">🤖 Spawn New Agent</h3>
-                    <button onclick="closeModelDialog()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6b7280;">×</button>
-                </div>
-
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Agent Role</label>
-                    <select id="agent-role" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1rem;">
-                        <option value="specialist">Specialist Agent</option>
-                        <option value="analyst">Analysis Agent</option>
-                        <option value="developer">Development Agent</option>
-                        <option value="reviewer">Code Review Agent</option>
-                        <option value="tester">Testing Agent</option>
-                    </select>
-                </div>
-
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">AI Model</label>
-                    <div id="model-selection" style="max-height: 300px; overflow-y: auto;">
-                        <div style="text-align: center; padding: 2rem; color: #6b7280;">Loading models...</div>
-                    </div>
-                </div>
-
-                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                    <button onclick="closeModelDialog()" class="btn" style="background: #6b7280;">Cancel</button>
-                    <button onclick="createAgentWithModel()" class="btn primary">Create Agent</button>
-                </div>
-            `;
-
-            overlay.appendChild(modal);
-            document.body.appendChild(overlay);
-
-            // Store reference for closing
-            window.currentModal = overlay;
-
-            // Load models
-            loadModelsForSelection();
-        }
-
-        function loadModelsForSelection() {
-            fetch('/models')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        displayModelOptions(data.models);
-                    } else {
-                        document.getElementById('model-selection').innerHTML = 
-                            '<div style="color: #ef4444; text-align: center; padding: 1rem;">Failed to load models</div>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Failed to load models:', error);
-                    document.getElementById('model-selection').innerHTML = 
-                        '<div style="color: #ef4444; text-align: center; padding: 1rem;">Error loading models</div>';
-                });
-        }
-
-        function displayModelOptions(models) {
-            const container = document.getElementById('model-selection');
-            const isDark = document.body.classList.contains('dark-mode');
-            
-            const groupedModels = {
-                anthropic: models.filter(m => m.provider === 'anthropic'),
-                openai: models.filter(m => m.provider === 'openai'),
-                deepseek: models.filter(m => m.provider === 'deepseek')
-            };
-
-            let html = '';
-            
-            Object.entries(groupedModels).forEach(([provider, providerModels]) => {
-                if (providerModels.length === 0) return;
-                
-                const providerName = provider.charAt(0).toUpperCase() + provider.slice(1);
-                html += `<div style="margin-bottom: 1.5rem;">
-                    <h4 style="margin-bottom: 0.75rem; color: ${isDark ? '#e2e8f0' : '#374151'}; font-size: 1.1rem;">${providerName}</h4>`;
-                
-                providerModels.forEach(model => {
-                    const isRecommended = model.recommended;
-                    html += `
-                        <div class="model-option" data-model-id="${model.id}" onclick="selectModel('${model.id}')" style="
-                            padding: 1rem;
-                            border: 2px solid ${isRecommended ? '#3b82f6' : '#e5e7eb'};
-                            border-radius: 8px;
-                            margin-bottom: 0.75rem;
-                            cursor: pointer;
-                            transition: all 0.2s ease;
-                            background: ${isRecommended ? (isDark ? '#1e3a8a' : '#eff6ff') : (isDark ? '#374151' : 'white')};
-                        ">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                                <div style="font-weight: 600; color: ${isDark ? '#e2e8f0' : '#374151'};">
-                                    ${model.name}
-                                    ${isRecommended ? '<span style="background: #3b82f6; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-left: 0.5rem;">RECOMMENDED</span>' : ''}
-                                </div>
-                                <div style="font-size: 0.875rem; color: #6b7280;">$${model.pricing.input}/$${model.pricing.output} per 1M tokens</div>
-                            </div>
-                            <div style="font-size: 0.875rem; color: ${isDark ? '#a0aec0' : '#6b7280'}; margin-bottom: 0.5rem;">${model.description}</div>
-                            <div style="font-size: 0.75rem; color: ${isDark ? '#9ca3af' : '#6b7280'};">
-                                Context: ${model.contextWindow.toLocaleString()} tokens | 
-                                Capabilities: ${model.capabilities.join(', ')}
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                html += '</div>';
-            });
-            
-            container.innerHTML = html;
-            
-            // Select first recommended model by default
-            const recommendedModel = models.find(m => m.recommended);
-            if (recommendedModel) {
-                selectModel(recommendedModel.id);
-            }
-        }
-
-        let selectedModelId = null;
-
-        function selectModel(modelId) {
-            // Remove previous selection
-            document.querySelectorAll('.model-option').forEach(option => {
-                option.style.boxShadow = 'none';
-                option.style.transform = 'none';
-            });
-            
-            // Highlight selected model
-            const selectedOption = document.querySelector(`[data-model-id="${modelId}"]`);
-            if (selectedOption) {
-                selectedOption.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
-                selectedOption.style.transform = 'translateY(-1px)';
-            }
-            
-            selectedModelId = modelId;
-        }
-
-        function createAgentWithModel() {
-            if (!selectedModelId) {
-                alert('Please select a model');
-                return;
-            }
-
-            const role = document.getElementById('agent-role').value;
-            const capabilities = getCapabilitiesForRole(role);
-
-            fetch('/agents/pool/spawn', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ role, capabilities, config: {}, modelId: selectedModelId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    addActivityEntry(`✅ ${role} agent spawned successfully with ${data.model}`);
-                    loadAgentPool();
-                    closeModelDialog();
-                } else {
-                    addActivityEntry(`❌ Failed to spawn ${role} agent: ${data.error}`);
-                }
-            })
-            .catch(error => {
-                console.error('Failed to spawn agent:', error);
-                addActivityEntry(`❌ Error spawning ${role} agent`);
-            });
-        }
-
-        function getCapabilitiesForRole(role) {
-            const roleCapabilities = {
-                specialist: ['analysis', 'reasoning'],
-                analyst: ['analysis', 'reasoning', 'writing'],
-                developer: ['coding', 'analysis'],
-                reviewer: ['coding', 'analysis', 'writing'],
-                tester: ['coding', 'analysis']
-            };
-            return roleCapabilities[role] || ['analysis'];
-        }
-
-        function closeModelDialog() {
-            if (window.currentModal) {
-                document.body.removeChild(window.currentModal);
-                window.currentModal = null;
-            }
-        }
-
-        function showCreateProjectWizard() {
-            // Create modal overlay
-            const overlay = document.createElement('div');
-            overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; display: flex; align-items: center; justify-content: center;';
-            
-            // Create modal content
-            const modal = document.createElement('div');
-            modal.style.cssText = 'background: #1e293b; border-radius: 8px; padding: 2rem; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; color: white;';
-            
-            modal.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                    <h2 style="margin: 0; color: #e2e8f0;">Create New Project</h2>
-                    <button onclick="closeProjectModal()" style="background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer;">&times;</button>
-                </div>
-                
-                <form id="project-form" style="display: flex; flex-direction: column; gap: 1rem;">
-                    <div>
-                        <label style="display: block; margin-bottom: 0.5rem; color: #e2e8f0;">Project Name</label>
-                        <input type="text" id="project-name" required 
-                               style="width: 100%; padding: 0.75rem; border-radius: 4px; border: 1px solid #475569; background: #334155; color: white;"
-                               placeholder="Enter project name">
-                    </div>
-                    
-                    <div>
-                        <label style="display: block; margin-bottom: 0.5rem; color: #e2e8f0;">Description</label>
-                        <textarea id="project-description" rows="3"
-                                  style="width: 100%; padding: 0.75rem; border-radius: 4px; border: 1px solid #475569; background: #334155; color: white; resize: vertical;"
-                                  placeholder="Brief description of the project"></textarea>
-                    </div>
-                    
-                    <div>
-                        <label style="display: block; margin-bottom: 0.5rem; color: #e2e8f0;">PRD Document (Optional)</label>
-                        <input type="file" id="prd-file" accept=".md,.txt,.pdf,.doc,.docx"
-                               style="width: 100%; padding: 0.75rem; border-radius: 4px; border: 1px solid #475569; background: #334155; color: white;">
-                        <small style="color: #94a3b8; margin-top: 0.25rem; display: block;">Upload a Product Requirements Document for AI analysis</small>
-                    </div>
-                    
-                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                        <button type="button" onclick="closeProjectModal()" 
-                                style="flex: 1; padding: 0.75rem; border-radius: 4px; border: 1px solid #475569; background: #334155; color: white; cursor: pointer;">
-                            Cancel
-                        </button>
-                        <button type="submit" 
-                                style="flex: 1; padding: 0.75rem; border-radius: 4px; border: none; background: #3b82f6; color: white; cursor: pointer;">
-                            Create Project
-                        </button>
-                    </div>
-                </form>
-            `;
-            
-            overlay.appendChild(modal);
-            document.body.appendChild(overlay);
-            window.currentProjectModal = overlay;
-            
-            // Handle form submission
-            document.getElementById('project-form').addEventListener('submit', handleProjectCreation);
-        }
-
-        function closeProjectModal() {
-            if (window.currentProjectModal) {
-                document.body.removeChild(window.currentProjectModal);
-                window.currentProjectModal = null;
-            }
-        }
-
-        function handleProjectCreation(event) {
-            event.preventDefault();
-            
-            const name = document.getElementById('project-name').value;
-            const description = document.getElementById('project-description').value;
-            const prdFile = document.getElementById('prd-file').files[0];
-            
-            if (!name.trim()) {
-                alert('Project name is required');
-                return;
-            }
-            
-            // Show loading state
-            const submitBtn = event.target.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            submitBtn.textContent = 'Creating...';
-            submitBtn.disabled = true;
-            
-            // Create project data
-            const projectData = {
-                name: name.trim(),
-                description: description.trim(),
-                status: 'planning',
-                created: new Date().toISOString(),
-                id: 'proj_' + Date.now()
-            };
-            
-            // If PRD file is provided, handle file upload
-            if (prdFile) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    projectData.prdContent = e.target.result;
-                    createProject(projectData);
-                };
-                reader.readAsText(prdFile);
-            } else {
-                createProject(projectData);
-            }
-            
-            function createProject(data) {
-                // In sample data mode, just add to local storage simulation
-                if (isSampleDataMode()) {
-                    addActivityEntry(`📁 Created project: ${data.name}`);
-                    closeProjectModal();
-                    loadProjectsData(); // Refresh projects display
-                    addActivityEntry(`✅ Project "${data.name}" created successfully`);
-                } else {
-                    // In production mode, send to API
-                    fetch('/api/projects', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    })
-                    .then(response => response.json())
-                    .then(result => {
-                        if (result.success) {
-                            addActivityEntry(`✅ Project "${data.name}" created successfully`);
-                            closeProjectModal();
-                            loadProjectsData(); // Refresh projects display
-                        } else {
-                            alert('Failed to create project: ' + result.error);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Project creation failed:', error);
-                        alert('Failed to create project. Please try again.');
-                    })
-                    .finally(() => {
-                        submitBtn.textContent = originalText;
-                        submitBtn.disabled = false;
-                    });
-                }
-            }
-        }
-
-        function openProject(projectId) {
-            alert(`Opening project: ${projectId}. This would show the project dashboard with detailed views.`);
-        }
-
-        function assignAgentToProject(projectId) {
-            alert(`Agent assignment for project ${projectId}. This would open the agent selection dialog.`);
-        }
-
-        function createTask() {
-            alert('Task creation dialog would open here.');
-        }
-
-        // RESOLVED: Bug #10 & #11 - Sample data toggle with proper click handling and state clearing
-        function toggleSampleData() {
-            const toggle = document.getElementById('sample-data-toggle');
-            if (!toggle) {
-                console.error('Sample data toggle element not found');
-                return;
-            }
-            
-            // Clear existing data structures when toggling
-            const agentList = document.getElementById('agent-list');
-            const projectsGrid = document.getElementById('projects-grid');
-            const activityFeed = document.getElementById('activity-feed');
-            
-            const isSampleData = toggle.classList.toggle('active');
-            localStorage.setItem('trilogy_sample_data', isSampleData.toString());
-            
-            // Clear current content before loading new data
-            if (agentList) agentList.innerHTML = '<div style="text-align: center; padding: 2rem; color: #6b7280;">Loading...</div>';
-            if (projectsGrid) projectsGrid.innerHTML = '<div style="text-align: center; padding: 2rem; color: #6b7280;">Loading...</div>';
-            
-            // Update the dashboard to reflect the new data mode
-            setTimeout(() => {
-                loadTabData();
-            }, 100);
-            
-            // Show feedback to user
-            const mode = isSampleData ? 'Sample Data' : 'Production';
-            addActivityEntry(`🔄 Switched to ${mode} mode`);
-        }
-
-        function isSampleDataMode() {
-            return localStorage.getItem('trilogy_sample_data') !== 'false';
-        }
-
-        // Load projects based on sample data toggle
+        // Load projects data
         function loadProjectsData() {
-            console.log('🔍 loadProjectsData called');
-            const projectsList = document.getElementById('projects-grid');
-            console.log('📋 projectsList element:', projectsList);
+            console.log('[Trilogy] Loading projects...');
+            var projectsGrid = document.getElementById('projects-grid');
             
-            const sampleMode = isSampleDataMode();
-            console.log('📊 Sample data mode:', sampleMode);
-            
-            if (sampleMode) {
-                console.log('🎭 Loading sample data');
-                // Load sample projects with proper styling
-                projectsList.innerHTML = `
-                    <div style="background: #334155; border-radius: 8px; padding: 1.5rem; border: 1px solid #475569;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                            <h3 style="margin: 0; color: #e2e8f0; font-size: 1.25rem;">E-Commerce Platform</h3>
-                            <span style="background: #10b981; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.875rem;">Active</span>
-                        </div>
-                        <p style="color: #94a3b8; margin-bottom: 1rem;">Full-stack marketplace with AI-powered recommendations</p>
-                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem; font-size: 0.875rem; color: #94a3b8;">
-                            <span>12 tasks</span>
-                            <span>•</span>
-                            <span>3 agents</span>
-                            <span>•</span>
-                            <span>85% complete</span>
-                        </div>
-                        <div style="display: flex; gap: 1rem;">
-                            <button onclick="openProject('ecommerce')" style="padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid #475569; background: #475569; color: white; cursor: pointer;">Open</button>
-                            <button onclick="assignAgentToProject('ecommerce')" style="padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid #3b82f6; background: transparent; color: #3b82f6; cursor: pointer;">Assign Agent</button>
-                        </div>
-                    </div>
-                    <div style="background: #334155; border-radius: 8px; padding: 1.5rem; border: 1px solid #475569;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                            <h3 style="margin: 0; color: #e2e8f0; font-size: 1.25rem;">Analytics Dashboard</h3>
-                            <span style="background: #f59e0b; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.875rem;">Planning</span>
-                        </div>
-                        <p style="color: #94a3b8; margin-bottom: 1rem;">Real-time analytics platform with custom visualizations</p>
-                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem; font-size: 0.875rem; color: #94a3b8;">
-                            <span>8 tasks</span>
-                            <span>•</span>
-                            <span>2 agents</span>
-                            <span>•</span>
-                            <span>25% complete</span>
-                        </div>
-                        <div style="display: flex; gap: 1rem;">
-                            <button onclick="openProject('analytics')" style="padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid #475569; background: #475569; color: white; cursor: pointer;">Open</button>
-                            <button onclick="assignAgentToProject('analytics')" style="padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid #3b82f6; background: transparent; color: #3b82f6; cursor: pointer;">Assign Agent</button>
-                        </div>
-                    </div>
-                `;
-            } else {
-                console.log('🔗 Loading real projects from API');
-                // Load real projects from API
-                fetch('/api/projects')
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('📡 API response received:', data);
-                        console.log('✅ Success:', data.success);
-                        console.log('📦 Data exists:', !!data.data);
-                        console.log('📊 Data length:', data.data ? data.data.length : 'N/A');
-                        if (data.success && data.data && data.data.length > 0) {
-                            console.log('✅ Rendering', data.data.length, 'projects');
-                            projectsList.innerHTML = data.data.map(project => 
-                                '<div class="project-card">' +
-                                    '<div class="project-header">' +
-                                        '<h3>' + project.name + '</h3>' +
-                                        '<span class="status-badge ' + project.status + '">' + project.status + '</span>' +
-                                    '</div>' +
-                                    '<p>' + project.description + '</p>' +
-                                    '<div class="project-stats">' +
-                                        '<span>' + (project.taskCount || 0) + ' tasks</span> • ' +
-                                        '<span>' + (project.agentCount || 0) + ' agents</span> • ' +
-                                        '<span>' + (project.progress || 0) + '% complete</span>' +
-                                    '</div>' +
-                                    '<div class="project-actions">' +
-                                        '<button class="btn secondary" onclick="openProject(\'' + project.id + '\')">Open</button>' +
-                                    '</div>' +
-                                '</div>'
-                            ).join('');
-                        } else {
-                            console.log('🚫 No projects to display - showing empty state');
-                            projectsList.innerHTML = `
-                                <div style="text-align: center; padding: 2rem; color: #64748b;">
-                                    <h3>No Projects Found</h3>
-                                    <p>Start by creating your first project or switch to sample data mode to see examples.</p>
-                                    <button class="btn primary" onclick="showCreateProjectWizard()" style="margin-top: 1rem;">Create First Project</button>
-                                </div>
-                            `;
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Failed to load projects:', error);
-                        projectsList.innerHTML = `
-                            <div style="text-align: center; padding: 2rem; color: #dc2626;">
-                                <h3>Error Loading Projects</h3>
-                                <p>Unable to connect to project API. Switch to sample data mode or check your connection.</p>
-                            </div>
-                        `;
-                    });
-            }
-        }
-
-        // Load agents based on sample data toggle
-        function loadAgentsData() {
-            const agentsList = document.getElementById('agent-list');
-            
-            if (isSampleDataMode()) {
-                // Keep existing sample agents
+            if (!projectsGrid) {
+                console.error('[Trilogy] projects-grid element not found!');
                 return;
-            } else {
-                // Load real agents from API
-                fetch('/agents/pool/status')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success && data.agents && data.agents.length > 0) {
-                            agentsList.innerHTML = data.agents.map(agent => `
-                                <div class="agent-card">
-                                    <div class="agent-header">
-                                        <span class="agent-name">${agent.role || 'Agent'}</span>
-                                        <span class="status-${agent.status.toLowerCase()}">${agent.status}</span>
-                                    </div>
-                                    <div style="font-size: 0.95rem; color: #64748b; margin-bottom: 1rem;">
-                                        ${agent.model || 'Unknown Model'} - ${agent.capabilities?.join(', ') || 'General purpose'}
-                                    </div>
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width: ${agent.progress || 0}%;"></div>
-                                    </div>
-                                </div>
-                            `).join('');
-                        } else {
-                            agentsList.innerHTML = `
-                                <div style="text-align: center; padding: 2rem; color: #64748b;">
-                                    <h3>No Active Agents</h3>
-                                    <p>Spawn your first agent to begin task execution.</p>
-                                    <button class="btn primary" onclick="spawnAgent()" style="margin-top: 1rem;">Spawn Agent</button>
-                                </div>
-                            `;
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Failed to load agents:', error);
-                        agentsList.innerHTML = `
-                            <div style="text-align: center; padding: 2rem; color: #dc2626;">
-                                <h3>Error Loading Agents</h3>
-                                <p>Unable to connect to agent pool API.</p>
-                            </div>
-                        `;
-                    });
+            }
+            
+            projectsGrid.innerHTML = '<div class="empty-state">Loading projects...</div>';
+            
+            fetch('/api/projects')
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    console.log('[Trilogy] API response:', data);
+                    
+                    if (data.success && data.data && data.data.length > 0) {
+                        console.log('[Trilogy] API returned ' + data.data.length + ' projects');
+                        window.projectsData = data.data;
+                        renderProjects(data.data);
+                        updateActivityFeed('Loaded ' + data.data.length + ' projects successfully');
+                    } else {
+                        console.log('[Trilogy] No projects found in API response');
+                        projectsGrid.innerHTML = '<div class="empty-state">No projects found</div>';
+                        updateActivityFeed('No projects found');
+                    }
+                })
+                .catch(function(error) {
+                    console.error('[Trilogy] Error loading projects:', error);
+                    projectsGrid.innerHTML = '<div class="empty-state">Error loading projects</div>';
+                    updateActivityFeed('Error loading projects: ' + error.message);
+                });
+        }
+
+        // Render projects
+        function renderProjects(projects) {
+            console.log('[Trilogy] Rendering ' + projects.length + ' projects');
+            var projectsGrid = document.getElementById('projects-grid');
+            
+            if (!projectsGrid) {
+                console.error('[Trilogy] projects-grid element not found!');
+                return;
+            }
+            
+            var html = '';
+            projects.forEach(function(project) {
+                var status = project.status || 'active';
+                var description = project.description || 'No description';
+                
+                // Generate random stats for demo
+                var taskCount = Math.floor(Math.random() * 15) + 1;
+                var agentCount = Math.floor(Math.random() * 5) + 1;
+                var progress = Math.floor(Math.random() * 90) + 10;
+                
+                html += '<div class="project-card">' +
+                    '<div class="project-header">' +
+                        '<h3>' + project.name + '</h3>' +
+                        '<span class="status-badge ' + status + '">' + status + '</span>' +
+                    '</div>' +
+                    '<p style="color: #94a3b8; margin-bottom: 1rem;">' + description + '</p>' +
+                    '<div class="project-stats">' +
+                        '<span>' + taskCount + ' tasks</span>' +
+                        '<span>•</span>' +
+                        '<span>' + agentCount + ' agents</span>' +
+                        '<span>•</span>' +
+                        '<span>' + progress + '% complete</span>' +
+                    '</div>' +
+                '</div>';
+            });
+            
+            projectsGrid.innerHTML = html;
+            
+            // Update project count in overview
+            var countElement = document.getElementById('active-projects-count');
+            if (countElement) {
+                countElement.textContent = projects.length;
             }
         }
 
-        // Enhanced loadTabData function
-        function loadTabData() {
+        // Update activity feed
+        function updateActivityFeed(message) {
+            var feed = document.getElementById('activity-feed');
+            if (feed) {
+                var time = new Date().toLocaleTimeString();
+                var newItem = '<div class="activity-item">✅ ' + message + ' - ' + time + '</div>';
+                feed.innerHTML = newItem + feed.innerHTML;
+                
+                // Keep only last 10 items
+                var items = feed.querySelectorAll('.activity-item');
+                if (items.length > 10) {
+                    for (var i = 10; i < items.length; i++) {
+                        items[i].remove();
+                    }
+                }
+            }
+        }
+
+        // Force load projects (for debugging)
+        function forceLoadProjects() {
+            console.log('[Trilogy] Force loading projects...');
+            updateActivityFeed('Force loading projects from API');
             loadProjectsData();
-            loadAgentsData();
-            // Add more data loading as needed for other tabs
         }
 
-        // Add keyboard support for toggle switches
-        document.addEventListener('keydown', function(event) {
-            if (event.target.classList.contains('toggle-switch') && (event.key === 'Enter' || event.key === ' ')) {
-                event.preventDefault();
-                event.target.click();
-            }
-        });
+        // Create new project (placeholder)
+        function createNewProject() {
+            alert('Project creation coming soon!');
+        }
 
-        // Initialize dashboard on load
-        document.addEventListener('DOMContentLoaded', initDashboard);
+        // Sample data for demonstration
+        const sampleProjects = [
+            {
+                name: "AI Content Generator",
+                description: "Automated content creation system using advanced language models",
+                status: "active"
+            },
+            {
+                name: "Smart Task Scheduler",
+                description: "Intelligent task allocation and scheduling system",
+                status: "active"
+            },
+            {
+                name: "Data Analysis Pipeline",
+                description: "Automated data processing and insight generation",
+                status: "created"
+            },
+            {
+                name: "Voice Assistant Integration",
+                description: "Multi-modal voice interface for system control",
+                status: "active"
+            },
+            {
+                name: "Security Monitoring",
+                description: "Real-time threat detection and response system",
+                status: "created"
+            }
+        ];
+
+        // Toggle between sample data and live data
+        function toggleSampleData() {
+            console.log('[Trilogy] Toggling sample data mode');
+            window.useSampleData = !window.useSampleData;
+            
+            const toggleButton = document.getElementById('sample-data-toggle');
+            if (window.useSampleData) {
+                toggleButton.textContent = '📊 Use Live Data';
+                toggleButton.style.background = '#dc2626';
+                updateActivityFeed('Switched to sample data mode');
+                
+                // Load sample data
+                renderProjects(sampleProjects);
+                
+                // Update counts with sample data
+                const countElement = document.getElementById('active-projects-count');
+                if (countElement) {
+                    countElement.textContent = sampleProjects.length;
+                }
+            } else {
+                toggleButton.textContent = '📊 Toggle Sample Data';
+                toggleButton.style.background = '#059669';
+                updateActivityFeed('Switched to live data mode');
+                
+                // Reload live data
+                if (window.currentTab === 'projects') {
+                    loadProjectsData();
+                } else {
+                    // Update overview with live data
+                    loadProjectsData();
+                }
+            }
+        }
+
+        // Initialize on DOM ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initDashboard);
+        } else {
+            initDashboard();
+        }
     </script>
 </body>
 </html>

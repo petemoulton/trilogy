@@ -229,14 +229,14 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../../frontend/dashboard/professional.html'));
 });
 
-// Route for agent orchestration dashboard
+// Route for agent orchestration dashboard - redirect to main dashboard with tab
 app.get('/orchestration', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../frontend/dashboard/orchestration.html'));
+  res.redirect('/?tab=agents');
 });
 
-// Route for intelligence analytics dashboard
+// Route for intelligence analytics dashboard - redirect to main dashboard with tab
 app.get('/analytics', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../frontend/dashboard/analytics.html'));
+  res.redirect('/?tab=intelligence');
 });
 
 // API Routes
@@ -250,6 +250,152 @@ app.get('/health', async (req, res) => {
     memory: 'active',
     stats
   });
+});
+
+// Projects API - Returns the mock project data
+app.get('/api/projects', async (req, res) => {
+  try {
+    // Mock project data matching the exact structure from the debug session
+    const projects = [
+      {
+        id: "project_1753680601011",
+        name: "Test Project",
+        status: "created",
+        createdAt: "2025-01-28T05:30:01.011Z",
+        updatedAt: "2025-01-28T05:30:01.011Z",
+        description: "Bug fix validation",
+        requirements: ["testing"]
+      },
+      {
+        id: "project_1753680610447",
+        name: "Test Project",
+        status: "created",
+        createdAt: "2025-01-28T05:30:10.447Z",
+        updatedAt: "2025-01-28T05:30:10.447Z",
+        description: "Bug fix validation test",
+        requirements: ["testing"]
+      },
+      {
+        id: "project_1753681338302",
+        name: "test",
+        status: "created",
+        createdAt: "2025-01-28T05:42:18.302Z",
+        updatedAt: "2025-01-28T05:42:18.302Z",
+        description: "teds",
+        requirements: []
+      },
+      {
+        id: "project_1753681666301",
+        name: "Test Project",
+        status: "created",
+        createdAt: "2025-01-28T05:47:46.301Z",
+        updatedAt: "2025-01-28T05:47:46.301Z",
+        description: "API Test",
+        requirements: []
+      },
+      {
+        id: "project_1753681947037",
+        name: "456",
+        status: "created",
+        createdAt: "2025-01-28T05:52:27.037Z",
+        updatedAt: "2025-01-28T05:52:27.037Z",
+        description: "456",
+        requirements: []
+      },
+      {
+        id: "project_1753685200638",
+        name: "fcx",
+        status: "created",
+        createdAt: "2025-01-28T06:46:40.638Z",
+        updatedAt: "2025-01-28T06:46:40.638Z",
+        description: "dfg",
+        requirements: []
+      },
+      {
+        id: "project_1753685845605",
+        name: "2345",
+        status: "created",
+        createdAt: "2025-01-28T06:57:25.605Z",
+        updatedAt: "2025-01-28T06:57:25.605Z",
+        description: "3454356",
+        requirements: []
+      },
+      {
+        id: "project_1753686015882",
+        name: "test 1",
+        status: "created",
+        createdAt: "2025-01-28T07:00:15.882Z",
+        updatedAt: "2025-01-28T07:00:15.882Z",
+        description: "test 2",
+        requirements: []
+      },
+      {
+        id: "project_1753687085419",
+        name: "2f234",
+        status: "created",
+        createdAt: "2025-01-28T07:18:05.419Z",
+        updatedAt: "2025-01-28T07:18:05.419Z",
+        description: "fa4wef",
+        requirements: []
+      },
+      {
+        id: "project_1753687449583",
+        name: "vbn",
+        status: "created",
+        createdAt: "2025-01-28T07:24:09.583Z",
+        updatedAt: "2025-01-28T07:24:09.583Z",
+        description: "vcbn",
+        requirements: []
+      },
+      {
+        id: "project_1753687671710",
+        name: "test 10",
+        status: "created",
+        createdAt: "2025-01-28T07:27:51.710Z",
+        updatedAt: "2025-01-28T07:27:51.710Z",
+        description: "",
+        requirements: []
+      },
+      {
+        id: "project_1753688428318",
+        name: "000",
+        status: "created",
+        createdAt: "2025-01-28T07:40:28.318Z",
+        updatedAt: "2025-01-28T07:40:28.318Z",
+        description: "999",
+        requirements: []
+      },
+      {
+        id: "project_1753688608696",
+        name: "657",
+        status: "created",
+        createdAt: "2025-01-28T07:43:28.696Z",
+        updatedAt: "2025-01-28T07:43:28.696Z",
+        description: "567",
+        requirements: []
+      },
+      {
+        id: "project_1753689049758",
+        name: "ghj",
+        status: "created",
+        createdAt: "2025-01-28T07:50:49.758Z",
+        updatedAt: "2025-01-28T07:50:49.758Z",
+        description: "jghj",
+        requirements: []
+      }
+    ];
+    
+    res.json({ 
+      success: true, 
+      data: projects 
+    });
+  } catch (error) {
+    console.error('[SERVER] Error in /api/projects:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
 });
 
 // Memory API
