@@ -1,0 +1,195 @@
+/**
+ * Dashboard Main CSS - Entry point for all dashboard styles
+ * Imports all modular CSS files in correct order
+ */
+
+/* 1. CSS Custom Properties (Variables) - Foundation */
+@import 'variables.css';
+
+/* 2. Base Styles - Reset and fundamentals */
+@import 'base.css';
+
+/* 3. Layout - Structure and positioning */
+@import 'layout.css';
+
+/* 4. Components - Reusable UI elements */
+@import 'components.css';
+
+/* 5. Utilities - Helper classes (loaded last for specificity) */
+@import 'utilities.css';
+
+/**
+ * Dashboard-specific overrides and custom styles
+ * Styles that are unique to this dashboard and don't fit in other modules
+ */
+
+/* Dashboard-specific animations */
+@keyframes slideInFromRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInFromLeft {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Dashboard-specific component variations */
+.dashboard-metric-large {
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--accent-color);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 11, 20, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-modal);
+}
+
+.dashboard-notification {
+    position: fixed;
+    top: var(--spacing-2xl);
+    right: var(--spacing-2xl);
+    max-width: 400px;
+    padding: var(--spacing-lg);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    animation: slideInFromRight 0.3s ease;
+    z-index: var(--z-popover);
+}
+
+.dashboard-notification.success {
+    border-color: var(--success-color);
+    background: var(--success-bg);
+}
+
+.dashboard-notification.error {
+    border-color: var(--error-color);
+    background: var(--error-bg);
+}
+
+.dashboard-notification.warning {
+    border-color: var(--warning-color);
+    background: var(--warning-bg);
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --border-primary: #ffffff;
+        --text-secondary: #ffffff;
+        --shadow-sm: 0 2px 4px rgba(255, 255, 255, 0.1);
+        --shadow-md: 0 4px 6px rgba(255, 255, 255, 0.15);
+        --shadow-lg: 0 4px 8px rgba(255, 255, 255, 0.2);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    
+    .tab-content {
+        animation: none;
+    }
+    
+    .project-card:hover {
+        transform: none;
+    }
+    
+    .btn:hover {
+        transform: none;
+    }
+    
+    .dashboard-link:hover {
+        transform: none;
+    }
+}
+
+/* Print styles */
+@media print {
+    .header,
+    .nav-tabs,
+    .quick-actions,
+    .alternative-dashboards {
+        display: none !important;
+    }
+    
+    .main-container {
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .project-card,
+    .stat-card,
+    .activity-feed {
+        break-inside: avoid;
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+    }
+    
+    body {
+        background: white !important;
+        color: black !important;
+    }
+}
+
+/* Custom scrollbar for specific elements */
+.activity-feed::-webkit-scrollbar {
+    width: 6px;
+}
+
+.activity-feed::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+    border-radius: var(--radius-sm);
+}
+
+.activity-feed::-webkit-scrollbar-thumb {
+    background: var(--border-primary);
+    border-radius: var(--radius-sm);
+}
+
+.activity-feed::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}
