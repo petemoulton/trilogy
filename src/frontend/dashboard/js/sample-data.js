@@ -82,6 +82,11 @@ class SampleDataManager {
             window.UIComponents.updateProjectCount(this.sampleProjects.length);
         }
         
+        // Refresh analytics if on intelligence tab
+        if (window.currentTab === 'intelligence' && window.AnalyticsManager) {
+            window.AnalyticsManager.refreshAllData();
+        }
+        
         console.log('[Trilogy] Sample data mode enabled');
     }
 
@@ -108,6 +113,11 @@ class SampleDataManager {
                 // Update overview with live data
                 window.DataManager.loadProjectsData();
             }
+        }
+        
+        // Refresh analytics if on intelligence tab
+        if (window.currentTab === 'intelligence' && window.AnalyticsManager) {
+            window.AnalyticsManager.refreshAllData();
         }
         
         console.log('[Trilogy] Live data mode enabled');

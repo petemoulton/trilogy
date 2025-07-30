@@ -43,6 +43,12 @@ class AnalyticsManager {
      */
     async loadOverviewMetrics() {
         try {
+            // Check if sample data mode is enabled
+            if (!window.useSampleData) {
+                this.showEmptyState();
+                return;
+            }
+            
             const response = await fetch('/analytics/overview');
             const data = await response.json();
             
@@ -51,6 +57,7 @@ class AnalyticsManager {
             }
         } catch (error) {
             console.error('Failed to load overview metrics:', error);
+            this.showEmptyState();
         }
     }
 
@@ -85,6 +92,11 @@ class AnalyticsManager {
      */
     async loadPerformanceData() {
         try {
+            // Check if sample data mode is enabled
+            if (!window.useSampleData) {
+                return; // Empty state already shown in loadOverviewMetrics
+            }
+            
             const response = await fetch('/analytics/performance');
             const data = await response.json();
             
@@ -143,6 +155,11 @@ class AnalyticsManager {
      */
     async loadAgentData() {
         try {
+            // Check if sample data mode is enabled
+            if (!window.useSampleData) {
+                return; // Empty state already shown in loadOverviewMetrics
+            }
+            
             const response = await fetch('/analytics/agents');
             const data = await response.json();
             
@@ -197,6 +214,11 @@ class AnalyticsManager {
      */
     async loadSystemInsights() {
         try {
+            // Check if sample data mode is enabled
+            if (!window.useSampleData) {
+                return; // Empty state already shown in loadOverviewMetrics
+            }
+            
             const response = await fetch('/analytics/insights');
             const data = await response.json();
             
@@ -236,6 +258,11 @@ class AnalyticsManager {
      */
     async loadActivityData() {
         try {
+            // Check if sample data mode is enabled
+            if (!window.useSampleData) {
+                return; // Empty state already shown in loadOverviewMetrics
+            }
+            
             const response = await fetch('/analytics/activity');
             const data = await response.json();
             
@@ -289,13 +316,17 @@ class AnalyticsManager {
      */
     startRealTimeUpdates() {
         // Update overview metrics every 30 seconds
-        this.updateInterval = setInterval(async () => {
-            await this.loadOverviewMetrics();
+        this.updateInterval = setInterval(async () => {  
+            if (window.useSampleData) {
+                await this.loadOverviewMetrics();
+            }
         }, 30000);
 
         // Update activity feed every 15 seconds
         this.activityInterval = setInterval(async () => {
-            await this.loadActivityData();
+            if (window.useSampleData) {
+                await this.loadActivityData();
+            }
         }, 15000);
 
         console.log('🔄 Real-time analytics updates started');
@@ -333,6 +364,98 @@ class AnalyticsManager {
         ]);
         
         console.log('✅ Analytics data refresh complete');
+    }
+
+    /**
+     * Show empty state when sample data is disabled
+     */
+    showEmptyState() {
+        console.log('[Trilogy] Showing analytics empty state (sample data disabled)');
+        
+        // Clear overview metrics
+        const elements = {
+            'total-workflows': '--',
+            'avg-completion-time': '--',
+            'success-rate': '--',
+            'accuracy-score': '--'
+        };
+
+        Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+            }
+        });
+
+        // Clear agent cards
+        const agentGrid = document.querySelector('.agent-analytics-grid');
+        if (agentGrid) {
+            agentGrid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-secondary);">
+                    <p>📊 Intelligence Analytics requires sample data mode</p>
+                    <p style="font-size: 0.9rem; margin-top: 0.5rem;">Enable sample data toggle to view AI performance metrics</p>
+                </div>
+            `;
+        }
+
+        // Clear activity stats
+        const statElements = {
+            'active-workflows': '--',
+            'queue-length': '--',
+            'processing-time': '--'
+        };
+
+        Object.entries(statElements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+            }
+        });
+
+        // Clear activity feed
+        const feedContainer = document.getElementById('intelligence-activity-feed');
+        if (feedContainer) {
+            feedContainer.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                    <p>🔌 No live data available</p>
+                    <p style="font-size: 0.9rem; margin-top: 0.5rem;">Enable sample data to see activity feed</p>
+                </div>
+            `;
+        }
+
+        // Clear insights
+        const categories = [
+            { selector: '.insight-category h4[style*="#10b981"]' },
+            { selector: '.insight-category h4[style*="#3b82f6"]' },
+            { selector: '.insight-category h4[style*="#f59e0b"]' }
+        ];
+
+        categories.forEach(category => {
+            const container = document.querySelector(category.selector);
+            if (container && container.parentElement) {
+                const listContainer = container.parentElement.querySelector('.insight-list');
+                if (listContainer) {
+                    listContainer.innerHTML = '<li style="text-align: center; color: var(--text-secondary); font-style: italic;">No insights available in live mode</li>';
+                }
+            }
+        });
+
+        // Clear chart bars to empty state
+        const chartBars = document.querySelectorAll('.chart-bar');
+        chartBars.forEach(bar => {
+            bar.style.height = '5%';
+            bar.setAttribute('title', 'No data available');
+        });
+
+        // Clear performance insights
+        const insightsContainer = document.querySelector('.performance-insights');
+        if (insightsContainer) {
+            insightsContainer.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                    <p>📈 Performance insights require sample data</p>
+                </div>
+            `;
+        }
     }
 
     /**
