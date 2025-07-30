@@ -88,8 +88,133 @@
         <!-- Projects Tab -->
         <div id="projects" class="tab-content">
             <h2 style="color: #e2e8f0; margin-bottom: 1.5rem;">Projects</h2>
-            <div class="project-grid" id="projects-grid">
-                <div class="empty-state">Loading projects...</div>
+            
+            <!-- Workflow Creation Form -->
+            <div class="workflow-creator" id="workflow-creator">
+                <div class="section-card">
+                    <h3 style="color: #e2e8f0; margin-bottom: 1rem;">🚀 Create New AI Workflow</h3>
+                    <p style="color: #a0a0a0; margin-bottom: 1.5rem;">Upload or paste a Product Requirements Document (PRD) to start a multi-agent analysis workflow.</p>
+                    
+                    <!-- PRD Input Section -->
+                    <div class="prd-input-section">
+                        <div class="input-methods" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                            <button id="paste-mode-btn" class="input-method-btn active" onclick="switchInputMode('paste')">
+                                📝 Paste Text
+                            </button>
+                            <button id="upload-mode-btn" class="input-method-btn" onclick="switchInputMode('upload')">
+                                📁 Upload File
+                            </button>
+                        </div>
+                        
+                        <!-- Paste Mode -->
+                        <div id="paste-input" class="input-mode active">
+                            <textarea 
+                                id="prd-text-input" 
+                                placeholder="Paste your PRD content here... 
+
+Example:
+# E-commerce Platform MVP
+We need to build a modern e-commerce platform with user authentication, product catalog, shopping cart, and payment processing..."
+                                style="width: 100%; height: 200px; background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; padding: 1rem; font-family: 'Courier New', monospace; font-size: 0.9rem; resize: vertical;"
+                            ></textarea>
+                        </div>
+                        
+                        <!-- Upload Mode -->
+                        <div id="upload-input" class="input-mode">
+                            <div class="file-drop-zone" id="file-drop-zone">
+                                <div class="drop-zone-content">
+                                    <span style="font-size: 2rem; margin-bottom: 0.5rem;">📁</span>
+                                    <p>Drop your PRD file here or click to browse</p>
+                                    <small style="color: var(--text-secondary);">Supports: .txt, .md, .doc, .docx, .pdf</small>
+                                </div>
+                                <input type="file" id="file-input" accept=".txt,.md,.doc,.docx,.pdf" style="display: none;">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Agent Selection -->
+                    <div class="agent-selection" style="margin: 1.5rem 0;">
+                        <h4 style="color: #e2e8f0; margin-bottom: 0.75rem;">Agent Workflow:</h4>
+                        <div class="workflow-steps">
+                            <div class="workflow-step">
+                                <span class="step-number">1</span>
+                                <div class="agent-info">
+                                    <strong>Sonnet (Analysis Lead)</strong>
+                                    <small>PRD analysis & task breakdown</small>
+                                </div>
+                                <span class="step-arrow">→</span>
+                            </div>
+                            <div class="workflow-step">
+                                <span class="step-number">2</span>
+                                <div class="agent-info">
+                                    <strong>Opus (Team Lead)</strong>
+                                    <small>Review & finalize decisions</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="workflow-actions" style="display: flex; gap: 1rem; align-items: center;">
+                        <button 
+                            id="start-workflow-btn" 
+                            class="primary-btn" 
+                            onclick="startWorkflow()" 
+                            disabled
+                        >
+                            🚀 Start AI Workflow
+                        </button>
+                        <button 
+                            id="clear-input-btn" 
+                            class="secondary-btn" 
+                            onclick="clearWorkflowInput()"
+                        >
+                            🗑️ Clear
+                        </button>
+                        <div id="workflow-status" class="workflow-status-indicator"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Active Workflow Display -->
+            <div class="active-workflow" id="active-workflow" style="display: none;">
+                <div class="section-card">
+                    <h3 style="color: #e2e8f0; margin-bottom: 1rem;">⚡ Workflow in Progress</h3>
+                    <div class="workflow-progress" id="workflow-progress">
+                        <!-- Progress will be populated here -->
+                    </div>
+                    <div class="workflow-actions" style="margin-top: 1rem;">
+                        <button id="cancel-workflow-btn" class="danger-btn" onclick="cancelWorkflow()">
+                            ⏹️ Cancel Workflow
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Workflow Results -->
+            <div class="workflow-results" id="workflow-results" style="display: none;">
+                <div class="section-card">
+                    <h3 style="color: #e2e8f0; margin-bottom: 1rem;">✅ Workflow Complete</h3>
+                    <div id="workflow-output" class="workflow-output">
+                        <!-- Results will be populated here -->
+                    </div>
+                    <div class="workflow-actions" style="margin-top: 1rem;">
+                        <button class="primary-btn" onclick="saveWorkflowResults()">
+                            💾 Save as Project
+                        </button>
+                        <button class="secondary-btn" onclick="startNewWorkflow()">
+                            🔄 Start New Workflow
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Existing Projects -->
+            <div class="existing-projects" style="margin-top: 2rem;">
+                <h3 style="color: #e2e8f0; margin-bottom: 1rem;">📋 Recent Projects</h3>
+                <div class="project-grid" id="projects-grid">
+                    <div class="empty-state">Loading projects...</div>
+                </div>
             </div>
         </div>
 
@@ -234,6 +359,7 @@
     <script src="js/tab-manager.js"></script>
     <script src="js/agent-manager.js"></script>
     <script src="js/log-manager.js"></script>
+    <script src="js/workflow-manager.js"></script>
     <script src="js/dashboard-core.js"></script>
     
     <!-- Initialize global state -->
@@ -265,6 +391,43 @@
         function createNewProject() {
             if (window.UIComponents) {
                 window.UIComponents.createNewProject();
+            }
+        }
+        
+        // Workflow management functions
+        function switchInputMode(mode) {
+            if (window.WorkflowManager) {
+                window.WorkflowManager.switchInputMode(mode);
+            }
+        }
+        
+        function startWorkflow() {
+            if (window.WorkflowManager) {
+                window.WorkflowManager.startWorkflow();
+            }
+        }
+        
+        function clearWorkflowInput() {
+            if (window.WorkflowManager) {
+                window.WorkflowManager.clearInput();
+            }
+        }
+        
+        function cancelWorkflow() {
+            if (window.WorkflowManager) {
+                window.WorkflowManager.cancelWorkflow();
+            }
+        }
+        
+        function saveWorkflowResults() {
+            if (window.WorkflowManager) {
+                window.WorkflowManager.saveAsProject();
+            }
+        }
+        
+        function startNewWorkflow() {
+            if (window.WorkflowManager) {
+                window.WorkflowManager.resetToNewWorkflow();
             }
         }
         

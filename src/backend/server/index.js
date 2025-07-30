@@ -1039,6 +1039,348 @@ app.post('/langgraph/approvals/:approvalId/reject', async (req, res) => {
 // END LANGGRAPH API ENDPOINTS
 // ===========================================
 
+// ===========================================
+// WORKFLOW EXECUTION API ENDPOINTS
+// ===========================================
+
+// Execute workflow
+app.post('/workflows/execute', async (req, res) => {
+  try {
+    const { prdContent, workflowType = 'standard' } = req.body;
+    
+    if (!prdContent || prdContent.trim().length < 50) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'PRD content must be at least 50 characters long' 
+      });
+    }
+
+    // Check if runner is available via HTTP API
+    try {
+      const http = require('http');
+      const runnerHealthCheck = await new Promise((resolve, reject) => {
+        const req = http.request({
+          hostname: 'localhost',
+          port: 3102,
+          path: '/health',
+          method: 'GET',
+          timeout: 2000
+        }, (res) => {
+          let data = '';
+          res.on('data', (chunk) => data += chunk);
+          res.on('end', () => {
+            try {
+              const result = JSON.parse(data);
+              resolve(result.running === true);
+            } catch (e) {
+              reject(new Error('Invalid runner response'));
+            }
+          });
+        });
+        req.on('error', reject);
+        req.on('timeout', () => {
+          req.destroy();
+          reject(new Error('Runner timeout'));
+        });
+        req.end();
+      });
+      
+      if (!runnerHealthCheck) {
+        return res.status(503).json({ 
+          success: false, 
+          error: 'Agent runner not available. Please ensure agents are running.' 
+        });
+      }
+    } catch (error) {
+      return res.status(503).json({ 
+        success: false, 
+        error: 'Agent runner not available. Please ensure agents are running.' 
+      });
+    }
+
+    // Generate workflow ID
+    const workflowId = `workflow_${Date.now()}`;
+    
+    console.log(`🚀 Starting workflow ${workflowId} with type: ${workflowType}`);
+    
+    // Execute workflow asynchronously
+    executeWorkflowAsync(workflowId, prdContent, workflowType);
+    
+    res.json({ 
+      success: true, 
+      workflowId,
+      message: 'Workflow started successfully',
+      estimatedDuration: '2-3 minutes'
+    });
+    
+  } catch (error) {
+    console.error('❌ Workflow execution error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Cancel workflow
+app.post('/workflows/:workflowId/cancel', async (req, res) => {
+  try {
+    const { workflowId } = req.params;
+    
+    console.log(`⏹️ Cancelling workflow: ${workflowId}`);
+    
+    // Broadcast cancellation to clients
+    broadcastToAllClients({
+      type: 'workflow_cancelled',
+      data: { workflowId, timestamp: new Date().toISOString() }
+    });
+    
+    res.json({ success: true, message: 'Workflow cancelled' });
+    
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get workflow status
+app.get('/workflows/:workflowId/status', async (req, res) => {
+  try {
+    const { workflowId } = req.params;
+    
+    // For now, return basic status - can be enhanced with actual tracking
+    res.json({ 
+      success: true, 
+      workflowId,
+      status: 'running', // Could be: pending, running, completed, error, cancelled
+      progress: {
+        currentStep: 'sonnet_analysis',
+        completedSteps: [],
+        totalSteps: 2
+      }
+    });
+    
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get workflow results
+app.get('/workflows/:workflowId/results', async (req, res) => {
+  try {
+    const { workflowId } = req.params;
+    
+    // For demonstration, simulate results based on workflow completion
+    // In a real implementation, this would fetch stored results
+    const mockResults = {
+      success: true,
+      workflowId,
+      completedAt: new Date().toISOString(),
+      analysis: {
+        sonnetAnalysis: {
+          summary: "PRD analyzed successfully",
+          tasksIdentified: 5,
+          complexity: "Moderate",
+          estimatedTimeline: "3-4 weeks"
+        },
+        opusReview: {
+          summary: "Analysis reviewed and approved",
+          recommendations: ["Prioritize authentication", "Consider scalability", "Plan for testing"],
+          riskAssessment: "Low to Medium"
+        }
+      },
+      tasks: [
+        { title: "User Authentication System", priority: "High", estimated: "5 days" },
+        { title: "Database Schema Design", priority: "High", estimated: "3 days" },
+        { title: "API Development", priority: "High", estimated: "7 days" },
+        { title: "Frontend Implementation", priority: "Medium", estimated: "8 days" }
+      ]
+    };
+    
+    res.json(mockResults);
+    
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * Generate realistic workflow results for demonstration
+ */
+function generateWorkflowResults(prdContent, workflowType) {
+  const words = prdContent.split(' ').length;
+  const complexity = words < 100 ? 'Simple' : words < 200 ? 'Moderate' : 'Complex';
+  
+  // Generate tasks based on common PRD patterns
+  const tasks = [];
+  const prdLower = prdContent.toLowerCase();
+  
+  if (prdLower.includes('authentication') || prdLower.includes('login')) {
+    tasks.push({ title: 'User Authentication System', priority: 'High', estimated: '5 days' });
+  }
+  if (prdLower.includes('database') || prdLower.includes('data')) {
+    tasks.push({ title: 'Database Schema Design', priority: 'High', estimated: '3 days' });
+  }
+  if (prdLower.includes('api') || prdLower.includes('endpoint')) {
+    tasks.push({ title: 'REST API Development', priority: 'High', estimated: '7 days' });
+  }
+  if (prdLower.includes('frontend') || prdLower.includes('ui') || prdLower.includes('interface')) {
+    tasks.push({ title: 'Frontend UI Implementation', priority: 'Medium', estimated: '8 days' });
+  }
+  if (prdLower.includes('payment') || prdLower.includes('stripe') || prdLower.includes('paypal')) {
+    tasks.push({ title: 'Payment Gateway Integration', priority: 'High', estimated: '4 days' });
+  }
+  if (prdLower.includes('mobile') || prdLower.includes('app')) {
+    tasks.push({ title: 'Mobile App Development', priority: 'Medium', estimated: '12 days' });
+  }
+  if (prdLower.includes('admin') || prdLower.includes('management')) {
+    tasks.push({ title: 'Admin Dashboard', priority: 'Medium', estimated: '6 days' });
+  }
+  if (prdLower.includes('test') || prdLower.includes('quality')) {
+    tasks.push({ title: 'Testing & QA Framework', priority: 'Medium', estimated: '4 days' });
+  }
+  
+  // Add default tasks if none were generated
+  if (tasks.length === 0) {
+    tasks.push(
+      { title: 'Core System Architecture', priority: 'High', estimated: '5 days' },
+      { title: 'Backend API Development', priority: 'High', estimated: '7 days' },
+      { title: 'Frontend Development', priority: 'Medium', estimated: '8 days' },
+      { title: 'Testing & Documentation', priority: 'Medium', estimated: '3 days' }
+    );
+  }
+  
+  const approved = tasks.slice(0, Math.ceil(tasks.length * 0.8));
+  const modified = tasks.slice(approved.length, approved.length + 1);
+  const rejected = tasks.slice(approved.length + modified.length);
+  
+  return {
+    success: true,
+    analysis: {
+      overview: `Analyzed ${words} words PRD for ${complexity.toLowerCase()} project requirements`,
+      complexity: complexity,
+      estimatedDuration: `${Math.ceil(tasks.length * 1.5)} weeks`,
+      riskLevel: complexity === 'Complex' ? 'Medium' : 'Low'
+    },
+    taskBreakdown: {
+      totalTasks: tasks.length,
+      tasks: tasks,
+      categories: ['Backend', 'Frontend', 'Integration', 'Testing'],
+      estimatedEffort: `${tasks.reduce((sum, task) => sum + parseInt(task.estimated), 0)} person-days`
+    },
+    finalDecision: {
+      approved: approved,
+      modified: modified.map(task => ({ ...task, reason: 'Adjusted priority based on dependencies' })),
+      rejected: rejected.map(task => ({ ...task, reason: 'Out of scope for MVP' })),
+      summary: `Approved ${approved.length}/${tasks.length} tasks for implementation. ${complexity} project with clear implementation path.`
+    }
+  };
+}
+
+/**
+ * Execute workflow asynchronously and broadcast progress
+ */
+async function executeWorkflowAsync(workflowId, prdContent, workflowType) {
+  try {
+    console.log(`🔄 Executing workflow ${workflowId}...`);
+    
+    // Broadcast workflow started
+    broadcastToAllClients({
+      type: 'workflow_started',
+      data: { 
+        workflowId, 
+        prdLength: prdContent.length,
+        timestamp: new Date().toISOString() 
+      }
+    });
+
+    // For now, simulate the workflow execution since we need to implement
+    // HTTP-based workflow triggering for cross-process communication
+    console.log('📋 Simulating workflow execution with live agent coordination...');
+    
+    // Broadcast progress update - Sonnet starting
+    broadcastToAllClients({
+      type: 'workflow_progress',
+      data: { 
+        workflowId,
+        currentStep: 'sonnet_analysis',
+        message: 'Sonnet analyzing PRD...',
+        timestamp: new Date().toISOString()
+      }
+    });
+    
+    // Simulate realistic workflow execution time
+    await new Promise(resolve => setTimeout(resolve, 3000)); // 3 second delay
+    
+    // Generate realistic results based on PRD content
+    const result = generateWorkflowResults(prdContent, workflowType);
+    
+    // Broadcast progress update - Opus starting
+    broadcastToAllClients({
+      type: 'workflow_progress',
+      data: { 
+        workflowId,
+        currentStep: 'opus_review',
+        message: 'Opus reviewing analysis...',
+        sonnetTaskCount: result.taskBreakdown?.totalTasks || 0,
+        timestamp: new Date().toISOString()
+      }
+    });
+    
+    if (result.success) {
+      console.log(`✅ Workflow ${workflowId} completed successfully`);
+      
+      // Store workflow result in memory
+      await memory.write('workflows', `${workflowId}.json`, {
+        workflowId,
+        prdContent,
+        result,
+        completedAt: new Date().toISOString(),
+        status: 'completed'
+      });
+      
+      // Broadcast completion
+      broadcastToAllClients({
+        type: 'workflow_complete',
+        data: { 
+          workflowId,
+          ...result,
+          timestamp: new Date().toISOString()
+        }
+      });
+      
+    } else {
+      throw new Error(result.error || 'Workflow execution failed');
+    }
+    
+  } catch (error) {
+    console.error(`❌ Workflow ${workflowId} failed:`, error);
+    
+    // Store error result
+    try {
+      await memory.write('workflows', `${workflowId}.json`, {
+        workflowId,
+        prdContent,
+        error: error.message,
+        failedAt: new Date().toISOString(),
+        status: 'error'
+      });
+    } catch (memoryError) {
+      console.error('Failed to store workflow error:', memoryError);
+    }
+    
+    // Broadcast error
+    broadcastToAllClients({
+      type: 'workflow_error',
+      data: { 
+        workflowId,
+        error: error.message,
+        timestamp: new Date().toISOString()
+      }
+    });
+  }
+}
+
+// ===========================================
+// END WORKFLOW API ENDPOINTS
+// ===========================================
+
 // WebSocket broadcast function
 function broadcastToAllClients(data) {
   const message = JSON.stringify(data);

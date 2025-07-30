@@ -118,6 +118,11 @@ class TabManager {
         if (window.DataManager) {
             window.DataManager.loadProjectsData();
         }
+        
+        // Initialize workflow manager if not already done
+        if (window.WorkflowManager) {
+            window.WorkflowManager.initialize();
+        }
     }
 
     /**
