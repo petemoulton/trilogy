@@ -173,7 +173,6 @@ class TabManager {
         } else {
             console.warn('[Trilogy] loadIntelligenceData function not available');
         }
-        }
     }
 
     /**
