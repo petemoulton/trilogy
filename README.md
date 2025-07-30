@@ -27,7 +27,7 @@ npm start
 ```bash
 cd materials/chromeext
 npm start
-# MCP server runs on http://localhost:3000
+# MCP server runs on http://localhost:3101
 ```
 
 ### 4. Start AI Agents
@@ -43,7 +43,7 @@ node runner.js --workflow
 ## 📊 Dashboard Access
 
 - **Main Dashboard**: http://localhost:8080
-- **Chrome MCP Dashboard**: http://localhost:3000/dashboard
+- **Chrome MCP Dashboard**: http://localhost:3101/dashboard
 
 ## 🧠 Memory System
 

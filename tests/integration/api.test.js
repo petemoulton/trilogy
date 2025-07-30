@@ -1,5 +1,5 @@
 const request = require('supertest');
-const { app } = require('../../server/index');
+const { app } = require('../../src/backend/server/index');
 
 describe('API Integration Tests', () => {
   describe('Health Check', () => {

@@ -157,7 +157,7 @@ async function startSystem() {
         
         console.log('\n🎉 Trilogy System Started Successfully!');
         console.log('📊 Dashboard: http://localhost:3100');
-        console.log('🌐 MCP Dashboard: http://localhost:3000/dashboard');
+        console.log('🌐 MCP Dashboard: http://localhost:3101/dashboard');
         console.log('🔗 API Health: http://localhost:3100/health');
         console.log('🤖 Agent Pool: http://localhost:3100/agents/pool/status');
         console.log(`🏊 Agent Pool Status: ${data.success ? 'Connected' : 'Disconnected'}`);
@@ -167,7 +167,7 @@ async function startSystem() {
       } catch (error) {
         console.log('\n⚠️ System started but agent pool may not be ready');
         console.log('🔗 Dashboard: http://localhost:3100');
-        console.log('🌐 MCP Dashboard: http://localhost:3000/dashboard');
+        console.log('🌐 MCP Dashboard: http://localhost:3101/dashboard');
         console.log('\nPress Ctrl+C to shutdown');
       }
     }, 5000); // Wait 5 seconds for full initialization

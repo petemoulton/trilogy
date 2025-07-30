@@ -40,14 +40,14 @@ async function verifyDashboards() {
   await testEndpoint('http://localhost:8080/', 'Main Dashboard');
   await testEndpoint('http://localhost:8080/agents/pool/status', 'Agent Pool Status');
   
-  console.log('\n🌐 Testing MCP Server (port 3000):');
-  await testEndpoint('http://localhost:3000/health', 'MCP Health Check');
-  await testEndpoint('http://localhost:3000/dashboard', 'MCP Dashboard');
-  await testEndpoint('http://localhost:3000/', 'MCP Root (should redirect)');
+  console.log('\n🌐 Testing MCP Server (port 3101):');
+  await testEndpoint('http://localhost:3101/health', 'MCP Health Check');
+  await testEndpoint('http://localhost:3101/dashboard', 'MCP Dashboard');
+  await testEndpoint('http://localhost:3101/', 'MCP Root (should redirect)');
   
   console.log('\n🎉 Dashboard verification complete!');
   console.log('📖 Main Dashboard: http://localhost:8080');
-  console.log('🌐 MCP Dashboard: http://localhost:3000/dashboard');
+  console.log('🌐 MCP Dashboard: http://localhost:3101/dashboard');
 }
 
 verifyDashboards().catch(console.error);

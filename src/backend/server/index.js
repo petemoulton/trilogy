@@ -580,10 +580,7 @@ app.post('/agents/runner/attach', async (req, res) => {
 });
 
 // Function to attach agent runner directly (for same-process communication)
-function attachAgentRunner(runner) {
-  runnerBridge.attachRunner(runner);
-  console.log('🔗 Agent runner attached via bridge');
-}
+// Note: Full attachAgentRunner implementation is at the end of file
 
 // Traditional Agent API (existing functionality)
 app.post('/agents/trigger/:agent', async (req, res) => {
