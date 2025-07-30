@@ -135,15 +135,17 @@ class TabManager {
     }
 
     /**
-     * Load agents tab data (placeholder)
+     * Load agents tab data
      */
     loadAgentsTab() {
         if (window.UIComponents) {
             window.UIComponents.updateActivityFeed(`Tab switched to: agents`);
         }
         
-        // TODO: Implement agent pool data loading
-        console.log('[Trilogy] Agent tab data loading - placeholder');
+        // Initialize agent pool manager if not already done
+        if (window.AgentPoolManager) {
+            window.AgentPoolManager.initialize();
+        }
     }
 
     /**
@@ -159,15 +161,17 @@ class TabManager {
     }
 
     /**
-     * Load logs tab data (placeholder)
+     * Load logs tab data
      */
     loadLogsTab() {
         if (window.UIComponents) {
             window.UIComponents.updateActivityFeed(`Tab switched to: logs`);
         }
         
-        // TODO: Implement logs data loading
-        console.log('[Trilogy] Logs tab data loading - placeholder');
+        // Initialize log manager if not already done
+        if (window.LogManager) {
+            window.LogManager.initialize();
+        }
     }
 
     /**

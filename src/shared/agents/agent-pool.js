@@ -263,7 +263,15 @@ class AgentPool extends EventEmitter {
     
     if (agent) {
       try {
-        await agent.disconnect();
+        // Only call disconnect if the agent has this method (specialist agents)
+        if (typeof agent.disconnect === 'function') {
+          await agent.disconnect();
+        } else {
+          // For main agents (sonnet/opus), call shutdown instead
+          if (typeof agent.shutdown === 'function') {
+            await agent.shutdown();
+          }
+        }
       } catch (error) {
         console.error(`Error disconnecting agent ${agentId}:`, error.message);
       }

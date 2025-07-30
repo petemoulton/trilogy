@@ -96,7 +96,42 @@
         <!-- Agent Pool Tab -->
         <div id="agents" class="tab-content">
             <h2 style="color: #e2e8f0; margin-bottom: 1.5rem;">Agent Pool</h2>
-            <div class="empty-state">Agent management coming soon...</div>
+            
+            <!-- Pool Statistics -->
+            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-agents">0</div>
+                    <div class="stat-label">Total Agents</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="active-agents">0</div>
+                    <div class="stat-label">Active</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="idle-agents">0</div>
+                    <div class="stat-label">Idle</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="error-agents">0</div>
+                    <div class="stat-label">Error</div>
+                </div>
+            </div>
+
+            <!-- Agent List -->
+            <div class="section-card">
+                <h3 style="color: #e2e8f0; margin-bottom: 1rem;">Active Agents</h3>
+                <div id="agents-list" class="agents-container">
+                    <div class="loading-state">Loading agents...</div>
+                </div>
+            </div>
+
+            <!-- Capabilities Overview -->
+            <div class="section-card" style="margin-top: 1.5rem;">
+                <h3 style="color: #e2e8f0; margin-bottom: 1rem;">Available Capabilities</h3>
+                <div id="capabilities-list" class="capabilities-container">
+                    <div class="loading-state">Loading capabilities...</div>
+                </div>
+            </div>
         </div>
 
         <!-- Intelligence Tab -->
@@ -108,7 +143,30 @@
         <!-- Logs Tab -->
         <div id="logs" class="tab-content">
             <h2 style="color: #e2e8f0; margin-bottom: 1.5rem;">System Logs</h2>
-            <div class="empty-state">Log viewer coming soon...</div>
+            
+            <!-- Log Controls -->
+            <div class="log-controls" style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+                <select id="log-level-filter" style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); padding: 0.5rem; border-radius: 4px;">
+                    <option value="all">All Levels</option>
+                    <option value="error">Errors</option>
+                    <option value="warn">Warnings</option>
+                    <option value="info">Info</option>
+                    <option value="debug">Debug</option>
+                </select>
+                <button onclick="clearLogs()" style="background: var(--danger-color); color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">
+                    Clear Logs
+                </button>
+                <button onclick="toggleAutoScroll()" id="auto-scroll-btn" style="background: var(--accent-color); color: var(--bg-primary); border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">
+                    Auto-scroll: ON
+                </button>
+            </div>
+
+            <!-- Log Viewer -->
+            <div class="section-card">
+                <div id="log-viewer" class="log-container" style="background: #0a0a0a; color: #e2e8f0; font-family: 'Courier New', monospace; font-size: 0.85rem; padding: 1rem; border-radius: 6px; height: 500px; overflow-y: auto; line-height: 1.4;">
+                    <div class="loading-state">Loading system logs...</div>
+                </div>
+            </div>
         </div>
 
         <!-- Settings Tab -->
@@ -174,6 +232,8 @@
     <script src="js/ui-components.js"></script>
     <script src="js/sample-data.js"></script>
     <script src="js/tab-manager.js"></script>
+    <script src="js/agent-manager.js"></script>
+    <script src="js/log-manager.js"></script>
     <script src="js/dashboard-core.js"></script>
     
     <!-- Initialize global state -->

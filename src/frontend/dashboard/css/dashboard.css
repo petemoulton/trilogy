@@ -193,3 +193,114 @@
 .activity-feed::-webkit-scrollbar-thumb:hover {
     background: var(--text-secondary);
 }
+
+/* Agent Pool Styles */
+.stat-card {
+    background: var(--bg-secondary);
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.agents-container {
+    display: grid;
+    gap: 1rem;
+}
+
+.agent-card {
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.agent-info h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.agent-info p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.agent-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.agent-status.idle {
+    background: #10b981;
+    color: white;
+}
+
+.agent-status.working {
+    background: #f59e0b;
+    color: white;
+}
+
+.agent-status.error {
+    background: #ef4444;
+    color: white;
+}
+
+.capabilities-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.capability-tag {
+    background: var(--accent-color);
+    color: var(--bg-primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* Log Viewer Styles */
+.log-entry {
+    margin-bottom: 0.5rem;
+    padding: 0.25rem 0;
+}
+
+.log-entry.error {
+    color: #ff6b6b;
+}
+
+.log-entry.warn {
+    color: #feca57;
+}
+
+.log-entry.info {
+    color: #48dbfb;
+}
+
+.log-entry.debug {
+    color: #ff9ff3;
+}
+
+.log-timestamp {
+    color: #6c757d;
+    font-size: 0.8rem;
+}

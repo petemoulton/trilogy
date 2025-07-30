@@ -446,6 +446,47 @@ app.post('/memory/:namespace/:key', async (req, res) => {
 // Agent Pool API
 app.get('/agents/pool/status', async (req, res) => {
   try {
+    // Try to get stats from runner API first (cross-process)
+    const runnerResponse = await new Promise((resolve, reject) => {
+      const http = require('http');
+      const options = {
+        hostname: 'localhost',
+        port: 3102,
+        path: '/pool/stats',
+        method: 'GET',
+        timeout: 2000
+      };
+
+      const request = http.request(options, (response) => {
+        let data = '';
+        response.on('data', (chunk) => data += chunk);
+        response.on('end', () => {
+          try {
+            const runnerStats = JSON.parse(data);
+            resolve(runnerStats);
+          } catch (parseError) {
+            reject(new Error('Invalid runner response'));
+          }
+        });
+      });
+
+      request.on('error', (error) => {
+        reject(error);
+      });
+
+      request.on('timeout', () => {
+        request.destroy();
+        reject(new Error('Runner API timeout'));
+      });
+
+      request.end();
+    });
+
+    res.json(runnerResponse);
+    
+  } catch (runnerError) {
+    // Fallback to bridge (same-process communication)
+    console.log('Runner API unavailable, using bridge fallback. Error:', runnerError.message || runnerError.code || runnerError);
     const poolStats = runnerBridge.getPoolStats();
     const allStatuses = runnerBridge.getAllAgentStatuses();
     res.json({ 
@@ -454,8 +495,6 @@ app.get('/agents/pool/status', async (req, res) => {
       agents: allStatuses,
       runnerAttached: runnerBridge.isRunnerAttached()
     });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
   }
 });
 

@@ -1,15 +1,57 @@
 const SonnetAgent = require('./sonnet-agent');
 const OpusAgent = require('./opus-agent');
 const AgentPool = require('./agent-pool');
+const express = require('express');
+const http = require('http');
 
 class AgentRunner {
   constructor() {
     this.agents = new Map();
     this.agentPool = new AgentPool();
     this.running = false;
+    this.runnerServer = null;
     
     // Set up agent pool event listeners
     this.setupPoolEventListeners();
+  }
+
+  /**
+   * Start HTTP server for runner API
+   */
+  startRunnerAPI() {
+    const app = express();
+    app.use(express.json());
+    
+    // Pool stats endpoint
+    app.get('/pool/stats', (req, res) => {
+      try {
+        const poolStats = this.getPoolStats();
+        const allStatuses = this.agentPool.getAllAgentStatuses();
+        
+        res.json({
+          success: true,
+          poolStats,
+          agents: allStatuses,
+          runnerAttached: true
+        });
+      } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+      }
+    });
+    
+    // Health check
+    app.get('/health', (req, res) => {
+      res.json({ 
+        status: 'healthy', 
+        running: this.running,
+        poolSize: this.getPoolStats().totalAgents,
+        timestamp: new Date().toISOString()
+      });
+    });
+    
+    this.runnerServer = app.listen(3102, () => {
+      console.log('🎯 Agent Runner API started on port 3102');
+    });
   }
 
   /**
@@ -48,6 +90,35 @@ class AgentRunner {
       this.agents.set('sonnet', sonnetAgent);
       this.agents.set('opus', opusAgent);
       
+      // Register main agents in the pool so they appear in pool stats
+      this.agentPool.agents.set('sonnet', sonnetAgent);
+      this.agentPool.agents.set('opus', opusAgent);
+      
+      this.agentPool.agentStatus.set('sonnet', {
+        id: 'sonnet',
+        role: 'analysis_lead',
+        status: 'idle',
+        capabilities: ['prd_analysis', 'task_breakdown', 'rapid_processing'],
+        spawnedAt: new Date().toISOString(),
+        tasksCompleted: 0,
+        currentTask: null
+      });
+      
+      this.agentPool.agentStatus.set('opus', {
+        id: 'opus',
+        role: 'team_lead',
+        status: 'idle',
+        capabilities: ['strategic_planning', 'task_finalization', 'team_coordination'],
+        spawnedAt: new Date().toISOString(),
+        tasksCompleted: 0,
+        currentTask: null
+      });
+      
+      this.agentPool.capabilities.set('sonnet', ['prd_analysis', 'task_breakdown', 'rapid_processing']);
+      this.agentPool.capabilities.set('opus', ['strategic_planning', 'task_finalization', 'team_coordination']);
+      this.agentPool.taskQueues.set('sonnet', []);
+      this.agentPool.taskQueues.set('opus', []);
+      
       // Attach this runner to the server for API access via HTTP
       try {
         // Wait a moment for server to be ready, then register via API
@@ -63,7 +134,7 @@ class AgentRunner {
 
             const options = {
               hostname: 'localhost',
-              port: 8080,
+              port: 3100,
               path: '/agents/runner/attach',
               method: 'POST',
               headers: {
@@ -105,6 +176,9 @@ class AgentRunner {
       console.log('✅ All agents connected and running');
       console.log('🏊 Agent pool ready for specialist spawning');
       
+      // Start runner API server
+      this.startRunnerAPI();
+      
       // Set up graceful shutdown
       process.on('SIGINT', () => this.shutdown());
       process.on('SIGTERM', () => this.shutdown());
@@ -120,6 +194,12 @@ class AgentRunner {
     
     console.log('🔄 Shutting down agents...');
     this.running = false;
+    
+    // Shutdown runner server
+    if (this.runnerServer) {
+      this.runnerServer.close();
+      console.log('🔌 Runner API server shut down');
+    }
     
     // Shutdown core agents
     const shutdownPromises = Array.from(this.agents.values()).map(agent => 
