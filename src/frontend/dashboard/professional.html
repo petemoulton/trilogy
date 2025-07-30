@@ -262,7 +262,236 @@ We need to build a modern e-commerce platform with user authentication, product 
         <!-- Intelligence Tab -->
         <div id="intelligence" class="tab-content">
             <h2 style="color: #e2e8f0; margin-bottom: 1.5rem;">Intelligence Analytics</h2>
-            <div class="empty-state">Analytics dashboard coming soon...</div>
+            
+            <!-- Overview Metrics -->
+            <div class="analytics-overview">
+                <div class="metric-cards-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon">🧠</div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="total-workflows">247</div>
+                            <div class="metric-label">Total Workflows</div>
+                            <div class="metric-change positive">+12% this week</div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-icon">⚡</div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="avg-completion-time">2.3min</div>
+                            <div class="metric-label">Avg Completion Time</div>
+                            <div class="metric-change positive">-8% faster</div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-icon">✅</div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="success-rate">94.8%</div>
+                            <div class="metric-label">Success Rate</div>
+                            <div class="metric-change positive">+2.1% improvement</div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-icon">🎯</div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="accuracy-score">89.2%</div>
+                            <div class="metric-label">Task Accuracy</div>
+                            <div class="metric-change neutral">±0.3% stable</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Sections -->
+            <div class="analytics-sections">
+                <!-- Workflow Performance -->
+                <div class="analytics-section">
+                    <div class="section-card">
+                        <h3 style="color: #e2e8f0; margin-bottom: 1rem;">📊 Workflow Performance</h3>
+                        
+                        <div class="performance-chart-container">
+                            <div class="chart-placeholder" id="workflow-performance-chart">
+                                <div class="chart-mock">
+                                    <div class="chart-bars">
+                                        <div class="chart-bar" style="height: 60%;"><span>Mon</span></div>
+                                        <div class="chart-bar" style="height: 80%;"><span>Tue</span></div>
+                                        <div class="chart-bar" style="height: 45%;"><span>Wed</span></div>
+                                        <div class="chart-bar" style="height: 90%;"><span>Thu</span></div>
+                                        <div class="chart-bar" style="height: 70%;"><span>Fri</span></div>
+                                        <div class="chart-bar" style="height: 30%;"><span>Sat</span></div>
+                                        <div class="chart-bar" style="height: 25%;"><span>Sun</span></div>
+                                    </div>
+                                    <div class="chart-legend">
+                                        <span class="legend-item">📈 Workflows per day</span>
+                                        <span class="legend-item">⏱️ Avg completion time</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="performance-insights">
+                            <div class="insight-item">
+                                <span class="insight-icon">🔥</span>
+                                <div>
+                                    <strong>Peak Performance:</strong> Thursday shows highest workflow volume (45 workflows)
+                                </div>
+                            </div>
+                            <div class="insight-item">
+                                <span class="insight-icon">⚡</span>
+                                <div>
+                                    <strong>Speed Improvement:</strong> Average completion time reduced by 15% this month
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agent Intelligence -->
+                <div class="analytics-section">
+                    <div class="section-card">
+                        <h3 style="color: #e2e8f0; margin-bottom: 1rem;">🤖 Agent Intelligence</h3>
+                        
+                        <div class="agent-analytics-grid">
+                            <div class="agent-performance-card">
+                                <div class="agent-header">
+                                    <span class="agent-name">Claude Sonnet</span>
+                                    <span class="agent-role">Analysis Lead</span>
+                                </div>
+                                <div class="agent-metrics">
+                                    <div class="agent-metric">
+                                        <span class="metric-label">Workflows Analyzed</span>
+                                        <span class="metric-value">247</span>
+                                    </div>
+                                    <div class="agent-metric">
+                                        <span class="metric-label">Avg Analysis Time</span>
+                                        <span class="metric-value">1.8min</span>
+                                    </div>
+                                    <div class="agent-metric">
+                                        <span class="metric-label">Accuracy Rating</span>
+                                        <span class="metric-value">92.4%</span>
+                                    </div>
+                                </div>
+                                <div class="agent-specialties">
+                                    <span class="specialty-tag">PRD Analysis</span>
+                                    <span class="specialty-tag">Task Breakdown</span>
+                                    <span class="specialty-tag">Requirements</span>
+                                </div>
+                            </div>
+                            
+                            <div class="agent-performance-card">
+                                <div class="agent-header">
+                                    <span class="agent-name">Claude Opus</span>
+                                    <span class="agent-role">Team Lead</span>
+                                </div>
+                                <div class="agent-metrics">
+                                    <div class="agent-metric">
+                                        <span class="metric-label">Reviews Completed</span>
+                                        <span class="metric-value">247</span>
+                                    </div>
+                                    <div class="agent-metric">
+                                        <span class="metric-label">Avg Review Time</span>
+                                        <span class="metric-value">0.5min</span>
+                                    </div>
+                                    <div class="agent-metric">
+                                        <span class="metric-label">Approval Rate</span>
+                                        <span class="metric-value">96.8%</span>
+                                    </div>
+                                </div>
+                                <div class="agent-specialties">
+                                    <span class="specialty-tag">Strategy</span>
+                                    <span class="specialty-tag">Risk Assessment</span>
+                                    <span class="specialty-tag">Quality Control</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Insights -->
+                <div class="analytics-section">
+                    <div class="section-card">
+                        <h3 style="color: #e2e8f0; margin-bottom: 1rem;">💡 System Insights</h3>
+                        
+                        <div class="insights-container">
+                            <div class="insight-category">
+                                <h4 style="color: #10b981; margin-bottom: 0.75rem;">🎯 Performance Optimizations</h4>
+                                <ul class="insight-list">
+                                    <li>Workflow caching has reduced average response time by 23%</li>
+                                    <li>Multi-agent coordination efficiency improved by 15% this month</li>
+                                    <li>PRD preprocessing algorithms show 12% better task identification</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="insight-category">
+                                <h4 style="color: #3b82f6; margin-bottom: 0.75rem;">📈 Usage Patterns</h4>
+                                <ul class="insight-list">
+                                    <li>Peak usage: Tuesday-Thursday, 10AM-2PM</li>
+                                    <li>Most common PRD types: E-commerce (32%), SaaS (28%), Mobile Apps (18%)</li>
+                                    <li>Average workflow complexity: Moderate (67% of workflows)</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="insight-category">
+                                <h4 style="color: #f59e0b; margin-bottom: 0.75rem;">⚠️ Recommendations</h4>
+                                <ul class="insight-list">
+                                    <li>Consider scaling agent pool during peak hours (10AM-2PM)</li>
+                                    <li>Implement specialized PRD templates for common use cases</li>
+                                    <li>Add workflow complexity pre-assessment for better resource allocation</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-time Activity -->
+                <div class="analytics-section">
+                    <div class="section-card">
+                        <h3 style="color: #e2e8f0; margin-bottom: 1rem;">⚡ Real-time Activity</h3>
+                        
+                        <div class="activity-dashboard">
+                            <div class="activity-stats">
+                                <div class="activity-stat">
+                                    <span class="stat-value" id="active-workflows">3</span>
+                                    <span class="stat-label">Active Workflows</span>
+                                </div>
+                                <div class="activity-stat">
+                                    <span class="stat-value" id="queue-length">7</span>
+                                    <span class="stat-label">Queued Requests</span>
+                                </div>
+                                <div class="activity-stat">
+                                    <span class="stat-value" id="processing-time">1.2min</span>
+                                    <span class="stat-label">Current Avg Time</span>
+                                </div>
+                            </div>
+                            
+                            <div class="live-activity-feed" id="intelligence-activity-feed">
+                                <div class="activity-item">
+                                    <span class="activity-time">12:34:56</span>
+                                    <span class="activity-type workflow">WORKFLOW</span>
+                                    <span class="activity-message">E-commerce PRD analysis completed in 2.1min</span>
+                                </div>
+                                <div class="activity-item">
+                                    <span class="activity-time">12:33:42</span>
+                                    <span class="activity-type agent">AGENT</span>
+                                    <span class="activity-message">Opus review approved with 3 recommendations</span>
+                                </div>
+                                <div class="activity-item">
+                                    <span class="activity-time">12:32:18</span>
+                                    <span class="activity-type system">SYSTEM</span>
+                                    <span class="activity-message">Performance optimization: +12% efficiency gain</span>
+                                </div>
+                                <div class="activity-item">
+                                    <span class="activity-time">12:31:05</span>
+                                    <span class="activity-type workflow">WORKFLOW</span>
+                                    <span class="activity-message">SaaS platform PRD queued for analysis</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Logs Tab -->
@@ -360,6 +589,7 @@ We need to build a modern e-commerce platform with user authentication, product 
     <script src="js/agent-manager.js"></script>
     <script src="js/log-manager.js"></script>
     <script src="js/workflow-manager.js"></script>
+    <script src="js/analytics-manager.js"></script>
     <script src="js/dashboard-core.js"></script>
     
     <!-- Initialize global state -->

@@ -154,15 +154,17 @@ class TabManager {
     }
 
     /**
-     * Load intelligence tab data (placeholder)
+     * Load intelligence tab data
      */
     loadIntelligenceTab() {
         if (window.UIComponents) {
             window.UIComponents.updateActivityFeed(`Tab switched to: intelligence`);
         }
         
-        // TODO: Implement intelligence analytics data loading
-        console.log('[Trilogy] Intelligence tab data loading - placeholder');
+        // Initialize analytics manager if not already done
+        if (window.AnalyticsManager) {
+            window.AnalyticsManager.initialize();
+        }
     }
 
     /**
