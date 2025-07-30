@@ -125,9 +125,9 @@ We need to build a modern e-commerce platform with user authentication, product 
                                 <div class="drop-zone-content">
                                     <span style="font-size: 2rem; margin-bottom: 0.5rem;">📁</span>
                                     <p>Drop your PRD file here or click to browse</p>
-                                    <small style="color: var(--text-secondary);">Supports: .txt, .md, .doc, .docx, .pdf</small>
+                                    <small style="color: var(--text-secondary);">Supports: .txt, .md files</small>
                                 </div>
-                                <input type="file" id="file-input" accept=".txt,.md,.doc,.docx,.pdf" style="display: none;">
+                                <input type="file" id="file-input" accept=".txt,.md" style="display: none;">
                             </div>
                         </div>
                     </div>
@@ -155,7 +155,16 @@ We need to build a modern e-commerce platform with user authentication, product 
                     </div>
                     
                     <!-- Action Buttons -->
-                    <div class="workflow-actions" style="display: flex; gap: 1rem; align-items: center;">
+                    <div class="workflow-actions" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                        <button 
+                            id="analyze-prd-btn" 
+                            class="primary-btn" 
+                            onclick="analyzePRD()" 
+                            disabled
+                            style="background: #7c3aed;"
+                        >
+                            🧠 Analyze PRD
+                        </button>
                         <button 
                             id="start-workflow-btn" 
                             class="primary-btn" 
@@ -172,6 +181,16 @@ We need to build a modern e-commerce platform with user authentication, product 
                             🗑️ Clear
                         </button>
                         <div id="workflow-status" class="workflow-status-indicator"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PRD Analysis Results -->
+            <div class="prd-analysis-results" id="prd-analysis-results" style="display: none;">
+                <div class="section-card">
+                    <h3 style="color: #e2e8f0; margin-bottom: 1rem;">🧠 Opus Agent Analysis</h3>
+                    <div id="analysis-output" class="analysis-output">
+                        <!-- Analysis results will be populated here -->
                     </div>
                 </div>
             </div>
@@ -199,8 +218,11 @@ We need to build a modern e-commerce platform with user authentication, product 
                         <!-- Results will be populated here -->
                     </div>
                     <div class="workflow-actions" style="margin-top: 1rem;">
+                        <button class="primary-btn" onclick="deployToAgents()" style="background: #10b981;">
+                            🚀 Deploy Agents
+                        </button>
                         <button class="primary-btn" onclick="saveWorkflowResults()">
-                            💾 Save as Project
+                            💾 Create Project
                         </button>
                         <button class="secondary-btn" onclick="startNewWorkflow()">
                             🔄 Start New Workflow
@@ -222,39 +244,212 @@ We need to build a modern e-commerce platform with user authentication, product 
         <div id="agents" class="tab-content">
             <h2 style="color: #e2e8f0; margin-bottom: 1.5rem;">Agent Pool</h2>
             
-            <!-- Pool Statistics -->
-            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-                <div class="stat-card">
-                    <div class="stat-number" id="total-agents">0</div>
-                    <div class="stat-label">Total Agents</div>
+            <!-- Agent Deployment Mode Toggle -->
+            <div class="agent-mode-toggle" style="margin-bottom: 2rem;">
+                <button id="pool-view-btn" class="mode-btn active" onclick="switchAgentView('pool')">
+                    📊 Pool View
+                </button>
+                <button id="deploy-view-btn" class="mode-btn" onclick="switchAgentView('deploy')">
+                    🚀 Deployment View
+                </button>
+            </div>
+
+            <!-- Pool View (Original) -->
+            <div id="pool-view" class="agent-view">
+                <!-- Pool Statistics -->
+                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-agents">0</div>
+                        <div class="stat-label">Total Agents</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="active-agents">0</div>
+                        <div class="stat-label">Active</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="idle-agents">0</div>
+                        <div class="stat-label">Idle</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="error-agents">0</div>
+                        <div class="stat-label">Error</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="active-agents">0</div>
-                    <div class="stat-label">Active</div>
+
+                <!-- Active Agent List -->
+                <div class="section-card">
+                    <h3 style="color: #e2e8f0; margin-bottom: 1rem;">Active Agents</h3>
+                    <div id="active-agents-list" class="agents-container">
+                        <div class="loading-state">Loading agents...</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="idle-agents">0</div>
-                    <div class="stat-label">Idle</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="error-agents">0</div>
-                    <div class="stat-label">Error</div>
+
+                <!-- Capabilities Overview -->
+                <div class="section-card" style="margin-top: 1.5rem;">
+                    <h3 style="color: #e2e8f0; margin-bottom: 1rem;">Available Capabilities</h3>
+                    <div id="capabilities-list" class="capabilities-container">
+                        <div class="loading-state">Loading capabilities...</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Agent List -->
-            <div class="section-card">
-                <h3 style="color: #e2e8f0; margin-bottom: 1rem;">Active Agents</h3>
-                <div id="agents-list" class="agents-container">
-                    <div class="loading-state">Loading agents...</div>
+            <!-- Agile Deployment View -->
+            <div id="deploy-view" class="agent-view" style="display: none;">
+                <!-- Sprint Header -->
+                <div class="sprint-header">
+                    <div class="sprint-info">
+                        <h2>🏃‍♂️ Sprint Planning: Agent Deployment</h2>
+                        <div class="sprint-meta">
+                            <span class="sprint-number">Sprint 1</span>
+                            <span class="sprint-duration">2 weeks</span>
+                            <span class="sprint-velocity">Story Points: <strong id="total-story-points">0</strong></span>
+                        </div>
+                    </div>
+                    <div class="sprint-actions">
+                        <button id="start-sprint-btn" class="primary-btn" onclick="startAgentSprint()" disabled>
+                            🚀 Start Sprint
+                        </button>
+                        <button id="complete-deployment-btn" class="success-btn" onclick="completeAgentDeployment()">
+                            ✅ Complete Deployment
+                        </button>
+                        <button id="reset-sprint-btn" class="secondary-btn" onclick="resetSprint()">
+                            🔄 Reset Sprint
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Capabilities Overview -->
-            <div class="section-card" style="margin-top: 1.5rem;">
-                <h3 style="color: #e2e8f0; margin-bottom: 1rem;">Available Capabilities</h3>
-                <div id="capabilities-list" class="capabilities-container">
-                    <div class="loading-state">Loading capabilities...</div>
+                <!-- Workflow Graph View -->
+                <div class="graph-section">
+                    <div class="section-header">
+                        <h3>🔄 Agent Workflow Graph</h3>
+                        <div class="view-controls">
+                            <button id="analyze-workflow-btn" class="primary-btn" onclick="analyzeWorkflowData()">
+                                📊 Analyze Workflow
+                            </button>
+                            <button id="refresh-graph-btn" class="secondary-btn" onclick="refreshWorkflowGraph()">
+                                🔄 Refresh Graph
+                            </button>
+                        </div>
+                    </div>
+                    <div class="graph-container">
+                        <svg id="agent-graph" width="100%" height="400"></svg>
+                        <div id="graph-tooltip" class="graph-tooltip"></div>
+                    </div>
+                </div>
+
+                <!-- Agent Pool with Settings -->
+                <div class="agent-pool-section">
+                    <div class="section-header">
+                        <h3>🤖 Agent Pool & Configuration</h3>
+                        <div class="pool-controls">
+                            <button id="add-agent-btn" class="success-btn" onclick="openAddAgentDialog()">
+                                ➕ Add Agent
+                            </button>
+                            <button id="deploy-selected-btn" class="primary-btn" onclick="deploySelectedAgents()" disabled>
+                                🚀 Deploy Selected
+                            </button>
+                        </div>
+                    </div>
+                    <div class="agent-list-container">
+                        <div id="available-agents-list" class="agents-grid">
+                            <!-- Agent cards will be populated here -->
+                        </div>
+                        <div class="deployment-summary" id="deployment-summary">
+                            <h4>📋 Selected for Deployment</h4>
+                            <div id="selected-agents-list" class="selected-agents-container">
+                                <!-- Selected agents will appear here -->
+                            </div>
+                            <div class="deployment-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Supervisors:</span>
+                                    <span id="supervisor-count">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Specialists:</span>
+                                    <span id="specialist-count">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Workers:</span>
+                                    <span id="worker-count">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agile Board -->
+                <div class="agile-board">
+                    <!-- Product Backlog -->
+                    <div class="agile-column backlog-column">
+                        <div class="column-header">
+                            <h3>📋 Product Backlog</h3>
+                            <span class="story-count" id="backlog-count">0</span>
+                        </div>
+                        <div class="column-content" id="backlog-stories">
+                            <!-- User stories will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Sprint Backlog -->
+                    <div class="agile-column sprint-column">
+                        <div class="column-header">
+                            <h3>🎯 Sprint Backlog</h3>
+                            <span class="story-count" id="sprint-count">0</span>
+                        </div>
+                        <div class="column-content" id="sprint-stories">
+                            <div class="empty-sprint">
+                                <div class="empty-icon">📝</div>
+                                <p>Drag user stories here to add to sprint</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- In Progress -->
+                    <div class="agile-column progress-column">
+                        <div class="column-header">
+                            <h3>⚡ In Progress</h3>
+                            <span class="story-count" id="progress-count">0</span>
+                        </div>
+                        <div class="column-content" id="progress-stories">
+                            <div class="wip-limit">WIP Limit: 3</div>
+                        </div>
+                    </div>
+
+                    <!-- Done -->
+                    <div class="agile-column done-column">
+                        <div class="column-header">
+                            <h3>✅ Done</h3>
+                            <span class="story-count" id="done-count">0</span>
+                        </div>
+                        <div class="column-content" id="done-stories">
+                            <!-- Completed stories -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sprint Summary Panel -->
+                <div class="sprint-summary">
+                    <div class="summary-header">
+                        <h3>📊 Sprint Metrics</h3>
+                    </div>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-value" id="team-velocity">0</div>
+                            <div class="metric-label">Team Velocity</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="burndown-rate">0%</div>
+                            <div class="metric-label">Burndown Rate</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="completion-rate">0%</div>
+                            <div class="metric-label">Completion Rate</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="active-agents">0</div>
+                            <div class="metric-label">Active Agents</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -554,6 +749,42 @@ We need to build a modern e-commerce platform with user authentication, product 
                 </div>
                 
                 <div class="setting-section">
+                    <h3 style="color: #e2e8f0; margin-bottom: 1rem;">Project Settings</h3>
+                    
+                    <div class="setting-item">
+                        <label style="color: #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: #1e293b; border-radius: 8px; margin-bottom: 1rem;">
+                            <span>
+                                <span style="font-weight: 600;">Project Directory</span>
+                                <small style="display: block; color: #94a3b8; margin-top: 0.25rem;">Set the default directory for project files</small>
+                                <small id="current-project-dir" style="display: block; color: #10b981; margin-top: 0.25rem; font-family: monospace;">~/Desktop/Projects/trilogy</small>
+                            </span>
+                            <button id="select-project-dir" onclick="selectProjectDirectory()" style="
+                                background: #059669; 
+                                color: white; 
+                                border: none; 
+                                padding: 0.5rem 1rem; 
+                                border-radius: 6px; 
+                                cursor: pointer;
+                                font-weight: 600;
+                                transition: background 0.2s;
+                            " onmouseover="this.style.background='#047857'" onmouseout="this.style.background='#059669'">
+                                📁 Choose Folder
+                            </button>
+                        </label>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label style="color: #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: #1e293b; border-radius: 8px; margin-bottom: 1rem;">
+                            <span>
+                                <span style="font-weight: 600;">Auto-create Project Folders</span>
+                                <small style="display: block; color: #94a3b8; margin-top: 0.25rem;">Automatically create folders for new projects</small>
+                            </span>
+                            <input type="checkbox" id="auto-create-folders" checked style="transform: scale(1.5);">
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="setting-section">
                     <h3 style="color: #e2e8f0; margin-bottom: 1rem;">System</h3>
                     
                     <div class="setting-item">
@@ -600,9 +831,42 @@ We need to build a modern e-commerce platform with user authentication, product 
         window.useSampleData = false;
         
         // Global function wrappers for HTML onclick handlers
-        function showTab(event, tabName) {
+        window.showTab = function showTab(event, tabName) {
+            console.log('[DEBUG] showTab called with:', tabName);
             if (window.TabManager) {
+                console.log('[DEBUG] TabManager found, calling showTab');
                 window.TabManager.showTab(event, tabName);
+            } else {
+                console.error('[DEBUG] TabManager not found! Available objects:', Object.keys(window));
+                // Fallback manual tab switching
+                switchTabManually(event, tabName);
+            }
+        }
+        
+        // Manual fallback tab switching
+        function switchTabManually(event, tabName) {
+            console.log('[DEBUG] Using manual tab switching for:', tabName);
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Add active class to clicked tab
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+            
+            // Hide all tab content
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.style.display = 'none');
+            
+            // Show target tab content
+            const targetContent = document.getElementById(tabName + '-tab');
+            if (targetContent) {
+                targetContent.style.display = 'block';
+                console.log('[DEBUG] Switched to tab:', tabName);
+            } else {
+                console.error('[DEBUG] Tab content not found for:', tabName);
             }
         }
         
@@ -661,6 +925,185 @@ We need to build a modern e-commerce platform with user authentication, product 
             }
         }
         
+        // Intelligence data loading function
+        async function loadIntelligenceData() {
+            console.log('[Intelligence] Loading git intelligence data...');
+            
+            try {
+                const response = await fetch('/api/intelligence/git');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const data = result.data;
+                    console.log('[Intelligence] Data loaded:', data);
+                    
+                    // Update stat cards
+                    document.getElementById('total-commits').textContent = data.commits.totalCommits || '0';
+                    document.getElementById('active-contributors').textContent = data.contributors.total || '0';
+                    document.getElementById('total-branches').textContent = data.repository.totalBranches || '0';
+                    document.getElementById('weekly-commits').textContent = data.productivity.weeklyCommits || '0';
+                    
+                    // Update commit types chart
+                    updateCommitTypesChart(data.commits.commitsByType);
+                    
+                    // Update productivity metrics
+                    updateProductivityMetrics(data.productivity);
+                    
+                    // Update contributors list
+                    updateContributorsList(data.contributors.list);
+                    
+                    // Update recent activity
+                    updateRecentActivity(data.recentActivity);
+                    
+                    // Update last updated time
+                    document.getElementById('intelligence-last-updated').textContent = 
+                        `Last updated: ${new Date(data.lastUpdated).toLocaleString()}`;
+                        
+                } else {
+                    console.error('[Intelligence] Failed to load data:', result.error);
+                    showErrorMessage('Failed to load intelligence data: ' + result.error);
+                }
+            } catch (error) {
+                console.error('[Intelligence] Error loading data:', error);
+                showErrorMessage('Error loading intelligence data: ' + error.message);
+            }
+        }
+        
+        function updateCommitTypesChart(commitTypes) {
+            const container = document.getElementById('commit-types-chart');
+            const total = Object.values(commitTypes).reduce((a, b) => a + b, 0);
+            
+            if (total === 0) {
+                container.innerHTML = '<div style="color: var(--text-secondary);">No commit data available</div>';
+                return;
+            }
+            
+            const chartHtml = Object.entries(commitTypes)
+                .filter(([_, count]) => count > 0)
+                .map(([type, count]) => {
+                    const percentage = ((count / total) * 100).toFixed(1);
+                    const color = getCommitTypeColor(type);
+                    return `
+                        <div class="chart-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <div style="display: flex; align-items: center;">
+                                <div style="width: 12px; height: 12px; background: ${color}; border-radius: 2px; margin-right: 0.5rem;"></div>
+                                <span style="color: var(--text-primary); text-transform: capitalize;">${type}</span>
+                            </div>
+                            <div style="color: var(--text-secondary);">${count} (${percentage}%)</div>
+                        </div>
+                    `;
+                }).join('');
+            
+            container.innerHTML = chartHtml;
+        }
+        
+        function updateProductivityMetrics(productivity) {
+            const container = document.getElementById('productivity-metrics');
+            container.innerHTML = `
+                <div class="metric-item" style="margin-bottom: 1rem;">
+                    <div style="color: var(--text-primary); font-weight: 500;">Monthly Commits</div>
+                    <div style="color: var(--text-secondary); font-size: 1.2rem;">${productivity.monthlyCommits}</div>
+                </div>
+                <div class="metric-item" style="margin-bottom: 1rem;">
+                    <div style="color: var(--text-primary); font-weight: 500;">Avg/Day</div>
+                    <div style="color: var(--text-secondary); font-size: 1.2rem;">${productivity.avgCommitsPerDay}</div>
+                </div>
+                <div class="metric-item" style="margin-bottom: 1rem;">
+                    <div style="color: var(--text-primary); font-weight: 500;">Files Changed</div>
+                    <div style="color: var(--text-secondary); font-size: 1.2rem;">${productivity.filesChanged}</div>
+                </div>
+                <div class="metric-item">
+                    <div style="color: var(--text-primary); font-weight: 500;">Lines Added/Deleted</div>
+                    <div style="color: var(--text-secondary); font-size: 1.2rem;">+${productivity.linesAdded} / -${productivity.linesDeleted}</div>
+                </div>
+            `;
+        }
+        
+        function updateContributorsList(contributors) {
+            const container = document.getElementById('contributors-list');
+            
+            if (!contributors || contributors.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-secondary);">No contributors found</div>';
+                return;
+            }
+            
+            const contributorsHtml = contributors.slice(0, 5).map((contributor, index) => `
+                <div class="contributor-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: center;">
+                        <div style="width: 8px; height: 8px; background: ${getContributorColor(index)}; border-radius: 50%; margin-right: 0.5rem;"></div>
+                        <span style="color: var(--text-primary);">${contributor.name}</span>
+                    </div>
+                    <span style="color: var(--text-secondary);">${contributor.commits} commits</span>
+                </div>
+            `).join('');
+            
+            container.innerHTML = contributorsHtml;
+        }
+        
+        function updateRecentActivity(recentActivity) {
+            const container = document.getElementById('recent-activity');
+            
+            if (!recentActivity || recentActivity.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-secondary);">No recent activity</div>';
+                return;
+            }
+            
+            const activityHtml = recentActivity.map(activity => `
+                <div class="activity-item" style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
+                    <div style="color: var(--text-primary); font-weight: 500; margin-bottom: 0.25rem;">
+                        ${activity.message.substring(0, 60)}${activity.message.length > 60 ? '...' : ''}
+                    </div>
+                    <div style="color: var(--text-secondary); font-size: 0.85rem; display: flex; justify-content: space-between;">
+                        <span>${activity.author}</span>
+                        <span>${activity.hash} • ${activity.relative}</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = activityHtml;
+        }
+        
+        function getCommitTypeColor(type) {
+            const colors = {
+                feat: '#10b981',
+                fix: '#f59e0b',
+                docs: '#3b82f6',
+                refactor: '#8b5cf6',
+                test: '#06b6d4',
+                other: '#6b7280'
+            };
+            return colors[type] || colors.other;
+        }
+        
+        function getContributorColor(index) {
+            const colors = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#06b6d4'];
+            return colors[index % colors.length];
+        }
+        
+        function showErrorMessage(message) {
+            // Create a temporary error notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #dc2626;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 6px;
+                z-index: 1000;
+                max-width: 350px;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+            }, 5000);
+        }
+
         function toggleDarkMode() {
             const body = document.body;
             const button = document.getElementById('dark-mode-toggle');
@@ -679,8 +1122,149 @@ We need to build a modern e-commerce platform with user authentication, product 
             }
         }
         
+        // Project directory selection function
+        async function selectProjectDirectory() {
+            console.log('📁 Selecting project directory...');
+            
+            try {
+                // Try to use modern File System Access API (Chrome/Edge)
+                if ('showDirectoryPicker' in window) {
+                    console.log('🌟 Using File System Access API');
+                    const directoryHandle = await window.showDirectoryPicker();
+                    const directoryPath = directoryHandle.name;
+                    
+                    // For security reasons, we can't get the full path, but we can use the name
+                    showSettingsNotification(`📁 Selected directory: ${directoryPath}`, 'success');
+                    updateProjectDirectory(`Selected: ${directoryPath}`);
+                    return;
+                }
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('File System Access API error:', error);
+                }
+            }
+            
+            try {
+                // Fallback: Create a hidden file input for directory selection
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.webkitdirectory = true; // Allow directory selection
+                input.multiple = true;
+                input.style.display = 'none';
+                
+                input.addEventListener('change', function(event) {
+                    const files = event.target.files;
+                    if (files.length > 0) {
+                        // Get the directory path from the first file
+                        const firstFile = files[0];
+                        const pathParts = firstFile.webkitRelativePath.split('/');
+                        const directoryName = pathParts[0];
+                        
+                        console.log(`📁 Selected directory: ${directoryName} (${files.length} files)`);
+                        showSettingsNotification(`📁 Selected directory: ${directoryName} (${files.length} files)`, 'success');
+                        updateProjectDirectory(directoryName);
+                    }
+                    document.body.removeChild(input);
+                });
+                
+                document.body.appendChild(input);
+                input.click();
+                
+            } catch (error) {
+                console.error('Directory selection fallback error:', error);
+                
+                // Final fallback: manual input
+                const currentDir = document.getElementById('current-project-dir');
+                const newDir = prompt('Enter project directory path (all projects will be created here):', currentDir.textContent);
+                
+                if (newDir && newDir.trim()) {
+                    updateProjectDirectory(newDir.trim());
+                }
+            }
+        }
+        
+        async function updateProjectDirectory(newPath) {
+            try {
+                // In a real app, this would call the backend to validate the directory
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ projectDirectory: newPath })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        document.getElementById('current-project-dir').textContent = newPath;
+                        localStorage.setItem('projectDirectory', newPath);
+                        showSettingsNotification('✅ Project directory updated successfully', 'success');
+                        
+                        // Refresh projects from the new directory
+                        console.log('[Settings] Refreshing projects from new directory...');
+                        if (window.DataManager) {
+                            await window.DataManager.loadProjects();
+                            showSettingsNotification('🔄 Projects refreshed from new directory', 'info');
+                        }
+                    } else {
+                        showSettingsNotification(`❌ ${result.error || 'Invalid directory path'}`, 'error');
+                    }
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to update directory');
+                }
+            } catch (error) {
+                console.error('Failed to update project directory:', error);
+                // For demo purposes, just update the display
+                document.getElementById('current-project-dir').textContent = newPath;
+                localStorage.setItem('projectDirectory', newPath);
+                showSettingsNotification('📁 Project directory updated (demo mode)', 'info');
+            }
+        }
+        
+        function showSettingsNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                border-radius: 6px;
+                color: white;
+                font-weight: 500;
+                z-index: 1000;
+                animation: slideInFromRight 0.3s ease;
+                max-width: 350px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            `;
+            
+            switch(type) {
+                case 'success':
+                    notification.style.background = '#10b981';
+                    break;
+                case 'error':
+                    notification.style.background = '#dc2626';
+                    break;
+                case 'info':
+                default:
+                    notification.style.background = '#3b82f6';
+                    break;
+            }
+            
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
         // Load dark mode preference on page load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             const savedMode = localStorage.getItem('darkMode');
             const button = document.getElementById('dark-mode-toggle');
             
@@ -688,7 +1272,2406 @@ We need to build a modern e-commerce platform with user authentication, product 
                 document.body.classList.add('dark-mode');
                 if (button) button.innerHTML = '☀️ Disable Dark Mode';
             }
+            
+            // Load current project directory from settings API
+            try {
+                const response = await fetch('/api/settings');
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data.projectDirectory) {
+                        document.getElementById('current-project-dir').textContent = result.data.projectDirectory;
+                        localStorage.setItem('projectDirectory', result.data.projectDirectory);
+                    }
+                } else {
+                    console.warn('[Settings] Could not load settings from API, using localStorage fallback');
+                    const savedDir = localStorage.getItem('projectDirectory');
+                    if (savedDir) {
+                        document.getElementById('current-project-dir').textContent = savedDir;
+                    }
+                }
+            } catch (error) {
+                console.error('[Settings] Error loading settings:', error);
+                // Fallback to localStorage
+                const savedDir = localStorage.getItem('projectDirectory');
+                if (savedDir) {
+                    document.getElementById('current-project-dir').textContent = savedDir;
+                }
+            }
         });
+
+        // =============================================
+        // AGENT DEPLOYMENT SYSTEM
+        // =============================================
+
+        // Global state for agent deployment
+        window.agentDeployment = {
+            selectedAgents: [],
+            agentHierarchy: null,
+            currentTooltip: null,
+            tooltipTimeout: null
+        };
+
+        // Deploy to Agents function (called from Deploy Agents button)
+        function deployToAgents() {
+            console.log('[Deployment] Switching to agents tab with deployment view');
+            // Switch to agents tab
+            window.showTab(null, 'agents');
+            // Switch to deployment view
+            setTimeout(() => {
+                switchAgentView('deploy');
+            }, 100);
+        }
+
+        // Create Project function (updated to navigate to projects tab)
+        function saveWorkflowResults() {
+            console.log('[Project] Creating new project and navigating to projects tab');
+            // Switch to projects tab
+            window.showTab(null, 'projects');
+            // TODO: Add project creation logic here
+            if (window.UIComponents) {
+                window.UIComponents.updateActivityFeed('New project created from workflow results');
+            }
+        }
+
+        // Agent View Switching
+        function switchAgentView(view) {
+            console.log('[Agents] Switching to view:', view);
+            
+            const poolView = document.getElementById('pool-view');
+            const deployView = document.getElementById('deploy-view');
+            const poolBtn = document.getElementById('pool-view-btn');
+            const deployBtn = document.getElementById('deploy-view-btn');
+
+            if (view === 'pool') {
+                poolView.style.display = 'block';
+                deployView.style.display = 'none';
+                poolBtn.classList.add('active');
+                deployBtn.classList.remove('active');
+            } else if (view === 'deploy') {
+                poolView.style.display = 'none';
+                deployView.style.display = 'block';
+                poolBtn.classList.remove('active');
+                deployBtn.classList.add('active');
+                
+                // Initialize the agile board when switching to deploy view
+                setTimeout(() => {
+                    initializeAgileBoard();
+                }, 100);
+            }
+        }
+
+        // Initialize Complete Deployment View (Graph + Agent Pool + Agile Board)
+        function initializeAgileBoard() {
+            console.log('[DeploymentView] Initializing complete deployment view');
+            
+            // Initialize global data structures
+            window.agentDeployment = window.agentDeployment || {
+                selectedAgents: [],
+                availableAgents: [],
+                workflowNodes: {},
+                userStories: []
+            };
+            
+            // Initialize sprint data
+            window.agentDeployment.sprintData = {
+                currentSprint: 1,
+                totalStoryPoints: 0,
+                completedStoryPoints: 0,
+                velocity: 12,
+                sprintGoal: 'Deploy high-performance AI agent system',
+                startDate: new Date().toLocaleDateString(),
+                endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString()
+            };
+            
+            // Initialize all three components
+            initializeWorkflowGraph();
+            initializeAgentPool();
+            initializeAgileBoardData();
+            
+            console.log('[DeploymentView] Complete deployment view initialized successfully');
+        }
+
+        // Initialize Workflow Graph (Flowchart)
+        function initializeWorkflowGraph() {
+            console.log('[WorkflowGraph] Initializing workflow graph');
+            
+            const svg = document.getElementById('agent-graph');
+            if (!svg) return;
+            
+            // Clear existing content
+            svg.innerHTML = '';
+            
+            // Add flowchart definitions (arrows, patterns)
+            addFlowchartDefinitions(svg);
+            
+            // Add clean flowchart background
+            addFlowchartBackground(svg);
+            
+            // Create workflow nodes data with better spacing
+            const workflowNodes = {
+                start: {
+                    id: 'start-1',
+                    name: 'Initialize System',
+                    type: 'terminal',
+                    icon: '🚀',
+                    status: 'ready',
+                    x: 400,
+                    y: 70
+                },
+                requirements: {
+                    id: 'process-1',
+                    name: 'Analyze Requirements',
+                    type: 'process',
+                    role: 'supervisor',
+                    icon: '📋',
+                    capabilities: ['analysis', 'planning', 'coordination'],
+                    description: 'Break down project requirements and create execution plan.',
+                    status: 'idle',
+                    x: 400,
+                    y: 170
+                },
+                decision: {
+                    id: 'decision-1',
+                    name: 'Agent Type?',
+                    type: 'decision',
+                    icon: '❓',
+                    status: 'waiting',
+                    x: 400,
+                    y: 280
+                },
+                frontend: {
+                    id: 'process-2',
+                    name: 'Frontend Agent',
+                    type: 'process',
+                    role: 'worker',
+                    icon: '🎨',
+                    capabilities: ['react', 'ui-design', 'styling', 'components'],
+                    description: 'Create responsive user interfaces.',
+                    status: 'idle',
+                    x: 200,
+                    y: 380
+                },
+                backend: {
+                    id: 'process-3',
+                    name: 'Backend Agent',
+                    type: 'process',
+                    role: 'worker',
+                    icon: '⚙️',
+                    capabilities: ['apis', 'databases', 'server-logic', 'security'],
+                    description: 'Build server-side architecture.',
+                    status: 'idle',
+                    x: 400,
+                    y: 380
+                },
+                specialist: {
+                    id: 'process-4',
+                    name: 'Specialist Agent',
+                    type: 'process',
+                    role: 'specialist',
+                    icon: '🎯',
+                    capabilities: ['testing', 'deployment', 'optimization'],
+                    description: 'Handle specialized tasks.',
+                    status: 'idle',
+                    x: 600,
+                    y: 380
+                },
+                completion: {
+                    id: 'end-1',
+                    name: 'Deployment Complete',
+                    type: 'terminal',
+                    icon: '✅',
+                    status: 'waiting',
+                    x: 400,
+                    y: 450
+                }
+            };
+
+            window.agentDeployment.workflowNodes = workflowNodes;
+
+            console.log('[WorkflowGraph] Drawing', Object.keys(workflowNodes).length, 'workflow nodes');
+            
+            // Create connections for the workflow
+            const connections = [
+                { from: 'start', to: 'requirements', label: 'Initialize' },
+                { from: 'requirements', to: 'decision', label: 'Analyze' },
+                { from: 'decision', to: 'frontend', label: 'UI Needed', type: 'conditional' },
+                { from: 'decision', to: 'backend', label: 'API Needed', type: 'conditional' },
+                { from: 'decision', to: 'specialist', label: 'Special Tasks', type: 'conditional' },
+                { from: 'frontend', to: 'completion', label: 'Complete' },
+                { from: 'backend', to: 'completion', label: 'Complete' },
+                { from: 'specialist', to: 'completion', label: 'Complete' }
+            ];
+            
+            // Draw modern professional flowchart
+            drawModernFlowchart(svg, workflowNodes, connections);
+            
+            // Setup tooltip for graph
+            setupGraphTooltip();
+            
+            console.log('[WorkflowGraph] Workflow graph initialized');
+        }
+
+        // Initialize Agent Pool
+        function initializeAgentPool() {
+            console.log('[AgentPool] Initializing agent pool');
+            
+            // Create available agents data
+            const availableAgents = [
+                {
+                    id: 'agent-supervisor-1',
+                    name: 'Project Manager',
+                    role: 'supervisor',
+                    icon: '👑',
+                    capabilities: ['project-management', 'coordination', 'planning', 'oversight'],
+                    status: 'idle',
+                    description: 'Manages project lifecycle and coordinates team activities.',
+                    settings: {
+                        maxConcurrentTasks: 5,
+                        priority: 'high',
+                        autoStart: true
+                    }
+                },
+                {
+                    id: 'agent-frontend-1',
+                    name: 'UI Developer',
+                    role: 'worker',
+                    icon: '🎨',
+                    capabilities: ['react', 'typescript', 'css', 'ui-design'],
+                    status: 'idle',
+                    description: 'Creates responsive and interactive user interfaces.',
+                    settings: {
+                        maxConcurrentTasks: 3,
+                        priority: 'medium',
+                        autoStart: true
+                    }
+                },
+                {
+                    id: 'agent-backend-1',
+                    name: 'API Developer',
+                    role: 'worker',
+                    icon: '⚙️',
+                    capabilities: ['nodejs', 'apis', 'databases', 'security'],
+                    status: 'idle',
+                    description: 'Builds robust server-side systems and APIs.',
+                    settings: {
+                        maxConcurrentTasks: 4,
+                        priority: 'high',
+                        autoStart: true
+                    }
+                },
+                {
+                    id: 'agent-specialist-1',
+                    name: 'QA Engineer',
+                    role: 'specialist',
+                    icon: '🧪',
+                    capabilities: ['testing', 'automation', 'quality-assurance', 'debugging'],
+                    status: 'idle',
+                    description: 'Ensures code quality through comprehensive testing.',
+                    settings: {
+                        maxConcurrentTasks: 2,
+                        priority: 'medium',
+                        autoStart: false
+                    }
+                },
+                {
+                    id: 'agent-specialist-2',
+                    name: 'DevOps Engineer',
+                    role: 'specialist',
+                    icon: '🚧',
+                    capabilities: ['ci-cd', 'docker', 'kubernetes', 'monitoring'],
+                    status: 'idle',
+                    description: 'Manages deployment pipelines and infrastructure.',
+                    settings: {
+                        maxConcurrentTasks: 3,
+                        priority: 'high',
+                        autoStart: true
+                    }
+                },
+                {
+                    id: 'agent-worker-1',
+                    name: 'Documentation Writer',
+                    role: 'worker',
+                    icon: '📝',
+                    capabilities: ['technical-writing', 'documentation', 'guides'],
+                    status: 'idle',
+                    description: 'Creates comprehensive project documentation.',
+                    settings: {
+                        maxConcurrentTasks: 2,
+                        priority: 'low',
+                        autoStart: false
+                    }
+                }
+            ];
+            
+            window.agentDeployment.availableAgents = availableAgents;
+            window.agentDeployment.selectedAgents = [];
+            
+            console.log('[AgentPool] Created', availableAgents.length, 'available agents');
+            
+            // Populate agent pool UI
+            populateAgentPool();
+            
+            console.log('[AgentPool] Agent pool initialized');
+        }
+
+        // Initialize Agile Board Data
+        function initializeAgileBoardData() {
+            console.log('[AgileBoardData] Initializing agile board data');
+            
+            // Generate agent user stories from available agents
+            generateAgentUserStories();
+            
+            // Populate kanban board columns
+            populateProductBacklog();
+            populateSprintBacklog();
+            populateInProgress();
+            populateDone();
+            
+            // Update sprint metrics
+            updateSprintMetrics();
+            
+            // Initialize drag and drop functionality
+            initializeDragAndDrop();
+            
+            console.log('[AgileBoardData] Agile board data initialized');
+        }
+
+        // Generate user stories based on agent capabilities
+        function generateAgentUserStories() {
+            const agentStories = [
+                {
+                    id: 'story-1',
+                    title: 'Deploy Core Planning Agent',
+                    description: 'As a system administrator, I want to deploy the planning agent so that requirements can be analyzed and execution plans created.',
+                    storyPoints: 5,
+                    priority: 'High',
+                    agent: 'requirements',
+                    role: 'supervisor',
+                    status: 'product-backlog',
+                    acceptanceCriteria: ['Agent responds to planning requests', 'Requirements analysis workflow active', 'Coordination capabilities enabled']
+                },
+                {
+                    id: 'story-2',
+                    title: 'Initialize Frontend Development Pipeline',
+                    description: 'As a development team, I want to activate the frontend development agent to create responsive user interfaces.',
+                    storyPoints: 8,
+                    priority: 'High',
+                    agent: 'frontend',
+                    role: 'worker',
+                    status: 'product-backlog',
+                    acceptanceCriteria: ['React components working', 'UI design patterns active', 'Styling capabilities enabled']
+                },
+                {
+                    id: 'story-3',
+                    title: 'Backend Infrastructure Agent Setup',
+                    description: 'As a system architect, I want to deploy the backend agent to handle API development and database management.',
+                    storyPoints: 13,
+                    priority: 'High',
+                    agent: 'backend',
+                    role: 'worker',
+                    status: 'sprint-backlog',
+                    acceptanceCriteria: ['API endpoints functional', 'Database connections stable', 'Security protocols active']
+                },
+                {
+                    id: 'story-4',
+                    title: 'Quality Assurance Agent Activation',
+                    description: 'As a quality manager, I want to enable the QA agent to ensure comprehensive testing and quality validation.',
+                    storyPoints: 5,
+                    priority: 'Medium',
+                    agent: 'testing',
+                    role: 'specialist',
+                    status: 'sprint-backlog',
+                    acceptanceCriteria: ['Automated testing running', 'Quality control checks active', 'Debugging capabilities enabled']
+                },
+                {
+                    id: 'story-5',
+                    title: 'DevOps Deployment Agent Ready',
+                    description: 'As a DevOps engineer, I want to configure the deployment agent for CI/CD pipeline management.',
+                    storyPoints: 8,
+                    priority: 'Medium',
+                    agent: 'deployment',
+                    role: 'worker',
+                    status: 'in-progress',
+                    acceptanceCriteria: ['CI/CD pipeline operational', 'Infrastructure monitoring active', 'Deployment scripts ready']
+                },
+                {
+                    id: 'story-6',
+                    title: 'Documentation Agent Configuration',
+                    description: 'As a technical writer, I want to activate the documentation agent to maintain comprehensive project documentation.',
+                    storyPoints: 3,
+                    priority: 'Low',
+                    agent: 'documentation',
+                    role: 'worker',
+                    status: 'done',
+                    acceptanceCriteria: ['Technical writing capabilities active', 'Documentation templates ready', 'Tutorial generation enabled']
+                }
+            ];
+            
+            window.agentDeployment.userStories = agentStories;
+            return agentStories;
+        }
+
+        // Populate Product Backlog column
+        function populateProductBacklog() {
+            const column = document.getElementById('backlog-stories');
+            const stories = window.agentDeployment.userStories.filter(story => story.status === 'product-backlog');
+            
+            if (column) {
+                column.innerHTML = stories.map(story => createStoryCard(story)).join('');
+            }
+        }
+
+        // Populate Sprint Backlog column
+        function populateSprintBacklog() {
+            const column = document.getElementById('sprint-stories');
+            const stories = window.agentDeployment.userStories.filter(story => story.status === 'sprint-backlog');
+            
+            if (column) {
+                if (stories.length === 0) {
+                    column.innerHTML = `
+                        <div class="empty-sprint">
+                            <div class="empty-icon">📝</div>
+                            <p>Drag user stories here to add to sprint</p>
+                        </div>
+                    `;
+                } else {
+                    column.innerHTML = stories.map(story => createStoryCard(story)).join('');
+                }
+            }
+        }
+
+        // Populate In Progress column
+        function populateInProgress() {
+            const column = document.getElementById('progress-stories');
+            const stories = window.agentDeployment.userStories.filter(story => story.status === 'in-progress');
+            
+            if (column) {
+                const wipLimit = '<div class="wip-limit">WIP Limit: 3</div>';
+                if (stories.length === 0) {
+                    column.innerHTML = wipLimit;
+                } else {
+                    column.innerHTML = wipLimit + stories.map(story => createStoryCard(story)).join('');
+                }
+            }
+        }
+
+        // Populate Done column
+        function populateDone() {
+            const column = document.getElementById('done-stories');
+            const stories = window.agentDeployment.userStories.filter(story => story.status === 'done');
+            
+            if (column) {
+                column.innerHTML = stories.map(story => createStoryCard(story)).join('');
+            }
+        }
+
+        // Create individual story card HTML
+        function createStoryCard(story) {
+            const priorityColor = {
+                'High': '#ef4444',
+                'Medium': '#f59e0b', 
+                'Low': '#10b981'
+            };
+            
+            const roleIcon = {
+                'supervisor': '👑',
+                'specialist': '🎯',
+                'worker': '🔧'
+            };
+            
+            return `
+                <div class="story-card" data-story-id="${story.id}" data-agent="${story.agent}" draggable="true">
+                    <div class="story-header">
+                        <div class="story-priority" style="background: ${priorityColor[story.priority] || '#6b7280'}">
+                            ${story.priority}
+                        </div>
+                        <div class="story-points">${story.storyPoints} pts</div>
+                    </div>
+                    <h4 class="story-title">${story.title}</h4>
+                    <p class="story-description">${story.description}</p>
+                    <div class="story-footer">
+                        <div class="agent-info">
+                            <span class="role-icon">${roleIcon[story.role] || '🤖'}</span>
+                            <span class="agent-role">${story.role}</span>
+                        </div>
+                        <div class="story-id">${story.id.toUpperCase()}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Update sprint metrics dashboard
+        function updateSprintMetrics() {
+            const sprintData = window.agentDeployment.sprintData;
+            const stories = window.agentDeployment.userStories;
+            
+            // Calculate current sprint statistics
+            const totalPoints = stories.reduce((sum, story) => sum + story.storyPoints, 0);
+            const completedPoints = stories
+                .filter(story => story.status === 'done')
+                .reduce((sum, story) => sum + story.storyPoints, 0);
+            const inProgressPoints = stories
+                .filter(story => story.status === 'in-progress')
+                .reduce((sum, story) => sum + story.storyPoints, 0);
+            const remainingPoints = totalPoints - completedPoints;
+            
+            // Update sprint header
+            const currentSprintEl = document.getElementById('current-sprint');
+            const sprintDatesEl = document.getElementById('sprint-dates');
+            const sprintGoalEl = document.getElementById('sprint-goal');
+            
+            if (currentSprintEl) currentSprintEl.textContent = `Sprint ${sprintData.currentSprint}`;
+            if (sprintDatesEl) sprintDatesEl.textContent = `${sprintData.startDate} - ${sprintData.endDate}`;
+            if (sprintGoalEl) sprintGoalEl.textContent = sprintData.sprintGoal;
+            
+            // Update metrics
+            const totalPointsEl = document.getElementById('total-points');
+            const completedPointsEl = document.getElementById('completed-points');
+            const remainingPointsEl = document.getElementById('remaining-points');
+            const teamVelocityEl = document.getElementById('team-velocity');
+            
+            if (totalPointsEl) totalPointsEl.textContent = totalPoints;
+            if (completedPointsEl) completedPointsEl.textContent = completedPoints;
+            if (remainingPointsEl) remainingPointsEl.textContent = remainingPoints;
+            if (teamVelocityEl) teamVelocityEl.textContent = sprintData.velocity;
+            
+            // Update progress bar
+            const progressPercentage = totalPoints > 0 ? (completedPoints / totalPoints) * 100 : 0;
+            const progressBar = document.querySelector('.progress-fill');
+            if (progressBar) {
+                progressBar.style.width = `${progressPercentage}%`;
+            }
+            
+            // Update status counts
+            const statusCounts = stories.reduce((counts, story) => {
+                counts[story.status] = (counts[story.status] || 0) + 1;
+                return counts;
+            }, {});
+            
+            const backlogCountEl = document.getElementById('backlog-count');
+            const sprintCountEl = document.getElementById('sprint-count');
+            const progressCountEl = document.getElementById('progress-count');
+            const doneCountEl = document.getElementById('done-count');
+            
+            if (backlogCountEl) backlogCountEl.textContent = statusCounts['product-backlog'] || 0;
+            if (sprintCountEl) sprintCountEl.textContent = statusCounts['sprint-backlog'] || 0;
+            if (progressCountEl) progressCountEl.textContent = statusCounts['in-progress'] || 0;
+            if (doneCountEl) doneCountEl.textContent = statusCounts['done'] || 0;
+        }
+
+        // Initialize drag and drop functionality
+        function initializeDragAndDrop() {
+            console.log('[AgileBoard] Initializing drag and drop');
+            
+            // Add drag event listeners to all story cards
+            document.querySelectorAll('.story-card').forEach(card => {
+                card.addEventListener('dragstart', handleDragStart);
+                card.addEventListener('dragend', handleDragEnd);
+            });
+            
+            // Add drop event listeners to all columns
+            document.querySelectorAll('.agile-column').forEach(column => {
+                column.addEventListener('dragover', handleDragOver);
+                column.addEventListener('drop', handleDrop);
+                column.addEventListener('dragenter', handleDragEnter);
+                column.addEventListener('dragleave', handleDragLeave);
+            });
+        }
+
+        // Drag and drop event handlers
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.dataset.storyId);
+            e.target.style.opacity = '0.5';
+        }
+
+        function handleDragEnd(e) {
+            e.target.style.opacity = '1';
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            if (e.target.classList.contains('agile-column')) {
+                e.target.style.background = 'rgba(59, 130, 246, 0.1)';
+            }
+        }
+
+        function handleDragLeave(e) {
+            if (e.target.classList.contains('agile-column')) {
+                e.target.style.background = '';
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.target.style.background = '';
+            
+            const storyId = e.dataTransfer.getData('text/plain');
+            const targetColumn = e.target.closest('.agile-column');
+            
+            if (!targetColumn) return;
+            
+            const newStatus = getColumnStatus(targetColumn);
+            moveStoryToColumn(storyId, newStatus);
+        }
+
+        // Get column status from column element
+        function getColumnStatus(column) {
+            if (column.classList.contains('backlog-column')) return 'product-backlog';
+            if (column.classList.contains('sprint-column')) return 'sprint-backlog';
+            if (column.classList.contains('progress-column')) return 'in-progress';
+            if (column.classList.contains('done-column')) return 'done';
+            return 'product-backlog';
+        }
+
+        // Move story to different column
+        function moveStoryToColumn(storyId, newStatus) {
+            const story = window.agentDeployment.userStories.find(s => s.id === storyId);
+            if (!story) return;
+            
+            story.status = newStatus;
+            
+            // Re-populate all columns with updated data
+            populateProductBacklog();
+            populateSprintBacklog();
+            populateInProgress();
+            populateDone();
+            
+            // Re-initialize drag and drop
+            initializeDragAndDrop();
+            
+            // Update metrics
+            updateSprintMetrics();
+            
+            console.log(`[AgileBoard] Moved ${storyId} to ${newStatus}`);
+        }
+
+        // Sprint management functions
+        function startAgentSprint() {
+            const sprintData = window.agentDeployment.sprintData;
+            sprintData.currentSprint += 1;
+            sprintData.startDate = new Date().toLocaleDateString();
+            sprintData.endDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString();
+            
+            // Move all sprint backlog items to in-progress
+            window.agentDeployment.userStories.forEach(story => {
+                if (story.status === 'sprint-backlog') {
+                    story.status = 'in-progress';
+                }
+            });
+            
+            // Refresh the board
+            populateSprintBacklog();
+            populateInProgress();
+            updateSprintMetrics();
+            initializeDragAndDrop();
+            
+            alert(`🚀 Sprint ${sprintData.currentSprint} started! Agent deployment is now in progress.`);
+        }
+
+        function resetSprint() {
+            // Reset all stories to product backlog except done items
+            window.agentDeployment.userStories.forEach(story => {
+                if (story.status !== 'done') {
+                    story.status = 'product-backlog';
+                }
+            });
+            
+            // Refresh all columns
+            populateProductBacklog();
+            populateSprintBacklog();
+            populateInProgress();
+            updateSprintMetrics();
+            initializeDragAndDrop();
+            
+            alert('🔄 Sprint reset! All pending stories moved back to product backlog.');
+        }
+
+        function completeAgentDeployment() {
+            const inProgressStories = window.agentDeployment.userStories.filter(story => story.status === 'in-progress');
+            
+            if (inProgressStories.length === 0) {
+                alert('⚠️ No agents currently in progress to deploy.');
+                return;
+            }
+            
+            // Move all in-progress items to done
+            inProgressStories.forEach(story => {
+                story.status = 'done';
+            });
+            
+            // Refresh the board
+            populateInProgress();
+            populateDone();
+            updateSprintMetrics();
+            initializeDragAndDrop();
+            
+            alert(`✅ Successfully deployed ${inProgressStories.length} agent${inProgressStories.length > 1 ? 's' : ''} to production!`);
+        }
+
+        // Populate Agent Pool UI
+        function populateAgentPool() {
+            const container = document.getElementById('available-agents-list');
+            if (!container) return;
+            
+            const agents = window.agentDeployment.availableAgents;
+            container.innerHTML = agents.map(agent => createAgentCard(agent)).join('');
+        }
+
+        // Create optimized responsive agent card HTML
+        function createAgentCard(agent) {
+            const roleColors = {
+                'supervisor': 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                'specialist': 'linear-gradient(135deg, #f59e0b, #d97706)',
+                'worker': 'linear-gradient(135deg, #10b981, #059669)'
+            };
+            
+            const statusLabels = {
+                'idle': 'Idle',
+                'active': 'Active',
+                'busy': 'Busy',
+                'error': 'Error'
+            };
+            
+            return `
+                <div class="agent-card" data-agent-id="${agent.id}" onclick="toggleAgentSelection('${agent.id}')" role="button" tabindex="0" aria-label="Select ${agent.name} agent">
+                    <div class="agent-card-header">
+                        <div class="agent-name">
+                            <span class="agent-icon" role="img" aria-label="${agent.name} icon">${agent.icon}</span>
+                            <span>${agent.name}</span>
+                        </div>
+                        <span class="agent-role" style="background: ${roleColors[agent.role] || roleColors.worker}" aria-label="Role: ${agent.role}">
+                            ${agent.role}
+                        </span>
+                    </div>
+                    
+                    <div class="agent-capabilities" role="list" aria-label="Agent capabilities">
+                        ${agent.capabilities.map(cap => `
+                            <span class="capability-tag" role="listitem" title="Capability: ${cap}">
+                                ${cap}
+                            </span>
+                        `).join('')}
+                    </div>
+                    
+                    <p class="agent-description" title="${agent.description}">
+                        ${agent.description}
+                    </p>
+                    
+                    <div class="agent-status">
+                        <div class="agent-status-info">
+                            <div class="status-indicator ${agent.status}" 
+                                 title="Status: ${statusLabels[agent.status]}"
+                                 aria-label="Agent status: ${statusLabels[agent.status]}">
+                            </div>
+                            <span class="status-text">${statusLabels[agent.status]}</span>
+                        </div>
+                        <button class="agent-settings-btn" 
+                                onclick="openAgentSettings('${agent.id}'); event.stopPropagation();"
+                                aria-label="Open settings for ${agent.name}"
+                                title="Configure ${agent.name} settings">
+                            ⚙️ Settings
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Toggle agent selection
+        function toggleAgentSelection(agentId) {
+            const agent = window.agentDeployment.availableAgents.find(a => a.id === agentId);
+            if (!agent) return;
+            
+            const isSelected = window.agentDeployment.selectedAgents.some(a => a.id === agentId);
+            const agentCard = document.querySelector(`[data-agent-id="${agentId}"]`);
+            
+            if (isSelected) {
+                // Deselect agent
+                window.agentDeployment.selectedAgents = window.agentDeployment.selectedAgents.filter(a => a.id !== agentId);
+                agentCard.classList.remove('selected');
+            } else {
+                // Select agent
+                window.agentDeployment.selectedAgents.push(agent);
+                agentCard.classList.add('selected');
+            }
+            
+            updateSelectedAgentsDisplay();
+            updateDeploymentStatus();
+        }
+
+        // Update selected agents display
+        function updateSelectedAgentsDisplay() {
+            const selectedContainer = document.getElementById('selected-agents-list');
+            const summaryContainer = document.getElementById('deployment-summary');
+            const deployBtn = document.getElementById('deploy-selected-btn');
+            
+            if (window.agentDeployment.selectedAgents.length === 0) {
+                summaryContainer.style.display = 'none';
+                deployBtn.disabled = true;
+                return;
+            }
+            
+            summaryContainer.style.display = 'block';
+            deployBtn.disabled = false;
+            
+            selectedContainer.innerHTML = window.agentDeployment.selectedAgents.map(agent => `
+                <div class="selected-agent-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; margin-bottom: 0.5rem; background: var(--bg-secondary); border-radius: 4px;">
+                    <span style="color: var(--text-primary);">${agent.icon} ${agent.name}</span>
+                    <button class="danger-btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="removeAgentFromSelection('${agent.id}')">Remove</button>
+                </div>
+            `).join('');
+            
+            // Update role statistics
+            const roleStats = window.agentDeployment.selectedAgents.reduce((stats, agent) => {
+                stats[agent.role] = (stats[agent.role] || 0) + 1;
+                return stats;
+            }, {});
+            
+            document.getElementById('supervisor-count').textContent = roleStats.supervisor || 0;
+            document.getElementById('specialist-count').textContent = roleStats.specialist || 0;
+            document.getElementById('worker-count').textContent = roleStats.worker || 0;
+        }
+
+        // Remove agent from selection
+        function removeAgentFromSelection(agentId) {
+            window.agentDeployment.selectedAgents = window.agentDeployment.selectedAgents.filter(a => a.id !== agentId);
+            document.querySelector(`[data-agent-id="${agentId}"]`).classList.remove('selected');
+            updateSelectedAgentsDisplay();
+            updateDeploymentStatus();
+        }
+
+        // Deploy selected agents
+        function deploySelectedAgents() {
+            const selectedAgents = window.agentDeployment.selectedAgents;
+            
+            if (selectedAgents.length === 0) {
+                alert('Please select at least one agent to deploy.');
+                return;
+            }
+            
+            const confirmMsg = `Deploy ${selectedAgents.length} agent${selectedAgents.length > 1 ? 's' : ''} to the workflow?\n\n${selectedAgents.map(a => `• ${a.name} (${a.role})`).join('\n')}`;
+            
+            if (confirm(confirmMsg)) {
+                // Update workflow graph with selected agents
+                updateWorkflowWithSelectedAgents();
+                
+                // Generate new user stories based on selection
+                generateUserStoriesFromSelection();
+                
+                // Refresh agile board
+                populateProductBacklog();
+                populateSprintBacklog();
+                populateInProgress();
+                populateDone();
+                updateSprintMetrics();
+                initializeDragAndDrop();
+                
+                alert(`🚀 Successfully deployed ${selectedAgents.length} agent${selectedAgents.length > 1 ? 's' : ''} to the workflow!`);
+            }
+        }
+
+        // Update workflow graph with selected agents
+        function updateWorkflowWithSelectedAgents() {
+            const selectedAgents = window.agentDeployment.selectedAgents;
+            
+            // Update workflow nodes status based on selected agents
+            Object.values(window.agentDeployment.workflowNodes).forEach(node => {
+                if (node.role) {
+                    const hasAgentForRole = selectedAgents.some(agent => agent.role === node.role);
+                    node.status = hasAgentForRole ? 'active' : 'idle';
+                }
+            });
+            
+            // Redraw the workflow graph
+            const svg = document.getElementById('agent-graph');
+            if (svg) {
+                svg.innerHTML = '';
+                addFlowchartDefinitions(svg);
+                addFlowchartBackground(svg);
+                drawFlowchartConnections(svg, window.agentDeployment.workflowNodes);
+                drawFlowchartNodes(svg, window.agentDeployment.workflowNodes);
+            }
+        }
+
+        // Generate user stories from selected agents
+        function generateUserStoriesFromSelection() {
+            const selectedAgents = window.agentDeployment.selectedAgents;
+            
+            const newStories = selectedAgents.map((agent, index) => ({
+                id: `story-${agent.id}`,
+                title: `Deploy ${agent.name}`,
+                description: `As a team lead, I want to deploy ${agent.name} so that ${agent.description.toLowerCase()}`,
+                storyPoints: agent.role === 'supervisor' ? 8 : agent.role === 'specialist' ? 5 : 3,
+                priority: agent.settings.priority === 'high' ? 'High' : agent.settings.priority === 'medium' ? 'Medium' : 'Low',
+                agent: agent.id,
+                role: agent.role,
+                status: index % 4 === 0 ? 'product-backlog' : index % 4 === 1 ? 'sprint-backlog' : index % 4 === 2 ? 'in-progress' : 'done',
+                acceptanceCriteria: [
+                    `${agent.name} is successfully initialized`,
+                    `All capabilities are active: ${agent.capabilities.join(', ')}`,
+                    `Agent responds to requests within expected timeframe`
+                ]
+            }));
+            
+            // Merge with existing stories, avoiding duplicates
+            const existingStoryIds = window.agentDeployment.userStories.map(s => s.id);
+            const uniqueNewStories = newStories.filter(story => !existingStoryIds.includes(story.id));
+            
+            window.agentDeployment.userStories = [...window.agentDeployment.userStories, ...uniqueNewStories];
+        }
+
+        // Setup graph tooltip
+        function setupGraphTooltip() {
+            const tooltip = document.getElementById('graph-tooltip');
+            if (!tooltip) return;
+            
+            window.agentDeployment.graphTooltip = tooltip;
+        }
+
+        // Analyze workflow data
+        function analyzeWorkflowData() {
+            console.log('[WorkflowAnalysis] Analyzing workflow data...');
+            
+            const selectedAgents = window.agentDeployment.selectedAgents;
+            const workflowNodes = window.agentDeployment.workflowNodes;
+            
+            // Calculate workflow efficiency
+            const totalNodes = Object.keys(workflowNodes).length;
+            const activeNodes = Object.values(workflowNodes).filter(node => node.status === 'active').length;
+            const efficiency = totalNodes > 0 ? (activeNodes / totalNodes * 100).toFixed(1) : 0;
+            
+            // Calculate role distribution
+            const roleDistribution = selectedAgents.reduce((dist, agent) => {
+                dist[agent.role] = (dist[agent.role] || 0) + 1;
+                return dist;
+            }, {});
+            
+            // Display analysis results
+            const analysisMessage = `
+🔍 Workflow Analysis Results:
+
+📊 Overall Efficiency: ${efficiency}%
+🤖 Total Agents Selected: ${selectedAgents.length}
+
+👥 Role Distribution:
+• Supervisors: ${roleDistribution.supervisor || 0}
+• Specialists: ${roleDistribution.specialist || 0}
+• Workers: ${roleDistribution.worker || 0}
+
+⚡ Active Workflow Nodes: ${activeNodes}/${totalNodes}
+📋 User Stories Generated: ${window.agentDeployment.userStories.length}
+
+${efficiency >= 70 ? '✅ Workflow is well-optimized!' : efficiency >= 50 ? '⚠️ Workflow could be improved.' : '❌ Workflow needs optimization.'}
+            `.trim();
+            
+            alert(analysisMessage);
+        }
+
+        // Refresh workflow graph
+        function refreshWorkflowGraph() {
+            console.log('[WorkflowGraph] Refreshing workflow graph...');
+            initializeWorkflowGraph();
+        }
+
+        // Open add agent dialog
+        function openAddAgentDialog() {
+            alert('🚧 Add Agent functionality coming soon!\n\nThis will allow you to create custom agents with specific capabilities and roles.');
+        }
+
+        // Modern professional flowchart drawing
+        function drawModernFlowchart(svg, nodes, connections) {
+            // Set larger SVG viewBox for bigger nodes
+            svg.setAttribute('viewBox', '0 0 800 500');
+            svg.setAttribute('width', '100%');
+            svg.setAttribute('height', '500');
+            
+            // Add gradient definitions
+            addModernGradients(svg);
+            
+            // Draw connections first (behind nodes)
+            connections.forEach(conn => {
+                drawModernConnection(svg, nodes[conn.from], nodes[conn.to], conn.label, conn.type);
+            });
+            
+            // Draw nodes on top
+            Object.values(nodes).forEach(node => {
+                drawModernNode(svg, node);
+            });
+        }
+
+        // Add modern gradient definitions
+        function addModernGradients(svg) {
+            const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            
+            // Arrow marker
+            const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+            marker.setAttribute('id', 'arrowhead');
+            marker.setAttribute('markerWidth', '10');
+            marker.setAttribute('markerHeight', '7');
+            marker.setAttribute('refX', '9');
+            marker.setAttribute('refY', '3.5');
+            marker.setAttribute('orient', 'auto');
+            
+            const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            polygon.setAttribute('points', '0 0, 10 3.5, 0 7');
+            polygon.setAttribute('fill', '#3b82f6');
+            marker.appendChild(polygon);
+            defs.appendChild(marker);
+            
+            // Gradients for different node types
+            const gradients = [
+                { id: 'terminal-gradient', colors: ['#3b82f6', '#1d4ed8'] },
+                { id: 'process-gradient', colors: ['#10b981', '#059669'] },
+                { id: 'decision-gradient', colors: ['#f59e0b', '#d97706'] },
+                { id: 'active-gradient', colors: ['#ef4444', '#dc2626'] }
+            ];
+            
+            gradients.forEach(grad => {
+                const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+                gradient.setAttribute('id', grad.id);
+                gradient.setAttribute('x1', '0%');
+                gradient.setAttribute('y1', '0%');
+                gradient.setAttribute('x2', '100%');
+                gradient.setAttribute('y2', '100%');
+                
+                const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+                stop1.setAttribute('offset', '0%');
+                stop1.setAttribute('stop-color', grad.colors[0]);
+                
+                const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+                stop2.setAttribute('offset', '100%');
+                stop2.setAttribute('stop-color', grad.colors[1]);
+                
+                gradient.appendChild(stop1);
+                gradient.appendChild(stop2);
+                defs.appendChild(gradient);
+            });
+            
+            svg.appendChild(defs);
+        }
+
+        // Draw modern connection between nodes
+        function drawModernConnection(svg, fromNode, toNode, label, type) {
+            if (!fromNode || !toNode) return;
+            
+            const startX = fromNode.x;
+            const startY = fromNode.y;
+            const endX = toNode.x;
+            const endY = toNode.y;
+            
+            // Create curved path for better visual flow
+            const midX = (startX + endX) / 2;
+            const midY = (startY + endY) / 2;
+            const controlY = midY - 20; // Curve upward
+            
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            const pathData = `M ${startX} ${startY} Q ${midX} ${controlY} ${endX} ${endY}`;
+            
+            path.setAttribute('d', pathData);
+            path.setAttribute('stroke', type === 'conditional' ? '#f59e0b' : '#3b82f6');
+            path.setAttribute('stroke-width', '2');
+            path.setAttribute('fill', 'none');
+            path.setAttribute('marker-end', 'url(#arrowhead)');
+            path.setAttribute('class', 'modern-connection');
+            path.setAttribute('opacity', '0.8');
+            
+            svg.appendChild(path);
+            
+            // Add label if provided
+            if (label) {
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', midX);
+                text.setAttribute('y', controlY - 5);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('fill', '#374151');
+                text.setAttribute('font-size', '10');
+                text.setAttribute('font-weight', '500');
+                text.textContent = label;
+                svg.appendChild(text);
+            }
+        }
+
+        // Draw modern node
+        function drawModernNode(svg, node) {
+            const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            group.setAttribute('class', 'modern-node');
+            group.setAttribute('data-node-id', node.id);
+            group.style.cursor = 'pointer';
+            
+            // Calculate text dimensions for proper sizing
+            const maxTextLength = Math.max(node.name.length, 8);
+            const nodeWidth = Math.max(100, maxTextLength * 6 + 20);
+            const nodeHeight = 60;
+            
+            // Node shape based on type
+            let shape;
+            let gradient = 'process-gradient';
+            
+            if (node.type === 'terminal') {
+                // Rounded rectangle for start/end (larger)
+                shape = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                shape.setAttribute('x', node.x - nodeWidth/2);
+                shape.setAttribute('y', node.y - nodeHeight/2);
+                shape.setAttribute('width', nodeWidth);
+                shape.setAttribute('height', nodeHeight);
+                shape.setAttribute('rx', '30');
+                shape.setAttribute('ry', '30');
+                gradient = 'terminal-gradient';
+            } else if (node.type === 'decision') {
+                // Diamond for decision (larger)
+                const diamondSize = Math.max(50, nodeWidth/2);
+                shape = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                const points = [
+                    [node.x, node.y - diamondSize],           // top
+                    [node.x + diamondSize, node.y],           // right
+                    [node.x, node.y + diamondSize],           // bottom
+                    [node.x - diamondSize, node.y]            // left
+                ].map(p => p.join(',')).join(' ');
+                shape.setAttribute('points', points);
+                gradient = 'decision-gradient';
+            } else {
+                // Rectangle for process (larger)
+                shape = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                shape.setAttribute('x', node.x - nodeWidth/2);
+                shape.setAttribute('y', node.y - nodeHeight/2);
+                shape.setAttribute('width', nodeWidth);
+                shape.setAttribute('height', nodeHeight);
+                shape.setAttribute('rx', '8');
+                shape.setAttribute('ry', '8');
+                gradient = node.status === 'active' ? 'active-gradient' : 'process-gradient';
+            }
+            
+            // Apply styling
+            shape.setAttribute('fill', `url(#${gradient})`);
+            shape.setAttribute('stroke', '#ffffff');
+            shape.setAttribute('stroke-width', '2');
+            shape.setAttribute('filter', 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))');
+            
+            // Add hover effects
+            shape.addEventListener('mouseenter', () => {
+                shape.setAttribute('filter', 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))');
+                group.style.transform = 'scale(1.08)';
+                group.style.transformOrigin = `${node.x}px ${node.y}px`;
+                group.style.transition = 'all 0.2s ease';
+            });
+            
+            shape.addEventListener('mouseleave', () => {
+                shape.setAttribute('filter', 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))');
+                group.style.transform = 'scale(1)';
+            });
+            
+            group.appendChild(shape);
+            
+            // Add icon (larger)
+            const icon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            icon.setAttribute('x', node.x);
+            icon.setAttribute('y', node.y - 8);
+            icon.setAttribute('text-anchor', 'middle');
+            icon.setAttribute('fill', 'white');
+            icon.setAttribute('font-size', '20');
+            icon.setAttribute('font-weight', 'bold');
+            icon.textContent = node.icon;
+            group.appendChild(icon);
+            
+            // Add node name (larger, no truncation)
+            const name = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            name.setAttribute('x', node.x);
+            name.setAttribute('y', node.y + 12);
+            name.setAttribute('text-anchor', 'middle');
+            name.setAttribute('fill', 'white');
+            name.setAttribute('font-size', '12');
+            name.setAttribute('font-weight', '600');
+            
+            // Handle multi-line text for long names
+            if (node.name.length > 15) {
+                const words = node.name.split(' ');
+                if (words.length > 1) {
+                    // First line
+                    const firstLine = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    firstLine.setAttribute('x', node.x);
+                    firstLine.setAttribute('y', node.y + 5);
+                    firstLine.setAttribute('text-anchor', 'middle');
+                    firstLine.setAttribute('fill', 'white');
+                    firstLine.setAttribute('font-size', '11');
+                    firstLine.setAttribute('font-weight', '600');
+                    firstLine.textContent = words.slice(0, Math.ceil(words.length/2)).join(' ');
+                    group.appendChild(firstLine);
+                    
+                    // Second line
+                    const secondLine = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    secondLine.setAttribute('x', node.x);
+                    secondLine.setAttribute('y', node.y + 18);
+                    secondLine.setAttribute('text-anchor', 'middle');
+                    secondLine.setAttribute('fill', 'white');
+                    secondLine.setAttribute('font-size', '11');
+                    secondLine.setAttribute('font-weight', '600');
+                    secondLine.textContent = words.slice(Math.ceil(words.length/2)).join(' ');
+                    group.appendChild(secondLine);
+                } else {
+                    name.textContent = node.name;
+                    group.appendChild(name);
+                }
+            } else {
+                name.textContent = node.name;
+                group.appendChild(name);
+            }
+            
+            // Add role indicator if present
+            if (node.role) {
+                const role = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                role.setAttribute('x', node.x);
+                role.setAttribute('y', node.y + (node.name.length > 15 ? 32 : 26));
+                role.setAttribute('text-anchor', 'middle');
+                role.setAttribute('fill', 'rgba(255,255,255,0.8)');
+                role.setAttribute('font-size', '9');
+                role.setAttribute('font-weight', '500');
+                role.textContent = node.role.toUpperCase();
+                group.appendChild(role);
+            }
+            
+            // Add click interaction
+            group.addEventListener('click', () => {
+                console.log('[WorkflowGraph] Node clicked:', node.name);
+                showNodeDetails(node);
+            });
+            
+            svg.appendChild(group);
+        }
+
+        // Show node details
+        function showNodeDetails(node) {
+            const details = `
+🔍 Node Details: ${node.name}
+
+Type: ${node.type.charAt(0).toUpperCase() + node.type.slice(1)}
+Status: ${node.status.charAt(0).toUpperCase() + node.status.slice(1)}
+${node.role ? `Role: ${node.role.charAt(0).toUpperCase() + node.role.slice(1)}` : ''}
+${node.capabilities ? `Capabilities: ${node.capabilities.join(', ')}` : ''}
+${node.description ? `\nDescription: ${node.description}` : ''}
+            `.trim();
+            
+            alert(details);
+        }
+
+        // Add flowchart SVG definitions
+        function addFlowchartDefinitions(svg) {
+            const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            
+            // Connection arrow marker
+            const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+            marker.setAttribute('id', 'arrowhead');
+            marker.setAttribute('markerWidth', '10');
+            marker.setAttribute('markerHeight', '7');
+            marker.setAttribute('refX', '9');
+            marker.setAttribute('refY', '3.5');
+            marker.setAttribute('orient', 'auto');
+            marker.setAttribute('markerUnits', 'strokeWidth');
+            
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', 'M0,0 L0,7 L10,3.5 z');
+            path.setAttribute('fill', '#6b7280');
+            
+            marker.appendChild(path);
+            defs.appendChild(marker);
+            
+            // Decision arrow marker (orange)
+            const decisionMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+            decisionMarker.setAttribute('id', 'decision-arrow');
+            decisionMarker.setAttribute('markerWidth', '10');
+            decisionMarker.setAttribute('markerHeight', '7');
+            decisionMarker.setAttribute('refX', '9');
+            decisionMarker.setAttribute('refY', '3.5');
+            decisionMarker.setAttribute('orient', 'auto');
+            decisionMarker.setAttribute('markerUnits', 'strokeWidth');
+            
+            const decisionPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            decisionPath.setAttribute('d', 'M0,0 L0,7 L10,3.5 z');
+            decisionPath.setAttribute('fill', '#f59e0b');
+            
+            decisionMarker.appendChild(decisionPath);
+            defs.appendChild(decisionMarker);
+            
+            // Feedback arrow marker (red)
+            const feedbackMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+            feedbackMarker.setAttribute('id', 'feedback-arrow');
+            feedbackMarker.setAttribute('markerWidth', '10');
+            feedbackMarker.setAttribute('markerHeight', '7');
+            feedbackMarker.setAttribute('refX', '9');
+            feedbackMarker.setAttribute('refY', '3.5');
+            feedbackMarker.setAttribute('orient', 'auto');
+            feedbackMarker.setAttribute('markerUnits', 'strokeWidth');
+            
+            const feedbackPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            feedbackPath.setAttribute('d', 'M0,0 L0,7 L10,3.5 z');
+            feedbackPath.setAttribute('fill', '#ef4444');
+            
+            feedbackMarker.appendChild(feedbackPath);
+            defs.appendChild(feedbackMarker);
+            
+            svg.appendChild(defs);
+        }
+        
+        // Add clean flowchart background
+        function addFlowchartBackground(svg) {
+            // Create gradient definition
+            const defs = svg.querySelector('defs') || document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            
+            const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+            gradient.setAttribute('id', 'flowchartBg');
+            gradient.setAttribute('x1', '0%');
+            gradient.setAttribute('y1', '0%');
+            gradient.setAttribute('x2', '100%');
+            gradient.setAttribute('y2', '100%');
+            
+            const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+            stop1.setAttribute('offset', '0%');
+            stop1.setAttribute('stop-color', '#f8fafc');
+            
+            const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+            stop2.setAttribute('offset', '100%');
+            stop2.setAttribute('stop-color', '#f1f5f9');
+            
+            gradient.appendChild(stop1);
+            gradient.appendChild(stop2);
+            defs.appendChild(gradient);
+            
+            if (!svg.querySelector('defs')) {
+                svg.appendChild(defs);
+            }
+            
+            // Simple clean background
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute('width', '100%');
+            rect.setAttribute('height', '100%');
+            rect.setAttribute('fill', 'url(#flowchartBg)');
+            svg.appendChild(rect);
+        }
+
+        // Add n8n-style background grid
+        function addN8nGrid(svg) {
+            const smallGrid = 20;
+            const largeGrid = 100;
+            const width = 1200;
+            const height = 720;
+            
+            // Small grid lines
+            for (let x = 0; x <= width; x += smallGrid) {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', x);
+                line.setAttribute('y1', 0);
+                line.setAttribute('x2', x);
+                line.setAttribute('y2', height);
+                line.setAttribute('class', 'n8n-grid');
+                svg.appendChild(line);
+            }
+            
+            for (let y = 0; y <= height; y += smallGrid) {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', 0);
+                line.setAttribute('y1', y);
+                line.setAttribute('x2', width);
+                line.setAttribute('y2', y);
+                line.setAttribute('class', 'n8n-grid');
+                svg.appendChild(line);
+            }
+            
+            // Major grid lines
+            for (let x = 0; x <= width; x += largeGrid) {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', x);
+                line.setAttribute('y1', 0);
+                line.setAttribute('x2', x);
+                line.setAttribute('y2', height);
+                line.setAttribute('class', 'n8n-grid major');
+                svg.appendChild(line);
+            }
+            
+            for (let y = 0; y <= height; y += largeGrid) {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', 0);
+                line.setAttribute('y1', y);
+                line.setAttribute('x2', width);
+                line.setAttribute('y2', y);
+                line.setAttribute('class', 'n8n-grid major');
+                svg.appendChild(line);
+            }
+        }
+
+        // Draw flowchart connections
+        function drawFlowchartConnections(svg, nodes) {
+            const connections = [
+                // Main flow
+                { from: nodes.start, to: nodes.requirements, type: 'straight', label: '' },
+                { from: nodes.requirements, to: nodes.decision, type: 'straight', label: '' },
+                
+                // Decision branches
+                { from: nodes.decision, to: nodes.frontend, type: 'decision', label: 'Frontend Only' },
+                { from: nodes.decision, to: nodes.backend, type: 'decision', label: 'Backend Only' },
+                { from: nodes.decision, to: nodes.fullstack, type: 'decision', label: 'Full-Stack' },
+                
+                // Convergence to testing
+                { from: nodes.frontend, to: nodes.testing, type: 'convergence', label: '' },
+                { from: nodes.backend, to: nodes.testing, type: 'convergence', label: '' },
+                { from: nodes.fullstack, to: nodes.deployment, type: 'straight', label: '' },
+                
+                // Testing and deployment flow
+                { from: nodes.testing, to: nodes.deployment, type: 'straight', label: 'Tests Pass' },
+                { from: nodes.deployment, to: nodes.documentation, type: 'straight', label: '' },
+                { from: nodes.documentation, to: nodes.review, type: 'straight', label: '' },
+                
+                // Review decision
+                { from: nodes.review, to: nodes.completion, type: 'decision', label: 'Approved' },
+                { from: nodes.review, to: nodes.requirements, type: 'feedback', label: 'Needs Changes' }
+            ];
+
+            connections.forEach((conn, index) => {
+                drawFlowchartConnection(svg, conn, index);
+            });
+        }
+
+        // Draw individual n8n-style connection with bezier curves
+        function drawN8nConnection(svg, connection) {
+            const { from, to } = connection;
+            const nodeWidth = 140;
+            const nodeHeight = 60;
+            
+            // Calculate connection points (output handle to input handle)
+            const fromX = from.x + nodeWidth / 2;
+            const fromY = from.y;
+            const toX = to.x - nodeWidth / 2;
+            const toY = to.y;
+            
+            // Create bezier curve path
+            const dx = toX - fromX;
+            const controlOffset = Math.abs(dx) * 0.5;
+            const controlX1 = fromX + controlOffset;
+            const controlX2 = toX - controlOffset;
+            
+            const pathData = `M ${fromX} ${fromY} C ${controlX1} ${fromY} ${controlX2} ${toY} ${toX} ${toY}`;
+            
+            // Create path element
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', pathData);
+            path.setAttribute('class', 'n8n-connection');
+            path.setAttribute('marker-end', 'url(#n8n-arrow)');
+            
+            svg.appendChild(path);
+        }
+
+        // Draw flowchart nodes
+        function drawFlowchartNodes(svg, nodes) {
+            console.log('[FlowchartNodes] Drawing', Object.keys(nodes).length, 'nodes');
+            Object.values(nodes).forEach((node, index) => {
+                console.log(`[FlowchartNodes] Processing node ${index + 1}:`, node.name);
+                try {
+                    drawFlowchartNode(svg, node);
+                } catch (error) {
+                    console.error(`[FlowchartNodes] Error drawing node ${node.name}:`, error);
+                }
+            });
+        }
+
+        // Draw individual flowchart node
+        function drawFlowchartNode(svg, node) {
+            console.log('[FlowchartNode] Drawing node:', node.name, 'Type:', node.type, 'Role:', node.role);
+            
+            // Create node group
+            const nodeGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            nodeGroup.setAttribute('class', `agent-node ${node.role || node.type || ''}`);
+            nodeGroup.setAttribute('data-agent-id', node.id);
+            
+            let shape;
+            const width = getFlowchartNodeWidth(node);
+            const height = getFlowchartNodeHeight(node);
+            const x = node.x - width / 2;
+            const y = node.y - height / 2;
+            
+            // Create different shapes based on node type
+            if (node.type === 'terminal') {
+                // Start/End nodes (rounded rectangles)
+                shape = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                shape.setAttribute('x', x);
+                shape.setAttribute('y', y);
+                shape.setAttribute('width', width);
+                shape.setAttribute('height', height);
+                shape.setAttribute('rx', height / 2);
+                shape.setAttribute('ry', height / 2);
+                shape.setAttribute('class', 'flowchart-terminal');
+            } else if (node.type === 'decision') {
+                // Decision nodes (diamonds)
+                const cx = node.x;
+                const cy = node.y;
+                const points = `${cx},${cy-40} ${cx+60},${cy} ${cx},${cy+40} ${cx-60},${cy}`;
+                shape = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                shape.setAttribute('points', points);
+                shape.setAttribute('class', 'flowchart-decision');
+            } else {
+                // Process nodes (rectangles)
+                shape = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                shape.setAttribute('x', x);
+                shape.setAttribute('y', y);
+                shape.setAttribute('width', width);
+                shape.setAttribute('height', height);
+                shape.setAttribute('rx', 8);
+                shape.setAttribute('ry', 8);
+                shape.setAttribute('class', `flowchart-process ${node.role || ''}`);
+            }
+            
+            // Add icon
+            const iconText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            iconText.setAttribute('x', node.x - 30);
+            iconText.setAttribute('y', node.y - 5);
+            iconText.setAttribute('class', 'flowchart-text icon');
+            iconText.textContent = node.icon || '🤖';
+            
+            // Add node title
+            const titleText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            titleText.setAttribute('x', node.x);
+            titleText.setAttribute('y', node.y + 8);
+            titleText.setAttribute('class', 'flowchart-text title');
+            titleText.textContent = node.name;
+            
+            // Add role/type subtitle for process nodes
+            if (node.role && node.type === 'process') {
+                const roleText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                roleText.setAttribute('x', node.x);
+                roleText.setAttribute('y', node.y + 25);
+                roleText.setAttribute('class', 'flowchart-text subtitle');
+                roleText.textContent = node.role.toUpperCase();
+                nodeGroup.appendChild(roleText);
+            }
+            
+            // Assemble node
+            nodeGroup.appendChild(shape);
+            nodeGroup.appendChild(iconText);
+            nodeGroup.appendChild(titleText);
+            
+            // Add click handler for selection
+            nodeGroup.addEventListener('click', () => selectAgent(node));
+            
+            // Add hover handlers for tooltip
+            nodeGroup.addEventListener('mouseenter', (e) => showAgentTooltip(e, node));
+            nodeGroup.addEventListener('mouseleave', hideAgentTooltip);
+            
+            svg.appendChild(nodeGroup);
+        }
+        
+        // Get flowchart node width based on type
+        function getFlowchartNodeWidth(node) {
+            if (node.type === 'decision') return 120;
+            if (node.type === 'terminal') return 140;
+            return 160; // process nodes
+        }
+        
+        // Get flowchart node height based on type
+        function getFlowchartNodeHeight(node) {
+            if (node.type === 'decision') return 80;
+            if (node.type === 'terminal') return 50;
+            return 70; // process nodes
+        }
+
+        // Draw individual flowchart connection
+        function drawFlowchartConnection(svg, connection, index) {
+            const { from, to, type, label } = connection;
+            
+            // Calculate connection points
+            const fromPoint = getFlowchartConnectionPoint(from, to, 'out');
+            const toPoint = getFlowchartConnectionPoint(to, from, 'in');
+            
+            // Create path element
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            const pathData = createFlowchartConnectionPath(fromPoint, toPoint, type);
+            
+            // Set path attributes based on connection type
+            path.setAttribute('d', pathData);
+            path.setAttribute('fill', 'none');
+            
+            if (type === 'decision') {
+                path.setAttribute('class', 'flowchart-connection decision-line');
+                path.setAttribute('marker-end', 'url(#decision-arrow)');
+            } else if (type === 'feedback') {
+                path.setAttribute('class', 'flowchart-connection feedback-line');
+                path.setAttribute('marker-end', 'url(#feedback-arrow)');
+            } else {
+                path.setAttribute('class', 'flowchart-connection');
+                path.setAttribute('marker-end', 'url(#arrowhead)');
+            }
+            
+            svg.appendChild(path);
+            
+            // Add label if specified
+            if (label && label.trim() !== '') {
+                addFlowchartConnectionLabel(svg, fromPoint, toPoint, label, type);
+            }
+        }
+        
+        // Get connection point for flowchart nodes
+        function getFlowchartConnectionPoint(node, targetNode, direction) {
+            const width = getFlowchartNodeWidth(node);
+            const height = getFlowchartNodeHeight(node);
+            
+            if (node.type === 'decision') {
+                // Diamond shape connection points
+                if (direction === 'out') {
+                    if (targetNode.x < node.x) return { x: node.x - 60, y: node.y }; // Left
+                    if (targetNode.x > node.x) return { x: node.x + 60, y: node.y }; // Right
+                    return { x: node.x, y: node.y + 40 }; // Bottom
+                } else {
+                    return { x: node.x, y: node.y - 40 }; // Top
+                }
+            } else {
+                // Rectangle/oval connection points
+                if (direction === 'out') {
+                    return { x: node.x, y: node.y + height / 2 }; // Bottom
+                } else {
+                    return { x: node.x, y: node.y - height / 2 }; // Top
+                }
+            }
+        }
+        
+        // Create flowchart connection path
+        function createFlowchartConnectionPath(from, to, type) {
+            const dx = to.x - from.x;
+            const dy = to.y - from.y;
+            
+            if (type === 'feedback') {
+                // Curved feedback path (loops back)
+                const midX = from.x - 100;
+                const midY = (from.y + to.y) / 2;
+                return `M ${from.x} ${from.y} Q ${midX} ${from.y} ${midX} ${midY} Q ${midX} ${to.y} ${to.x} ${to.y}`;
+            } else if (Math.abs(dx) > 20) {
+                // Curved path for side-to-side connections
+                const midY = from.y + dy * 0.6;
+                return `M ${from.x} ${from.y} Q ${from.x} ${midY} ${to.x} ${to.y}`;
+            } else {
+                // Straight line for vertical connections
+                return `M ${from.x} ${from.y} L ${to.x} ${to.y}`;
+            }
+        }
+        
+        // Add connection label for flowchart
+        function addFlowchartConnectionLabel(svg, from, to, label, type) {
+            const midX = (from.x + to.x) / 2;
+            const midY = (from.y + to.y) / 2;
+            
+            // Offset label based on connection type
+            let offsetX = 0;
+            let offsetY = -8;
+            
+            if (type === 'decision') {
+                offsetX = from.x < to.x ? 15 : -15;
+                offsetY = -5;
+            } else if (type === 'feedback') {
+                offsetX = -30;
+                offsetY = 0;
+            }
+            
+            const labelBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            const labelText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            
+            // Create label text
+            labelText.setAttribute('x', midX + offsetX);
+            labelText.setAttribute('y', midY + offsetY);
+            labelText.setAttribute('class', 'flowchart-text');
+            labelText.setAttribute('style', 'font-size: 10px; font-weight: 500; fill: #374151;');
+            labelText.textContent = label;
+            
+            // Create background rectangle
+            const bbox = labelText.getBBox ? labelText.getBBox() : { width: label.length * 6, height: 12 };
+            labelBg.setAttribute('x', (midX + offsetX) - bbox.width / 2 - 2);
+            labelBg.setAttribute('y', (midY + offsetY) - bbox.height / 2 - 2);
+            labelBg.setAttribute('width', bbox.width + 4);
+            labelBg.setAttribute('height', bbox.height + 4);
+            labelBg.setAttribute('fill', 'rgba(255, 255, 255, 0.9)');
+            labelBg.setAttribute('stroke', '#e5e7eb');
+            labelBg.setAttribute('stroke-width', '1');
+            labelBg.setAttribute('rx', '3');
+            
+            svg.appendChild(labelBg);
+            svg.appendChild(labelText);
+        }
+
+        // Get connection point for flowchart nodes
+        function getConnectionPoint(node, targetNode, direction) {
+            const nodeWidth = getFlowchartNodeWidth(node);
+            const nodeHeight = getFlowchartNodeHeight(node);
+            
+            if (direction === 'out') {
+                // Connection leaves from bottom of node
+                return { x: node.x, y: node.y + nodeHeight / 2 };
+            } else {
+                // Connection enters from top of node
+                return { x: node.x, y: node.y - nodeHeight / 2 };
+            }
+        }
+
+        // Create flowchart path (curved for better visual flow)
+        function createFlowchartPath(from, to, type) {
+            const dx = to.x - from.x;
+            const dy = to.y - from.y;
+            
+            if (type === 'decision') {
+                // Curved path for decision branches
+                const midY = from.y + dy * 0.5;
+                return `M ${from.x} ${from.y} Q ${from.x} ${midY} ${to.x} ${to.y}`;
+            } else if (type === 'completion') {
+                // Curved convergence paths
+                const controlX = from.x + dx * 0.3;
+                const controlY = from.y + dy * 0.7;
+                return `M ${from.x} ${from.y} Q ${controlX} ${controlY} ${to.x} ${to.y}`;
+            } else {
+                // Straight path for direct flow
+                return `M ${from.x} ${from.y} L ${to.x} ${to.y}`;
+            }
+        }
+
+        // Add connection label
+        function addConnectionLabel(svg, from, to, label, index) {
+            const midX = (from.x + to.x) / 2 + (index % 2 === 0 ? -20 : 20);
+            const midY = (from.y + to.y) / 2;
+            
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', midX);
+            text.setAttribute('y', midY);
+            text.setAttribute('class', 'flow-indicator');
+            text.textContent = label;
+            
+            svg.appendChild(text);
+        }
+
+        // Draw flowchart nodes
+        function drawFlowchartNodes(svg, hierarchy) {
+            // Draw start/end terminals
+            drawFlowchartNode(svg, hierarchy.start);
+            drawFlowchartNode(svg, hierarchy.end);
+            
+            // Draw supervisor
+            drawFlowchartNode(svg, hierarchy.supervisor);
+            
+            // Draw decision diamond
+            drawFlowchartNode(svg, hierarchy.decision);
+            
+            // Draw specialists
+            hierarchy.specialists.forEach(agent => drawFlowchartNode(svg, agent));
+            
+            // Draw workers
+            hierarchy.workers.forEach(agent => drawFlowchartNode(svg, agent));
+        }
+
+        // Draw individual flowchart node
+        function drawFlowchartNode(svg, node) {
+            const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            group.setAttribute('class', `agent-node ${node.role || node.type}`);
+            group.setAttribute('data-agent-id', node.id);
+            
+            // Only make agent nodes clickable (not start/end/decision)
+            if (node.role) {
+                group.style.cursor = 'pointer';
+                group.addEventListener('click', () => selectAgent(node));
+                group.addEventListener('mouseenter', (e) => showAgentTooltip(e, node));
+                group.addEventListener('mouseleave', () => hideAgentTooltip());
+            }
+
+            if (node.type === 'terminal') {
+                drawTerminalNode(group, node);
+            } else if (node.type === 'decision') {
+                drawDecisionNode(group, node);
+            } else {
+                drawProcessNode(group, node);
+            }
+
+            svg.appendChild(group);
+        }
+
+        // Draw terminal (start/end) node
+        function drawTerminalNode(group, node) {
+            const ellipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+            ellipse.setAttribute('cx', node.x);
+            ellipse.setAttribute('cy', node.y);
+            ellipse.setAttribute('rx', 80);
+            ellipse.setAttribute('ry', 25);
+            ellipse.setAttribute('class', 'flowchart-terminal');
+            
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', node.x);
+            text.setAttribute('y', node.y);
+            text.setAttribute('class', 'flowchart-text title');
+            text.textContent = node.name;
+            
+            group.appendChild(ellipse);
+            group.appendChild(text);
+        }
+
+        // Draw decision diamond
+        function drawDecisionNode(group, node) {
+            const diamond = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            const size = 60;
+            const points = `${node.x},${node.y - size} ${node.x + size},${node.y} ${node.x},${node.y + size} ${node.x - size},${node.y}`;
+            diamond.setAttribute('points', points);
+            diamond.setAttribute('class', 'flowchart-decision');
+            
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', node.x);
+            text.setAttribute('y', node.y - 5);
+            text.setAttribute('class', 'flowchart-text title');
+            text.textContent = 'Task';
+            
+            const text2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text2.setAttribute('x', node.x);
+            text2.setAttribute('y', node.y + 10);
+            text2.setAttribute('class', 'flowchart-text title');
+            text2.textContent = 'Router';
+            
+            group.appendChild(diamond);
+            group.appendChild(text);
+            group.appendChild(text2);
+        }
+
+        // Draw process box
+        function drawProcessNode(group, node) {
+            const width = getFlowchartNodeWidth(node);
+            const height = getFlowchartNodeHeight(node);
+            
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute('x', node.x - width / 2);
+            rect.setAttribute('y', node.y - height / 2);
+            rect.setAttribute('width', width);
+            rect.setAttribute('height', height);
+            rect.setAttribute('class', `flowchart-process ${node.role}`);
+            
+            // Title
+            const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            title.setAttribute('x', node.x);
+            title.setAttribute('y', node.y - 15);
+            title.setAttribute('class', 'flowchart-text title');
+            title.textContent = node.name;
+            
+            // Role
+            const role = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            role.setAttribute('x', node.x);
+            role.setAttribute('y', node.y);
+            role.setAttribute('class', 'flowchart-text subtitle');
+            role.textContent = node.role ? node.role.toUpperCase() : '';
+            
+            // Top capabilities
+            const capabilities = node.capabilities ? node.capabilities.slice(0, 2).join(' • ') : '';
+            const capText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            capText.setAttribute('x', node.x);
+            capText.setAttribute('y', node.y + 15);
+            capText.setAttribute('class', 'flowchart-text capabilities');
+            capText.textContent = capabilities;
+            
+            group.appendChild(rect);
+            group.appendChild(title);
+            group.appendChild(role);
+            group.appendChild(capText);
+        }
+
+        // Add flowchart labels
+        function drawFlowchartLabels(container, hierarchy) {
+            // Add workflow stage labels
+            const stages = [
+                { text: 'Planning Phase', x: 50, y: 120 },
+                { text: 'Task Distribution', x: 50, y: 240 },
+                { text: 'Execution Phase', x: 50, y: 360 },
+                { text: 'Integration', x: 50, y: 600 }
+            ];
+            
+            stages.forEach(stage => {
+                const label = document.createElement('div');
+                label.className = 'flowchart-label';
+                label.textContent = stage.text;
+                label.style.left = stage.x + 'px';
+                label.style.top = stage.y + 'px';
+                container.appendChild(label);
+            });
+        }
+
+        // Helper functions for flowchart node dimensions
+        function getFlowchartNodeWidth(node) {
+            if (node.type === 'terminal') return 160;
+            if (node.type === 'decision') return 120;
+            switch (node.role) {
+                case 'supervisor': return 140;
+                case 'specialist': return 130;
+                case 'worker': return 120;
+                default: return 100;
+            }
+        }
+
+        function getFlowchartNodeHeight(node) {
+            if (node.type === 'terminal') return 50;
+            if (node.type === 'decision') return 120;
+            switch (node.role) {
+                case 'supervisor': return 60;
+                case 'specialist': return 55;
+                case 'worker': return 50;
+                default: return 40;
+            }
+        }
+
+        // Helper functions for node styling (legacy - kept for compatibility)
+        function getNodeRadius(role) {
+            switch (role) {
+                case 'supervisor': return 30;
+                case 'specialist': return 25;
+                case 'worker': return 20;
+                default: return 20;
+            }
+        }
+
+        function getNodeColor(role) {
+            switch (role) {
+                case 'supervisor': return '#f59e0b';
+                case 'specialist': return '#10b981';
+                case 'worker': return '#3b82f6';
+                default: return '#6b7280';
+            }
+        }
+
+        // Agent selection (updated for flowchart)
+        function selectAgent(agent) {
+            console.log('[AgentGraph] Agent selected:', agent.name);
+            
+            const isSelected = window.agentDeployment.selectedAgents.some(a => a.id === agent.id);
+            
+            if (isSelected) {
+                // Deselect agent
+                window.agentDeployment.selectedAgents = window.agentDeployment.selectedAgents.filter(a => a.id !== agent.id);
+                const nodeElement = document.querySelector(`[data-agent-id="${agent.id}"]`);
+                if (nodeElement) {
+                    nodeElement.classList.remove('selected');
+                    // Update process box styling
+                    const processBox = nodeElement.querySelector('.flowchart-process');
+                    if (processBox) {
+                        processBox.classList.remove('selected');
+                    }
+                }
+            } else {
+                // Select agent
+                window.agentDeployment.selectedAgents.push(agent);
+                const nodeElement = document.querySelector(`[data-agent-id="${agent.id}"]`);
+                if (nodeElement) {
+                    nodeElement.classList.add('selected');
+                    // Update process box styling
+                    const processBox = nodeElement.querySelector('.flowchart-process');
+                    if (processBox) {
+                        processBox.classList.add('selected');
+                    }
+                }
+            }
+            
+            updateSelectedAgentsList();
+            updateDeploymentStatus();
+            highlightFlowchartConnections(agent.id, !isSelected);
+        }
+
+        // Highlight flowchart connections for selected agents
+        function highlightFlowchartConnections(agentId, isSelected) {
+            // This could be enhanced to highlight the flow path for selected agents
+            const connections = document.querySelectorAll('.agent-connection');
+            connections.forEach(conn => {
+                if (isSelected) {
+                    // Add subtle highlighting to show agent relationships
+                    conn.classList.add('highlighted');
+                } else {
+                    conn.classList.remove('highlighted');
+                }
+            });
+        }
+
+        // Update selected agents list
+        function updateSelectedAgentsList() {
+            const container = document.getElementById('selected-agents-list');
+            const selectedAgents = window.agentDeployment.selectedAgents;
+            const countBadge = document.getElementById('agent-count-badge');
+            const clearBtn = document.getElementById('clear-all-btn');
+            const summary = document.getElementById('deployment-summary');
+            
+            // Update count badge
+            countBadge.textContent = `${selectedAgents.length} selected`;
+            
+            // Show/hide clear button
+            clearBtn.style.display = selectedAgents.length > 0 ? 'block' : 'none';
+            
+            if (selectedAgents.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-pool-state">
+                        <div class="empty-icon">🎯</div>
+                        <h4>No Agents Selected</h4>
+                        <p>Click on nodes in the workflow above to add agents to your deployment pool</p>
+                    </div>
+                `;
+                summary.style.display = 'none';
+                return;
+            }
+            
+            // Group agents by role for statistics
+            const roleStats = {
+                supervisor: selectedAgents.filter(a => a.role === 'supervisor' || a.type === 'supervisor').length,
+                specialist: selectedAgents.filter(a => a.role === 'specialist' || a.type === 'specialist').length,
+                worker: selectedAgents.filter(a => a.role === 'worker' || a.type === 'worker').length
+            };
+            
+            const agentsHtml = selectedAgents.map(agent => `
+                <div class="selected-agent-card ${agent.role || agent.type || ''}">
+                    <div class="selected-agent-header">
+                        <div>
+                            <div class="selected-agent-name">${agent.name}</div>
+                            <div class="selected-agent-role">${agent.role ? agent.role.toUpperCase() : (agent.type ? agent.type.toUpperCase() : '')}</div>
+                        </div>
+                        <div>
+                            <button class="agent-settings-btn" onclick="openAgentSettings('${agent.id}')" title="Settings">
+                                ⚙️
+                            </button>
+                            <button class="remove-agent-btn" onclick="removeSelectedAgent('${agent.id}')" title="Remove">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+                    <div class="agent-capabilities">
+                        ${agent.capabilities && Array.isArray(agent.capabilities) ? agent.capabilities.map(cap => `<span class="capability-tag">${cap}</span>`).join('') : ''}
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = agentsHtml;
+            
+            // Update summary statistics
+            document.getElementById('supervisor-count').textContent = roleStats.supervisor;
+            document.getElementById('specialist-count').textContent = roleStats.specialist;
+            document.getElementById('worker-count').textContent = roleStats.worker;
+            summary.style.display = 'block';
+        }
+
+        // Remove selected agent
+        function removeSelectedAgent(agentId) {
+            window.agentDeployment.selectedAgents = window.agentDeployment.selectedAgents.filter(a => a.id !== agentId);
+            document.querySelector(`[data-agent-id="${agentId}"]`).classList.remove('selected');
+            updateSelectedAgentsList();
+            updateDeploymentStatus();
+        }
+
+        // Clear all selected agents
+        function clearAllAgents() {
+            console.log('[AgentGraph] Clearing all selected agents');
+            
+            // Remove selected class from all nodes
+            window.agentDeployment.selectedAgents.forEach(agent => {
+                const nodeElement = document.querySelector(`[data-agent-id="${agent.id}"]`);
+                if (nodeElement) {
+                    nodeElement.classList.remove('selected');
+                }
+            });
+            
+            // Clear the array
+            window.agentDeployment.selectedAgents = [];
+            
+            // Update UI
+            updateSelectedAgentsList();
+            updateDeploymentStatus();
+        }
+
+        // Update deployment status
+        function updateDeploymentStatus() {
+            const statusEl = document.getElementById('deployment-status');
+            const confirmBtn = document.getElementById('confirm-deployment-btn');
+            const selectedCount = window.agentDeployment.selectedAgents.length;
+            
+            if (selectedCount === 0) {
+                statusEl.textContent = 'Select agents to deploy';
+                statusEl.className = 'deployment-status';
+                confirmBtn.disabled = true;
+            } else {
+                statusEl.textContent = `${selectedCount} agent${selectedCount > 1 ? 's' : ''} selected for deployment`;
+                statusEl.className = 'deployment-status ready';
+                confirmBtn.disabled = false;
+            }
+        }
+
+        // Reset deployment
+        function resetDeployment() {
+            console.log('[AgentGraph] Resetting deployment');
+            window.agentDeployment.selectedAgents = [];
+            document.querySelectorAll('.agent-node.selected').forEach(node => {
+                node.classList.remove('selected');
+            });
+            updateSelectedAgentsList();
+            updateDeploymentStatus();
+        }
+
+        // Confirm agent deployment
+        function confirmAgentDeployment() {
+            console.log('[Deployment] Confirming agent deployment');
+            const selectedAgents = window.agentDeployment.selectedAgents;
+            
+            if (selectedAgents.length === 0) {
+                alert('Please select at least one agent to deploy.');
+                return;
+            }
+            
+            // Show confirmation dialog
+            const confirmMsg = `Deploy ${selectedAgents.length} agent${selectedAgents.length > 1 ? 's' : ''} to active pool?\\n\\n${selectedAgents.map(a => `• ${a.name} (${a.role})`).join('\\n')}`;
+            
+            if (confirm(confirmMsg)) {
+                // Add agents to active pool
+                selectedAgents.forEach(agent => {
+                    addAgentToActivePool(agent);
+                });
+                
+                // Reset deployment view
+                resetDeployment();
+                
+                // Switch back to pool view
+                switchAgentView('pool');
+                
+                // Show success message
+                if (window.UIComponents) {
+                    window.UIComponents.updateActivityFeed(`Deployed ${selectedAgents.length} agent${selectedAgents.length > 1 ? 's' : ''} to active pool`);
+                }
+                
+                alert(`Successfully deployed ${selectedAgents.length} agent${selectedAgents.length > 1 ? 's' : ''} to the active pool!`);
+            }
+        }
+
+        // Add agent to active pool
+        function addAgentToActivePool(agent) {
+            console.log('[AgentPool] Adding agent to active pool:', agent.name);
+            // TODO: Implement backend API call to add agent to active pool
+            // For now, just update the UI
+            updateActiveAgentsList();
+        }
+
+        // Update active agents list (placeholder)
+        function updateActiveAgentsList() {
+            const container = document.getElementById('active-agents-list');
+            // TODO: Fetch actual active agents from backend
+            container.innerHTML = '<div class="loading-state">Loading active agents...</div>';
+        }
+
+        // Agent tooltip system
+        function setupAgentTooltip(container) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'agent-tooltip';
+            tooltip.id = 'agent-tooltip';
+            container.appendChild(tooltip);
+            window.agentDeployment.currentTooltip = tooltip;
+        }
+
+        function showAgentTooltip(event, agent) {
+            const tooltip = window.agentDeployment.currentTooltip;
+            if (!tooltip) return;
+            
+            // Clear any existing hide timeout
+            if (window.agentDeployment.tooltipTimeout) {
+                clearTimeout(window.agentDeployment.tooltipTimeout);
+                window.agentDeployment.tooltipTimeout = null;
+            }
+            
+            tooltip.innerHTML = `
+                <h4>${agent.name || 'Unknown Agent'}</h4>
+                <div class="agent-role">${agent.role ? agent.role.toUpperCase() : 'NO ROLE'}</div>
+                <div class="agent-capabilities">
+                    ${agent.capabilities && Array.isArray(agent.capabilities) ? agent.capabilities.map(cap => `<span class="capability-tag">${cap}</span>`).join('') : ''}
+                </div>
+                <div class="agent-description">${agent.description}</div>
+            `;
+            
+            // Get positioning info
+            const rect = event.target.getBoundingClientRect();
+            const container = document.getElementById('agent-graph-container');
+            const containerRect = container.getBoundingClientRect();
+            
+            // Calculate position relative to container
+            const leftPos = Math.max(10, rect.left - containerRect.left + 40);
+            const topPos = Math.max(10, rect.top - containerRect.top - 10);
+            
+            // Ensure tooltip stays within container bounds
+            const maxLeft = containerRect.width - tooltip.offsetWidth - 10;
+            const maxTop = containerRect.height - tooltip.offsetHeight - 10;
+            
+            tooltip.style.left = Math.min(leftPos, maxLeft) + 'px';
+            tooltip.style.top = Math.min(topPos, maxTop) + 'px';
+            tooltip.style.position = 'absolute';
+            tooltip.style.zIndex = '1000';
+            
+            tooltip.classList.add('visible');
+        }
+
+        function hideAgentTooltip() {
+            // Add a small delay to prevent flickering when moving between node elements
+            window.agentDeployment.tooltipTimeout = setTimeout(() => {
+                const tooltip = window.agentDeployment.currentTooltip;
+                if (tooltip) {
+                    tooltip.classList.remove('visible');
+                }
+                window.agentDeployment.tooltipTimeout = null;
+            }, 100);
+        }
+
+        // Agent settings modal
+        function openAgentSettings(agentId) {
+            console.log('[AgentSettings] Opening settings for agent:', agentId);
+            const agent = window.agentDeployment.selectedAgents.find(a => a.id === agentId);
+            if (!agent) return;
+            
+            // Create modal if it doesn't exist
+            let modal = document.getElementById('agent-settings-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'agent-settings-modal';
+                modal.className = 'agent-settings-modal';
+                document.body.appendChild(modal);
+            }
+            
+            modal.innerHTML = `
+                <div class="agent-settings-content">
+                    <button class="agent-settings-close" onclick="closeAgentSettings()">✕</button>
+                    <h3 style="color: var(--text-primary); margin-bottom: 1rem;">${agent.name} Settings</h3>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label style="color: var(--text-primary); display: block; margin-bottom: 0.5rem;">Agent Name:</label>
+                        <input type="text" id="agent-name-input" value="${agent.name}" 
+                               style="width: 100%; padding: 0.5rem; background: var(--bg-secondary); 
+                                      border: 1px solid var(--border-color); border-radius: 4px; 
+                                      color: var(--text-primary);">
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label style="color: var(--text-primary); display: block; margin-bottom: 0.5rem;">Priority Level:</label>
+                        <select id="agent-priority-select" 
+                                style="width: 100%; padding: 0.5rem; background: var(--bg-secondary); 
+                                       border: 1px solid var(--border-color); border-radius: 4px; 
+                                       color: var(--text-primary);">
+                            <option value="high">High Priority</option>
+                            <option value="medium" selected>Medium Priority</option>
+                            <option value="low">Low Priority</option>
+                        </select>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label style="color: var(--text-primary); display: block; margin-bottom: 0.5rem;">Max Concurrent Tasks:</label>
+                        <input type="number" id="agent-max-tasks-input" value="3" min="1" max="10"
+                               style="width: 100%; padding: 0.5rem; background: var(--bg-secondary); 
+                                      border: 1px solid var(--border-color); border-radius: 4px; 
+                                      color: var(--text-primary);">
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="color: var(--text-primary); display: block; margin-bottom: 0.5rem;">
+                            <input type="checkbox" id="agent-auto-start" checked> Auto-start on deployment
+                        </label>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="primary-btn" onclick="saveAgentSettings('${agentId}')">Save Settings</button>
+                        <button class="secondary-btn" onclick="closeAgentSettings()">Cancel</button>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('visible');
+        }
+
+        function closeAgentSettings() {
+            const modal = document.getElementById('agent-settings-modal');
+            if (modal) {
+                modal.classList.remove('visible');
+            }
+        }
+
+        function saveAgentSettings(agentId) {
+            console.log('[AgentSettings] Saving settings for agent:', agentId);
+            // TODO: Implement settings save logic
+            closeAgentSettings();
+            alert('Agent settings saved successfully!');
+        }
+
+        // Analytics Manager for Intelligence Tab
+        window.AnalyticsManager = {
+            initialize: function() {
+                console.log('[AnalyticsManager] Initializing analytics dashboard');
+                this.loadAnalyticsData();
+            },
+            
+            loadAnalyticsData: function() {
+                // Load analytics overview metrics
+                fetch('/analytics/overview')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.updateOverviewMetrics(data.metrics);
+                        }
+                    })
+                    .catch(error => console.warn('[AnalyticsManager] Overview data not available:', error));
+                    
+                // Load real-time activity
+                this.loadActivityData();
+                
+                // Update every 30 seconds
+                setInterval(() => {
+                    this.loadActivityData();
+                }, 30000);
+            },
+            
+            updateOverviewMetrics: function(metrics) {
+                const elements = {
+                    'total-workflows': metrics.totalWorkflows,
+                    'avg-completion-time': metrics.avgCompletionTime,
+                    'success-rate': metrics.successRate,
+                    'accuracy-score': metrics.accuracyScore
+                };
+                
+                Object.entries(elements).forEach(([id, value]) => {
+                    const element = document.getElementById(id);
+                    if (element && value) {
+                        element.textContent = value;
+                    }
+                });
+            },
+            
+            loadActivityData: function() {
+                fetch('/analytics/activity')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.updateActivityStats(data.stats);
+                            this.updateActivityFeed(data.activities);
+                        }
+                    })
+                    .catch(error => console.warn('[AnalyticsManager] Activity data not available:', error));
+            },
+            
+            updateActivityStats: function(stats) {
+                const elements = {
+                    'active-workflows': stats.activeWorkflows,
+                    'queue-length': stats.queueLength,
+                    'processing-time': stats.currentAvgTime
+                };
+                
+                Object.entries(elements).forEach(([id, value]) => {
+                    const element = document.getElementById(id);
+                    if (element && value !== undefined) {
+                        element.textContent = value;
+                    }
+                });
+            },
+            
+            updateActivityFeed: function(activities) {
+                const feed = document.getElementById('intelligence-activity-feed');
+                if (feed && activities) {
+                    feed.innerHTML = activities.map(activity => `
+                        <div class="activity-item">
+                            <span class="activity-time">${activity.time}</span>
+                            <span class="activity-type ${activity.type}">${activity.type.toUpperCase()}</span>
+                            <span class="activity-message">${activity.message}</span>
+                        </div>
+                    `).join('');
+                }
+            }
+        };
     </script>
 </body>
 </html>

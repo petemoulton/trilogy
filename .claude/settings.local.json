@@ -20,7 +20,15 @@
       "Bash(open /Users/petermoulton/Repos/trilogy/milestone2-ui-poc.html)",
       "Bash(grep:*)",
       "Bash(open http://localhost:8080)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(open http://localhost:3100)",
+      "Bash(kill:*)",
+      "Bash(pkill:*)",
+      "Bash(git stash push:*)",
+      "Bash(git checkout:*)",
+      "Bash(git shortlog:*)",
+      "Bash(gtimeout:*)",
+      "Bash(sed:*)"
     ],
     "deny": []
   }

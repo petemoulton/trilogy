@@ -165,6 +165,14 @@ class TabManager {
         if (window.AnalyticsManager) {
             window.AnalyticsManager.initialize();
         }
+        
+        // Load git intelligence data
+        if (typeof loadIntelligenceData === 'function') {
+            console.log('[Trilogy] Loading intelligence analytics data...');
+            loadIntelligenceData();
+        } else {
+            console.warn('[Trilogy] loadIntelligenceData function not available');
+        }
     }
 
     /**

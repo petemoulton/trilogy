@@ -7,12 +7,18 @@ class WorkflowManager {
         this.currentWorkflow = null;
         this.workflowStatus = 'idle'; // idle, running, completed, error
         this.activeWebSocket = null;
+        this.initialized = false;
     }
 
     /**
      * Initialize workflow manager
      */
     initialize() {
+        if (this.initialized) {
+            console.log('⚠️ WorkflowManager: Already initialized, skipping...');
+            return;
+        }
+        
         console.log('🔄 WorkflowManager: Initializing...');
         
         // Set up input validation
@@ -23,6 +29,9 @@ class WorkflowManager {
         
         // Set up WebSocket for real-time updates
         this.setupWebSocket();
+        
+        this.initialized = true;
+        console.log('✅ WorkflowManager: Initialization complete');
     }
 
     /**
@@ -31,14 +40,20 @@ class WorkflowManager {
     setupInputValidation() {
         const textInput = document.getElementById('prd-text-input');
         const startBtn = document.getElementById('start-workflow-btn');
+        const analyzeBtn = document.getElementById('analyze-prd-btn');
         
-        if (textInput && startBtn) {
+        if (textInput && startBtn && analyzeBtn) {
             textInput.addEventListener('input', () => {
-                const hasContent = textInput.value.trim().length > 50; // Minimum 50 chars
-                startBtn.disabled = !hasContent;
+                const hasContent = textInput.value.trim().length > 20; // Minimum 20 chars for analysis
+                const hasEnoughForWorkflow = textInput.value.trim().length > 50; // Minimum 50 chars for workflow
                 
-                if (hasContent) {
-                    this.updateWorkflowStatus('✅ Ready to start workflow');
+                analyzeBtn.disabled = !hasContent;
+                startBtn.disabled = !hasEnoughForWorkflow;
+                
+                if (hasEnoughForWorkflow) {
+                    this.updateWorkflowStatus('✅ Ready to analyze PRD or start workflow');
+                } else if (hasContent) {
+                    this.updateWorkflowStatus('📝 Ready to analyze PRD (more content needed for workflow)');
                 } else {
                     this.updateWorkflowStatus('');
                 }
@@ -53,16 +68,31 @@ class WorkflowManager {
         const dropZone = document.getElementById('file-drop-zone');
         const fileInput = document.getElementById('file-input');
         
+        console.log('🔧 Setting up file drop zone...', { dropZone: !!dropZone, fileInput: !!fileInput });
+        
+        if (!dropZone) {
+            console.warn('❌ Drop zone element not found! ID: file-drop-zone');
+            return;
+        }
+        
+        if (!fileInput) {
+            console.warn('❌ File input element not found! ID: file-input');
+            return;
+        }
+        
         if (dropZone && fileInput) {
             // Click to browse
             dropZone.addEventListener('click', () => {
+                console.log('📁 Drop zone clicked, triggering file input...');
                 fileInput.click();
             });
             
             // File selection
             fileInput.addEventListener('change', (e) => {
+                console.log('📄 File input changed:', e.target.files);
                 const file = e.target.files[0];
                 if (file) {
+                    console.log('📁 File selected:', file.name, file.type, file.size);
                     this.handleFileUpload(file);
                 }
             });
@@ -94,9 +124,31 @@ class WorkflowManager {
      */
     async handleFileUpload(file) {
         try {
+            // Validate file type (only .md and .txt files)
+            const validTypes = ['.txt', '.md'];
+            const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+            
+            if (!validTypes.includes(fileExtension)) {
+                this.updateWorkflowStatus(`❌ Invalid file type. Please upload .md or .txt files only.`);
+                return;
+            }
+            
+            // Check file size (max 5MB)
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                this.updateWorkflowStatus(`❌ File too large. Maximum size is 5MB.`);
+                return;
+            }
+            
             this.updateWorkflowStatus('📁 Processing file...');
             
             const text = await this.readFileAsText(file);
+            
+            // Validate content length
+            if (text.trim().length < 20) {
+                this.updateWorkflowStatus(`❌ File content too short. Please provide at least 20 characters.`);
+                return;
+            }
             
             // Switch to paste mode and populate with file content
             this.switchInputMode('paste');
@@ -106,9 +158,79 @@ class WorkflowManager {
             document.getElementById('start-workflow-btn').disabled = false;
             this.updateWorkflowStatus(`✅ File loaded: ${file.name} (${text.length} characters)`);
             
+            // Add visual feedback
+            this.showUploadSuccess(file.name, text.length);
+            
         } catch (error) {
             this.updateWorkflowStatus(`❌ Error reading file: ${error.message}`);
         }
+    }
+
+    /**
+     * Show upload success feedback
+     */
+    showUploadSuccess(fileName, textLength) {
+        const dropZone = document.getElementById('file-drop-zone');
+        if (dropZone) {
+            // Temporarily change the drop zone appearance
+            dropZone.style.background = '#dcfce7';
+            dropZone.style.borderColor = '#10b981';
+            
+            // Reset after 2 seconds
+            setTimeout(() => {
+                dropZone.style.background = 'var(--bg-primary)';
+                dropZone.style.borderColor = 'var(--border-color)';
+            }, 2000);
+        }
+        
+        // Show a notification
+        this.showNotification(`📁 ${fileName} uploaded successfully (${textLength} characters)`, 'success');
+    }
+    
+    /**
+     * Show notification message
+     */
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 6px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            animation: slideInFromRight 0.3s ease;
+            max-width: 350px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        `;
+        
+        switch(type) {
+            case 'success':
+                notification.style.background = '#10b981';
+                break;
+            case 'error':
+                notification.style.background = '#dc2626';
+                break;
+            case 'info':
+            default:
+                notification.style.background = '#3b82f6';
+                break;
+        }
+        
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        // Remove after 4 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+            }, 300);
+        }, 4000);
     }
 
     /**
@@ -457,6 +579,194 @@ class WorkflowManager {
     }
 
     /**
+     * Switch between input modes (paste/upload)
+     */
+    switchInputMode(mode) {
+        console.log('🔄 Switching input mode to:', mode);
+        
+        // Update button states
+        const pasteBtn = document.getElementById('paste-mode-btn');
+        const uploadBtn = document.getElementById('upload-mode-btn');
+        
+        if (pasteBtn && uploadBtn) {
+            pasteBtn.classList.toggle('active', mode === 'paste');
+            uploadBtn.classList.toggle('active', mode === 'upload');
+        }
+        
+        // Update input mode visibility
+        const pasteInput = document.getElementById('paste-input');
+        const uploadInput = document.getElementById('upload-input');
+        
+        if (pasteInput && uploadInput) {
+            pasteInput.classList.toggle('active', mode === 'paste');
+            uploadInput.classList.toggle('active', mode === 'upload');
+        }
+        
+        console.log('✅ Input mode switched to:', mode);
+    }
+
+    /**
+     * Analyze PRD content to determine agent requirements
+     */
+    async analyzePRD() {
+        try {
+            const prdContent = this.getPRDContent();
+            if (!prdContent || prdContent.trim().length < 20) {
+                this.showNotification('❌ Please provide at least 20 characters of PRD content', 'error');
+                return;
+            }
+
+            console.log('🧠 Starting PRD analysis...');
+            this.updateWorkflowStatus('🔍 Opus agent analyzing PRD...');
+            
+            // Show loading state
+            this.showAnalysisLoading();
+
+            const response = await fetch('/api/analyze-prd', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    prdContent: prdContent
+                })
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log('✅ PRD analysis complete:', result.analysis);
+                this.displayAnalysisResults(result.analysis);
+                this.updateWorkflowStatus('✅ Analysis complete! Ready to start workflow.');
+                this.showNotification('🧠 PRD analysis completed successfully', 'success');
+            } else {
+                throw new Error(result.error || 'Analysis failed');
+            }
+            
+        } catch (error) {
+            console.error('❌ PRD analysis failed:', error);
+            this.updateWorkflowStatus('❌ Analysis failed');
+            this.showNotification(`❌ Analysis failed: ${error.message}`, 'error');
+            this.hideAnalysisResults();
+        }
+    }
+
+    /**
+     * Show loading state for analysis
+     */
+    showAnalysisLoading() {
+        const resultsDiv = document.getElementById('prd-analysis-results');
+        const outputDiv = document.getElementById('analysis-output');
+        
+        if (resultsDiv && outputDiv) {
+            resultsDiv.style.display = 'block';
+            outputDiv.innerHTML = `
+                <div class="analysis-loading" style="text-align: center; padding: 2rem;">
+                    <div class="spinner" style="width: 40px; height: 40px; border: 4px solid #1e293b; border-top: 4px solid #7c3aed; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+                    <p style="color: #e2e8f0;">🧠 Opus agent analyzing your PRD...</p>
+                    <p style="color: #94a3b8; font-size: 0.9rem;">Estimating complexity and required Sonnet agents</p>
+                </div>
+            `;
+        }
+    }
+
+    /**
+     * Display PRD analysis results
+     */
+    displayAnalysisResults(analysis) {
+        const resultsDiv = document.getElementById('prd-analysis-results');
+        const outputDiv = document.getElementById('analysis-output');
+        
+        if (!resultsDiv || !outputDiv) return;
+
+        resultsDiv.style.display = 'block';
+        
+        const { projectAnalysis, agentEstimation, detectedFeatures, recommendations } = analysis;
+        
+        const resultsHTML = `
+            <div class="analysis-summary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                <div class="analysis-stat" style="background: #1e293b; padding: 1rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem; font-weight: bold; color: #7c3aed;">${agentEstimation.totalSonnetAgents}</div>
+                    <div style="color: #e2e8f0; font-size: 0.9rem;">Sonnet Agents</div>
+                </div>
+                <div class="analysis-stat" style="background: #1e293b; padding: 1rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem; font-weight: bold; color: #f59e0b;">1</div>
+                    <div style="color: #e2e8f0; font-size: 0.9rem;">Opus Agent (Lead)</div>
+                </div>
+                <div class="analysis-stat" style="background: #1e293b; padding: 1rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem; font-weight: bold; color: #10b981;">${projectAnalysis.estimatedDuration}</div>
+                    <div style="color: #e2e8f0; font-size: 0.9rem;">Est. Duration</div>
+                </div>
+                <div class="analysis-stat" style="background: #1e293b; padding: 1rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem; font-weight: bold; color: #3b82f6;">${projectAnalysis.projectSize}</div>
+                    <div style="color: #e2e8f0; font-size: 0.9rem;">Project Size</div>
+                </div>
+            </div>
+
+            <div class="analysis-details" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                <div class="analysis-section" style="background: #1e293b; padding: 1.5rem; border-radius: 8px;">
+                    <h4 style="color: #e2e8f0; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        🎯 Agent Breakdown
+                    </h4>
+                    <div class="agent-list">
+                        ${agentEstimation.agentBreakdown.map(agent => `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #374151;">
+                                <div>
+                                    <div style="color: #e2e8f0; font-weight: 500;">${agent.specialty}</div>
+                                    <div style="color: #94a3b8; font-size: 0.8rem;">${agent.reason}</div>
+                                </div>
+                                <div style="background: #7c3aed; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: bold;">
+                                    ${agent.agents}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="analysis-section" style="background: #1e293b; padding: 1.5rem; border-radius: 8px;">
+                    <h4 style="color: #e2e8f0; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        🔍 Detected Features
+                    </h4>
+                    <div class="features-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        ${detectedFeatures.map(feature => `
+                            <span style="background: #059669; color: white; padding: 0.25rem 0.75rem; border-radius: 16px; font-size: 0.8rem; text-transform: capitalize;">
+                                ${feature.replace(/([A-Z])/g, ' $1').trim()}
+                            </span>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+
+            <div class="analysis-recommendations" style="background: #1e293b; padding: 1.5rem; border-radius: 8px; margin-top: 1.5rem;">
+                <h4 style="color: #e2e8f0; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    💡 Recommendations
+                </h4>
+                <ul style="color: #e2e8f0; margin: 0; padding-left: 1.5rem;">
+                    ${recommendations.map(rec => `<li style="margin-bottom: 0.5rem;">${rec}</li>`).join('')}
+                </ul>
+            </div>
+
+            <div class="analysis-actions" style="margin-top: 1.5rem; text-align: center;">
+                <button onclick="startWorkflow()" class="primary-btn" style="background: #059669;">
+                    🚀 Deploy ${agentEstimation.totalSonnetAgents} Sonnet Agents & Start Workflow
+                </button>
+            </div>
+        `;
+        
+        outputDiv.innerHTML = resultsHTML;
+    }
+
+    /**
+     * Hide analysis results
+     */
+    hideAnalysisResults() {
+        const resultsDiv = document.getElementById('prd-analysis-results');
+        if (resultsDiv) {
+            resultsDiv.style.display = 'none';
+        }
+    }
+
+    /**
      * Save workflow results as project
      */
     saveAsProject() {
@@ -468,13 +778,16 @@ class WorkflowManager {
 
 // Global functions for HTML onclick handlers
 window.switchInputMode = function(mode) {
-    // Update button states
-    document.getElementById('paste-mode-btn').classList.toggle('active', mode === 'paste');
-    document.getElementById('upload-mode-btn').classList.toggle('active', mode === 'upload');
-    
-    // Update input mode visibility
-    document.getElementById('paste-input').classList.toggle('active', mode === 'paste');
-    document.getElementById('upload-input').classList.toggle('active', mode === 'upload');
+    if (window.WorkflowManager && window.WorkflowManager.switchInputMode) {
+        window.WorkflowManager.switchInputMode(mode);
+    } else {
+        // Fallback if WorkflowManager is not available
+        console.warn('⚠️ WorkflowManager not available, using fallback switchInputMode');
+        document.getElementById('paste-mode-btn')?.classList.toggle('active', mode === 'paste');
+        document.getElementById('upload-mode-btn')?.classList.toggle('active', mode === 'upload');
+        document.getElementById('paste-input')?.classList.toggle('active', mode === 'paste');
+        document.getElementById('upload-input')?.classList.toggle('active', mode === 'upload');
+    }
 };
 
 window.startWorkflow = function() {
@@ -509,5 +822,31 @@ window.saveWorkflowResults = function() {
     }
 };
 
+window.analyzePRD = function() {
+    if (window.WorkflowManager) {
+        window.WorkflowManager.analyzePRD();
+    }
+};
+
 // Global instance
 window.WorkflowManager = new WorkflowManager();
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 DOM Content Loaded - initializing WorkflowManager');
+    if (window.WorkflowManager) {
+        window.WorkflowManager.initialize();
+    }
+});
+
+// Fallback initialization in case DOMContentLoaded already fired
+if (document.readyState === 'loading') {
+    // Document is still loading, DOMContentLoaded will fire
+    console.log('📄 Document still loading, waiting for DOMContentLoaded');
+} else {
+    // Document is already loaded
+    console.log('📄 Document already loaded, initializing WorkflowManager immediately');
+    if (window.WorkflowManager) {
+        window.WorkflowManager.initialize();
+    }
+}

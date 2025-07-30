@@ -275,11 +275,218 @@ app.get('/health', async (req, res) => {
   });
 });
 
-// Projects API - Returns the mock project data
+// ===========================================
+// PROJECT DIRECTORY MANAGEMENT
+// ===========================================
+
+// Global variable to store project directory setting
+let currentProjectDirectory = process.cwd();
+
+/**
+ * Get the current project directory setting
+ */
+function getProjectDirectory() {
+  return currentProjectDirectory;
+}
+
+/**
+ * Set the project directory
+ */
+function setProjectDirectory(directory) {
+  currentProjectDirectory = directory;
+  console.log(`[SERVER] Project directory updated to: ${directory}`);
+}
+
+/**
+ * Load projects from the specified directory
+ */
+async function loadProjectsFromDirectory(directory) {
+  try {
+    const projectsPath = path.resolve(directory);
+    
+    // Check if directory exists
+    try {
+      await fs.access(projectsPath);
+    } catch (error) {
+      console.log(`[SERVER] Directory ${projectsPath} not accessible, using current directory`);
+      return [];
+    }
+    
+    // Read directory contents
+    const entries = await fs.readdir(projectsPath, { withFileTypes: true });
+    const projects = [];
+    
+    // Look for project directories (directories or files with project metadata)
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        const projectPath = path.join(projectsPath, entry.name);
+        const project = await analyzeProjectDirectory(projectPath, entry.name);
+        if (project) {
+          projects.push(project);
+        }
+      }
+    }
+    
+    return projects;
+  } catch (error) {
+    console.error('[SERVER] Error loading projects from directory:', error);
+    return [];
+  }
+}
+
+/**
+ * Analyze a directory to determine if it's a project and extract metadata
+ */
+async function analyzeProjectDirectory(projectPath, directoryName) {
+  try {
+    const stats = await fs.stat(projectPath);
+    
+    // Look for common project files
+    const projectFiles = ['package.json', 'README.md', 'requirements.txt', 'pom.xml', 'Cargo.toml', '.git'];
+    let projectType = 'Unknown';
+    let description = '';
+    let requirements = [];
+    
+    // Check for project indicators
+    for (const fileName of projectFiles) {
+      const filePath = path.join(projectPath, fileName);
+      try {
+        await fs.access(filePath);
+        
+        // Determine project type based on files found
+        switch (fileName) {
+          case 'package.json':
+            projectType = 'Node.js';
+            try {
+              const packageData = await fs.readFile(filePath, 'utf8');
+              const packageJson = JSON.parse(packageData);
+              description = packageJson.description || description;
+              if (packageJson.dependencies) {
+                requirements = Object.keys(packageJson.dependencies);
+              }
+            } catch (e) {
+              // Ignore JSON parse errors
+            }
+            break;
+          case 'requirements.txt':
+            projectType = 'Python';
+            try {
+              const reqData = await fs.readFile(filePath, 'utf8');
+              requirements = reqData.split('\n').filter(line => line.trim()).map(line => line.split('==')[0]);
+            } catch (e) {
+              // Ignore file read errors
+            }
+            break;
+          case 'pom.xml':
+            projectType = 'Java/Maven';
+            break;
+          case 'Cargo.toml':
+            projectType = 'Rust';
+            break;
+          case '.git':
+            if (!projectType || projectType === 'Unknown') {
+              projectType = 'Git Repository';
+            }
+            break;
+          case 'README.md':
+            try {
+              const readmeData = await fs.readFile(filePath, 'utf8');
+              // Extract first line or first paragraph as description
+              const firstLine = readmeData.split('\n')[0].replace(/^#\s*/, '');
+              if (firstLine && !description) {
+                description = firstLine.substring(0, 100);
+              }
+            } catch (e) {
+              // Ignore file read errors
+            }
+            break;
+        }
+      } catch (error) {
+        // File doesn't exist, continue
+      }
+    }
+    
+    // If no specific project files found, still treat as a potential project directory
+    if (projectType === 'Unknown') {
+      // Check if directory has any code files
+      try {
+        const files = await fs.readdir(projectPath);
+        const codeExtensions = ['.js', '.ts', '.py', '.java', '.rs', '.go', '.cpp', '.c', '.html', '.css'];
+        const hasCodeFiles = files.some(file => 
+          codeExtensions.some(ext => file.toLowerCase().endsWith(ext))
+        );
+        
+        if (hasCodeFiles) {
+          projectType = 'Code Project';
+        } else {
+          projectType = 'Directory';
+        }
+      } catch (e) {
+        projectType = 'Directory';
+      }
+    }
+    
+    return {
+      id: `project_${directoryName}_${Date.now()}`,
+      name: directoryName,
+      status: 'active',
+      createdAt: stats.birthtime.toISOString(),
+      updatedAt: stats.mtime.toISOString(),
+      description: description || `${projectType} project`,
+      requirements: requirements.slice(0, 10), // Limit to first 10 requirements
+      projectType: projectType,
+      path: projectPath,
+      size: await calculateDirectorySize(projectPath)
+    };
+    
+  } catch (error) {
+    console.error(`[SERVER] Error analyzing project directory ${projectPath}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Calculate directory size
+ */
+async function calculateDirectorySize(dirPath) {
+  try {
+    let totalSize = 0;
+    const entries = await fs.readdir(dirPath, { withFileTypes: true });
+    
+    for (const entry of entries) {
+      const fullPath = path.join(dirPath, entry.name);
+      if (entry.isFile()) {
+        const stats = await fs.stat(fullPath);
+        totalSize += stats.size;
+      }
+      // Skip subdirectories for performance
+    }
+    
+    // Return human readable size
+    if (totalSize < 1024) return `${totalSize} B`;
+    if (totalSize < 1024 * 1024) return `${(totalSize / 1024).toFixed(1)} KB`;
+    if (totalSize < 1024 * 1024 * 1024) return `${(totalSize / 1024 / 1024).toFixed(1)} MB`;
+    return `${(totalSize / 1024 / 1024 / 1024).toFixed(1)} GB`;
+  } catch (error) {
+    return 'Unknown';
+  }
+}
+
+// Projects API - Returns projects from the configured directory
 app.get('/api/projects', async (req, res) => {
   try {
-    // Mock project data matching the exact structure from the debug session
-    const projects = [
+    console.log('[SERVER] Loading projects from directory...');
+    
+    // Get project directory from settings (default to current directory)
+    const projectDirectory = getProjectDirectory();
+    console.log(`[SERVER] Project directory: ${projectDirectory}`);
+    
+    const projects = await loadProjectsFromDirectory(projectDirectory);
+    
+    console.log(`[SERVER] Found ${projects.length} projects`);
+    
+    // Fallback to mock data if no projects found
+    const fallbackProjects = projects.length > 0 ? projects : [
       {
         id: "project_1753680601011",
         name: "Test Project",
@@ -410,13 +617,194 @@ app.get('/api/projects', async (req, res) => {
     
     res.json({ 
       success: true, 
-      data: projects 
+      data: fallbackProjects 
     });
   } catch (error) {
     console.error('[SERVER] Error in /api/projects:', error);
     res.status(500).json({ 
       success: false, 
       error: error.message 
+    });
+  }
+});
+
+// Settings API
+app.get('/api/settings', async (req, res) => {
+  try {
+    const settings = {
+      projectDirectory: getProjectDirectory()
+    };
+    
+    res.json({ 
+      success: true, 
+      data: settings 
+    });
+  } catch (error) {
+    console.error('[SERVER] Error in /api/settings:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
+app.post('/api/settings', async (req, res) => {
+  try {
+    const { projectDirectory } = req.body;
+    
+    if (projectDirectory) {
+      // Validate that the directory exists
+      try {
+        await fs.access(projectDirectory);
+        setProjectDirectory(projectDirectory);
+        console.log(`[SERVER] Project directory updated to: ${projectDirectory}`);
+      } catch (error) {
+        return res.status(400).json({ 
+          success: false, 
+          error: `Directory does not exist: ${projectDirectory}` 
+        });
+      }
+    }
+    
+    const settings = {
+      projectDirectory: getProjectDirectory()
+    };
+    
+    res.json({ 
+      success: true, 
+      data: settings 
+    });
+  } catch (error) {
+    console.error('[SERVER] Error in /api/settings POST:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
+// Git Intelligence API
+app.get('/api/intelligence/git', async (req, res) => {
+  try {
+    const git = require('simple-git')();
+    
+    // Get recent commits (last 30 days)
+    const since = new Date();
+    since.setDate(since.getDate() - 30);
+    
+    const [
+      recentCommits,
+      branches,
+      contributors,
+      fileStats
+    ] = await Promise.all([
+      git.log(['--max-count=50']),
+      git.branch(['--all']),
+      git.raw(['shortlog', '-sn', '--all']),
+      git.diffSummary(['HEAD~10..HEAD']).catch(() => ({ files: [] }))
+    ]);
+
+    // Process commit data for analytics
+    const commitAnalytics = {
+      totalCommits: recentCommits.total,
+      commitsByDay: {},
+      commitsByAuthor: {},
+      commitsByType: { feat: 0, fix: 0, docs: 0, refactor: 0, test: 0, other: 0 }
+    };
+
+    // Filter commits to last 30 days and process
+    const filteredCommits = recentCommits.all.filter(commit => {
+      const commitDate = new Date(commit.date);
+      return commitDate >= since;
+    });
+
+    commitAnalytics.totalCommits = filteredCommits.length;
+
+    filteredCommits.forEach(commit => {
+      const date = commit.date.split('T')[0];
+      const author = commit.author_name;
+      
+      // Count by day
+      commitAnalytics.commitsByDay[date] = (commitAnalytics.commitsByDay[date] || 0) + 1;
+      
+      // Count by author
+      commitAnalytics.commitsByAuthor[author] = (commitAnalytics.commitsByAuthor[author] || 0) + 1;
+      
+      // Count by type (based on commit message)
+      const message = commit.message.toLowerCase();
+      if (message.startsWith('feat')) commitAnalytics.commitsByType.feat++;
+      else if (message.startsWith('fix')) commitAnalytics.commitsByType.fix++;
+      else if (message.startsWith('docs')) commitAnalytics.commitsByType.docs++;
+      else if (message.startsWith('refactor')) commitAnalytics.commitsByType.refactor++;
+      else if (message.startsWith('test')) commitAnalytics.commitsByType.test++;
+      else commitAnalytics.commitsByType.other++;
+    });
+
+    // Process contributor data
+    const contributorList = contributors.split('\n')
+      .filter(line => line.trim())
+      .map(line => {
+        const [commits, ...nameParts] = line.trim().split('\t');
+        return {
+          name: nameParts.join(' ').trim(),
+          commits: parseInt(commits)
+        };
+      });
+
+    // Process branch data
+    const branchList = Object.keys(branches.branches).map(name => ({
+      name: name.replace('remotes/origin/', ''),
+      current: branches.current === name,
+      remote: name.startsWith('remotes/')
+    }));
+
+    // Calculate productivity metrics
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+    
+    const recentCommitsCount = filteredCommits.filter(c => new Date(c.date) > sevenDaysAgo).length;
+    const productivity = {
+      weeklyCommits: recentCommitsCount,
+      monthlyCommits: filteredCommits.length,
+      avgCommitsPerDay: (filteredCommits.length / 30).toFixed(1),
+      filesChanged: fileStats.files ? fileStats.files.length : 0,
+      linesAdded: fileStats.insertions || 0,
+      linesDeleted: fileStats.deletions || 0
+    };
+
+    const intelligence = {
+      repository: {
+        branches: branchList,
+        totalBranches: branchList.length,
+        activeBranches: branchList.filter(b => !b.remote).length
+      },
+      commits: commitAnalytics,
+      contributors: {
+        list: contributorList,
+        total: contributorList.length,
+        mostActive: contributorList[0] || { name: 'Unknown', commits: 0 }
+      },
+      productivity,
+      recentActivity: recentCommits.all.slice(0, 10).map(commit => ({
+        hash: commit.hash.substring(0, 7),
+        message: commit.message,
+        author: commit.author_name,
+        date: commit.date,
+        relative: new Date(commit.date).toLocaleDateString()
+      })),
+      lastUpdated: new Date().toISOString()
+    };
+
+    res.json({ 
+      success: true, 
+      data: intelligence 
+    });
+  } catch (error) {
+    console.error('[SERVER] Error in /api/intelligence/git:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch git intelligence data: ' + error.message 
     });
   }
 });
@@ -1195,6 +1583,251 @@ app.get('/workflows/:workflowId/results', async (req, res) => {
     
     res.json(mockResults);
     
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ===========================================
+// PRD ANALYSIS API ENDPOINTS
+// ===========================================
+
+// Analyze PRD and estimate required Sonnet agents
+app.post('/api/analyze-prd', async (req, res) => {
+  try {
+    const { prdContent } = req.body;
+    
+    if (!prdContent || prdContent.trim().length < 20) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'PRD content must be at least 20 characters long' 
+      });
+    }
+
+    console.log('🔍 Analyzing PRD content for agent estimation...');
+    
+    // Simulate Opus agent analysis
+    const analysis = await analyzeWithOpusAgent(prdContent);
+    
+    res.json({
+      success: true,
+      analysis: analysis,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('Error analyzing PRD:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * Simulate Opus agent analysis to determine Sonnet agent requirements
+ */
+async function analyzeWithOpusAgent(prdContent) {
+  // Simulate processing time
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  const words = prdContent.split(/\s+/).length;
+  const lines = prdContent.split('\n').length;
+  const prdLower = prdContent.toLowerCase();
+  
+  // Analyze complexity factors
+  const complexityFactors = {
+    authentication: prdLower.includes('auth') || prdLower.includes('login') || prdLower.includes('user'),
+    database: prdLower.includes('database') || prdLower.includes('data') || prdLower.includes('storage'),
+    api: prdLower.includes('api') || prdLower.includes('endpoint') || prdLower.includes('rest'),
+    frontend: prdLower.includes('ui') || prdLower.includes('interface') || prdLower.includes('react') || prdLower.includes('vue'),
+    backend: prdLower.includes('server') || prdLower.includes('backend') || prdLower.includes('node'),
+    payment: prdLower.includes('payment') || prdLower.includes('stripe') || prdLower.includes('paypal'),
+    testing: prdLower.includes('test') || prdLower.includes('testing') || prdLower.includes('qa'),
+    deployment: prdLower.includes('deploy') || prdLower.includes('docker') || prdLower.includes('aws'),
+    mobile: prdLower.includes('mobile') || prdLower.includes('app') || prdLower.includes('ios') || prdLower.includes('android'),
+    realtime: prdLower.includes('realtime') || prdLower.includes('websocket') || prdLower.includes('live')
+  };
+  
+  // Count complexity domains
+  const activeDomains = Object.values(complexityFactors).filter(Boolean).length;
+  
+  // Determine project size
+  let projectSize = 'Small';
+  let baseAgents = 2;
+  
+  if (words > 500 || activeDomains > 5) {
+    projectSize = 'Large';
+    baseAgents = 6;
+  } else if (words > 200 || activeDomains > 3) {
+    projectSize = 'Medium';
+    baseAgents = 4;
+  }
+  
+  // Calculate specific agents needed
+  const agentRequirements = [];
+  let totalSonnetAgents = baseAgents;
+  
+  if (complexityFactors.authentication) {
+    agentRequirements.push({ 
+      specialty: 'Authentication & Security', 
+      agents: 1, 
+      reason: 'User management and security implementation' 
+    });
+  }
+  
+  if (complexityFactors.database) {
+    agentRequirements.push({ 
+      specialty: 'Database Design', 
+      agents: 1, 
+      reason: 'Schema design and data management' 
+    });
+  }
+  
+  if (complexityFactors.frontend) {
+    agentRequirements.push({ 
+      specialty: 'Frontend Development', 
+      agents: projectSize === 'Large' ? 2 : 1, 
+      reason: 'UI/UX implementation and user interfaces' 
+    });
+  }
+  
+  if (complexityFactors.backend) {
+    agentRequirements.push({ 
+      specialty: 'Backend Development', 
+      agents: projectSize === 'Large' ? 2 : 1, 
+      reason: 'Server logic and API development' 
+    });
+  }
+  
+  if (complexityFactors.payment) {
+    agentRequirements.push({ 
+      specialty: 'Payment Integration', 
+      agents: 1, 
+      reason: 'Payment gateway and transaction processing' 
+    });
+    totalSonnetAgents += 1; // Payment systems are complex
+  }
+  
+  if (complexityFactors.testing) {
+    agentRequirements.push({ 
+      specialty: 'Quality Assurance', 
+      agents: 1, 
+      reason: 'Testing framework and test implementation' 
+    });
+  }
+  
+  if (complexityFactors.deployment) {
+    agentRequirements.push({ 
+      specialty: 'DevOps & Deployment', 
+      agents: 1, 
+      reason: 'Infrastructure and deployment automation' 
+    });
+  }
+  
+  if (complexityFactors.mobile) {
+    agentRequirements.push({ 
+      specialty: 'Mobile Development', 
+      agents: projectSize === 'Large' ? 2 : 1, 
+      reason: 'Mobile app development for iOS/Android' 
+    });
+    totalSonnetAgents += 1; // Mobile adds complexity
+  }
+  
+  if (complexityFactors.realtime) {
+    agentRequirements.push({ 
+      specialty: 'Real-time Systems', 
+      agents: 1, 
+      reason: 'WebSocket and real-time feature implementation' 
+    });
+    totalSonnetAgents += 1; // Real-time is complex
+  }
+  
+  // Calculate total agents from requirements
+  const calculatedAgents = agentRequirements.reduce((sum, req) => sum + req.agents, 0);
+  totalSonnetAgents = Math.max(totalSonnetAgents, calculatedAgents);
+  
+  // Ensure minimum and maximum bounds
+  totalSonnetAgents = Math.max(2, Math.min(12, totalSonnetAgents));
+  
+  // Generate timeline estimation
+  const estimatedWeeks = Math.ceil(totalSonnetAgents * 1.5 + (projectSize === 'Large' ? 2 : projectSize === 'Medium' ? 1 : 0));
+  
+  return {
+    projectAnalysis: {
+      wordCount: words,
+      lineCount: lines,
+      projectSize: projectSize,
+      complexityScore: activeDomains,
+      estimatedDuration: `${estimatedWeeks} weeks`
+    },
+    agentEstimation: {
+      totalSonnetAgents: totalSonnetAgents,
+      opusAgents: 1, // Always 1 Opus as team lead
+      agentBreakdown: agentRequirements
+    },
+    detectedFeatures: Object.keys(complexityFactors).filter(key => complexityFactors[key]),
+    recommendations: [
+      `Deploy ${totalSonnetAgents} Sonnet agents for optimal task distribution`,
+      `1 Opus agent will coordinate and review all work`,
+      `Estimated completion time: ${estimatedWeeks} weeks`,
+      `Project complexity: ${projectSize} (${activeDomains} domains detected)`
+    ]
+  };
+}
+
+// ===========================================
+// SETTINGS API ENDPOINTS
+// ===========================================
+
+// Update project directory setting
+app.post('/settings/project-directory', async (req, res) => {
+  try {
+    const { directory } = req.body;
+    
+    if (!directory || typeof directory !== 'string') {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Directory path is required' 
+      });
+    }
+    
+    // Validate directory path (basic validation)
+    const path = require('path');
+    const normalizedPath = path.resolve(directory);
+    
+    // Check if directory exists (in a real app, you might create it)
+    try {
+      await fs.access(normalizedPath);
+      
+      // Store the setting (in a real app, save to database)
+      console.log(`📁 Project directory updated to: ${normalizedPath}`);
+      
+      res.json({ 
+        success: true, 
+        directory: normalizedPath,
+        message: 'Project directory updated successfully'
+      });
+      
+    } catch (accessError) {
+      res.status(400).json({ 
+        success: false, 
+        error: 'Directory does not exist or is not accessible' 
+      });
+    }
+    
+  } catch (error) {
+    console.error('Error updating project directory:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get current project directory setting
+app.get('/settings/project-directory', async (req, res) => {
+  try {
+    // In a real app, this would come from database/config
+    const currentDirectory = process.cwd();
+    res.json({ 
+      success: true, 
+      directory: currentDirectory 
+    });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
