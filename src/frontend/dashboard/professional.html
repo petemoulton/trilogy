@@ -114,7 +114,57 @@
         <!-- Settings Tab -->
         <div id="settings" class="tab-content">
             <h2 style="color: #e2e8f0; margin-bottom: 1.5rem;">Settings</h2>
-            <div class="empty-state">Settings panel coming soon...</div>
+            
+            <div class="settings-panel">
+                <div class="setting-section">
+                    <h3 style="color: #e2e8f0; margin-bottom: 1rem;">Appearance</h3>
+                    
+                    <div class="setting-item">
+                        <label style="color: #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: #1e293b; border-radius: 8px; margin-bottom: 1rem;">
+                            <span>
+                                <span style="font-weight: 600;">Dark Mode</span>
+                                <small style="display: block; color: #94a3b8; margin-top: 0.25rem;">Switch between light and dark themes</small>
+                            </span>
+                            <button id="dark-mode-toggle" onclick="toggleDarkMode()" style="
+                                background: #3b82f6; 
+                                color: white; 
+                                border: none; 
+                                padding: 0.5rem 1rem; 
+                                border-radius: 6px; 
+                                cursor: pointer;
+                                font-weight: 600;
+                                transition: background 0.2s;
+                            " onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
+                                🌙 Enable Dark Mode
+                            </button>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="setting-section">
+                    <h3 style="color: #e2e8f0; margin-bottom: 1rem;">System</h3>
+                    
+                    <div class="setting-item">
+                        <label style="color: #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: #1e293b; border-radius: 8px; margin-bottom: 1rem;">
+                            <span>
+                                <span style="font-weight: 600;">Auto-refresh Dashboard</span>
+                                <small style="display: block; color: #94a3b8; margin-top: 0.25rem;">Automatically update dashboard data</small>
+                            </span>
+                            <input type="checkbox" checked style="transform: scale(1.5);">
+                        </label>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label style="color: #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: #1e293b; border-radius: 8px;">
+                            <span>
+                                <span style="font-weight: 600;">Enable Notifications</span>
+                                <small style="display: block; color: #94a3b8; margin-top: 0.25rem;">Show system notifications</small>
+                            </span>
+                            <input type="checkbox" checked style="transform: scale(1.5);">
+                        </label>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -157,6 +207,35 @@
                 window.UIComponents.createNewProject();
             }
         }
+        
+        function toggleDarkMode() {
+            const body = document.body;
+            const button = document.getElementById('dark-mode-toggle');
+            const isDark = body.classList.contains('dark-mode');
+            
+            if (isDark) {
+                // Switch to light mode
+                body.classList.remove('dark-mode');
+                button.innerHTML = '🌙 Enable Dark Mode';
+                localStorage.setItem('darkMode', 'false');
+            } else {
+                // Switch to dark mode
+                body.classList.add('dark-mode');
+                button.innerHTML = '☀️ Disable Dark Mode';
+                localStorage.setItem('darkMode', 'true');
+            }
+        }
+        
+        // Load dark mode preference on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedMode = localStorage.getItem('darkMode');
+            const button = document.getElementById('dark-mode-toggle');
+            
+            if (savedMode === 'true') {
+                document.body.classList.add('dark-mode');
+                if (button) button.innerHTML = '☀️ Disable Dark Mode';
+            }
+        });
     </script>
 </body>
 </html>

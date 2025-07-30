@@ -6,6 +6,19 @@ const { Server } = require('socket.io');
 const auth = require('./auth');
 const { UserDB, SessionDB, EventDB, MacroDB, ScreenshotDB } = require('./database');
 
+// Add process error handlers to prevent crashes
+process.on('uncaughtException', (error) => {
+  console.error('🚨 Uncaught Exception in MCP Server:', error);
+  console.error('Stack:', error.stack);
+  // Don't exit - log the error and continue
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('🚨 Unhandled Promise Rejection in MCP Server:', reason);
+  console.error('Promise:', promise);
+  // Don't exit - log the error and continue
+});
+
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
@@ -96,7 +109,8 @@ async function createSession(tabId, url, title = '') {
   try {
     await SessionDB.create(sessionId, tabId, url, title);
   } catch (error) {
-    console.error('Error saving session to database:', error);
+    console.error('🚨 Error saving session to database:', error);
+    // Continue without throwing - don't crash the server
   }
   
   return sessionId;
@@ -115,7 +129,8 @@ async function updateSessionActivity(sessionId) {
         event_count: session.eventCount
       });
     } catch (error) {
-      console.error('Error updating session in database:', error);
+      console.error('🚨 Error updating session in database:', error);
+      // Continue without throwing - don't crash the server
     }
   }
 }
@@ -175,7 +190,8 @@ app.post('/click-event', validateRequest({ required: ['event', 'url'] }), async 
   try {
     await EventDB.create(clickEvent);
   } catch (error) {
-    console.error('Error saving event to database:', error);
+    console.error('🚨 Error saving event to database:', error);
+    // Continue without throwing - don't crash the server
   }
   
   console.log('Click event received:', clickEvent);
@@ -319,7 +335,7 @@ app.post('/macros', validateRequest({ required: ['name', 'actions'] }), async (r
     
     res.json({ success: true, macroId: result.id });
   } catch (error) {
-    console.error('Error saving macro:', error);
+    console.error('🚨 Error saving macro:', error);
     res.status(500).json({ success: false, error: 'Failed to save macro' });
   }
 });
@@ -330,8 +346,8 @@ app.get('/macros', async (req, res) => {
     const dbMacros = await MacroDB.getAll();
     res.json({ macros: dbMacros });
   } catch (error) {
-    console.error('Error getting macros:', error);
-    res.json({ macros });
+    console.error('🚨 Error getting macros:', error);
+    res.json({ macros }); // Fallback to in-memory macros
   }
 });
 
@@ -344,7 +360,7 @@ app.get('/macros/:id', async (req, res) => {
     }
     res.json({ macro });
   } catch (error) {
-    console.error('Error getting macro:', error);
+    console.error('🚨 Error getting macro:', error);
     res.status(500).json({ success: false, error: 'Database error' });
   }
 });
@@ -358,7 +374,7 @@ app.delete('/macros/:id', async (req, res) => {
     }
     res.json({ success: true });
   } catch (error) {
-    console.error('Error deleting macro:', error);
+    console.error('🚨 Error deleting macro:', error);
     res.status(500).json({ success: false, error: 'Database error' });
   }
 });
@@ -595,4 +611,13 @@ server.listen(PORT, () => {
   console.log(`Dashboard: http://localhost:${PORT}/dashboard`);
   console.log(`WebSocket server enabled for real-time communication`);
   console.log(`Session management enabled with automatic cleanup`);
+});
+
+// Handle server errors
+server.on('error', (error) => {
+  console.error('🚨 MCP Server error:', error);
+  if (error.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use`);
+    process.exit(1);
+  }
 });
