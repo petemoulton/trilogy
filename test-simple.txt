@@ -1,0 +1,16 @@
+Simple Project Requirements
+
+Build a todo list application with the following features:
+- Add new tasks
+- Mark tasks as complete
+- Delete tasks
+- Filter tasks by status
+- Persistent storage
+
+Technical stack:
+- Frontend: React.js
+- Backend: Node.js with Express
+- Database: PostgreSQL
+- Deployment: Docker containers
+
+Timeline: 2-3 weeks for MVP
