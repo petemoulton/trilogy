@@ -683,6 +683,132 @@ app.post('/api/settings', async (req, res) => {
   }
 });
 
+// Git Intelligence API
+app.get('/api/intelligence/git', async (req, res) => {
+  try {
+    const git = require('simple-git')();
+    
+    // Get recent commits (last 30 days)
+    const since = new Date();
+    since.setDate(since.getDate() - 30);
+    
+    const [
+      recentCommits,
+      branches,
+      contributors,
+      fileStats
+    ] = await Promise.all([
+      git.log(['--max-count=50']),
+      git.branch(['--all']),
+      git.raw(['shortlog', '-sn', '--all']),
+      git.diffSummary(['HEAD~10..HEAD']).catch(() => ({ files: [] }))
+    ]);
+
+    // Process commit data for analytics
+    const commitAnalytics = {
+      totalCommits: recentCommits.total,
+      commitsByDay: {},
+      commitsByAuthor: {},
+      commitsByType: { feat: 0, fix: 0, docs: 0, refactor: 0, test: 0, other: 0 }
+    };
+
+    // Filter commits to last 30 days and process
+    const filteredCommits = recentCommits.all.filter(commit => {
+      const commitDate = new Date(commit.date);
+      return commitDate >= since;
+    });
+
+    commitAnalytics.totalCommits = filteredCommits.length;
+
+    filteredCommits.forEach(commit => {
+      const date = commit.date.split('T')[0];
+      const author = commit.author_name;
+      
+      // Count by day
+      commitAnalytics.commitsByDay[date] = (commitAnalytics.commitsByDay[date] || 0) + 1;
+      
+      // Count by author
+      commitAnalytics.commitsByAuthor[author] = (commitAnalytics.commitsByAuthor[author] || 0) + 1;
+      
+      // Count by type (based on commit message)
+      const message = commit.message.toLowerCase();
+      if (message.startsWith('feat')) commitAnalytics.commitsByType.feat++;
+      else if (message.startsWith('fix')) commitAnalytics.commitsByType.fix++;
+      else if (message.startsWith('docs')) commitAnalytics.commitsByType.docs++;
+      else if (message.startsWith('refactor')) commitAnalytics.commitsByType.refactor++;
+      else if (message.startsWith('test')) commitAnalytics.commitsByType.test++;
+      else commitAnalytics.commitsByType.other++;
+    });
+
+    // Process contributor data
+    const contributorList = contributors.split('\n')
+      .filter(line => line.trim())
+      .map(line => {
+        const [commits, ...nameParts] = line.trim().split('\t');
+        return {
+          name: nameParts.join(' ').trim(),
+          commits: parseInt(commits)
+        };
+      });
+
+    // Process branch data
+    const branchList = Object.keys(branches.branches).map(name => ({
+      name: name.replace('remotes/origin/', ''),
+      current: branches.current === name,
+      remote: name.startsWith('remotes/')
+    }));
+
+    // Calculate productivity metrics
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+    
+    const recentCommitsCount = filteredCommits.filter(c => new Date(c.date) > sevenDaysAgo).length;
+    const productivity = {
+      weeklyCommits: recentCommitsCount,
+      monthlyCommits: filteredCommits.length,
+      avgCommitsPerDay: (filteredCommits.length / 30).toFixed(1),
+      filesChanged: fileStats.files ? fileStats.files.length : 0,
+      linesAdded: fileStats.insertions || 0,
+      linesDeleted: fileStats.deletions || 0
+    };
+
+    const intelligence = {
+      repository: {
+        branches: branchList,
+        totalBranches: branchList.length,
+        activeBranches: branchList.filter(b => !b.remote).length
+      },
+      commits: commitAnalytics,
+      contributors: {
+        list: contributorList,
+        total: contributorList.length,
+        mostActive: contributorList[0] || { name: 'Unknown', commits: 0 }
+      },
+      productivity,
+      recentActivity: recentCommits.all.slice(0, 10).map(commit => ({
+        hash: commit.hash.substring(0, 7),
+        message: commit.message,
+        author: commit.author_name,
+        date: commit.date,
+        relative: new Date(commit.date).toLocaleDateString()
+      })),
+      lastUpdated: new Date().toISOString()
+    };
+
+    res.json({ 
+      success: true, 
+      data: intelligence 
+    });
+  } catch (error) {
+    console.error('[SERVER] Error in /api/intelligence/git:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch git intelligence data: ' + error.message 
+    });
+  }
+});
+
 // Memory API
 app.get('/memory/:namespace/:key', async (req, res) => {
   try {

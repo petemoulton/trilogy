@@ -25,7 +25,10 @@
       "Bash(kill:*)",
       "Bash(pkill:*)",
       "Bash(git stash push:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(git shortlog:*)",
+      "Bash(gtimeout:*)",
+      "Bash(sed:*)"
     ],
     "deny": []
   }
