@@ -10,7 +10,7 @@ class AgentRunner {
     this.agentPool = new AgentPool();
     this.running = false;
     this.runnerServer = null;
-    
+
     // Set up agent pool event listeners
     this.setupPoolEventListeners();
   }
@@ -21,13 +21,13 @@ class AgentRunner {
   startRunnerAPI() {
     const app = express();
     app.use(express.json());
-    
+
     // Pool stats endpoint
     app.get('/pool/stats', (req, res) => {
       try {
         const poolStats = this.getPoolStats();
         const allStatuses = this.agentPool.getAllAgentStatuses();
-        
+
         res.json({
           success: true,
           poolStats,
@@ -38,17 +38,17 @@ class AgentRunner {
         res.status(500).json({ success: false, error: error.message });
       }
     });
-    
+
     // Health check
     app.get('/health', (req, res) => {
-      res.json({ 
-        status: 'healthy', 
+      res.json({
+        status: 'healthy',
         running: this.running,
         poolSize: this.getPoolStats().totalAgents,
         timestamp: new Date().toISOString()
       });
     });
-    
+
     this.runnerServer = app.listen(3102, () => {
       console.log('🎯 Agent Runner API started on port 3102');
     });
@@ -77,23 +77,23 @@ class AgentRunner {
 
   async start() {
     console.log('🚀 Starting Trilogy AI Agent System...');
-    
+
     try {
       // Initialize agents
       const sonnetAgent = new SonnetAgent();
       const opusAgent = new OpusAgent();
-      
+
       // Connect agents to server
       await sonnetAgent.connect();
       await opusAgent.connect();
-      
+
       this.agents.set('sonnet', sonnetAgent);
       this.agents.set('opus', opusAgent);
-      
+
       // Register main agents in the pool so they appear in pool stats
       this.agentPool.agents.set('sonnet', sonnetAgent);
       this.agentPool.agents.set('opus', opusAgent);
-      
+
       this.agentPool.agentStatus.set('sonnet', {
         id: 'sonnet',
         role: 'analysis_lead',
@@ -103,7 +103,7 @@ class AgentRunner {
         tasksCompleted: 0,
         currentTask: null
       });
-      
+
       this.agentPool.agentStatus.set('opus', {
         id: 'opus',
         role: 'team_lead',
@@ -113,12 +113,12 @@ class AgentRunner {
         tasksCompleted: 0,
         currentTask: null
       });
-      
+
       this.agentPool.capabilities.set('sonnet', ['prd_analysis', 'task_breakdown', 'rapid_processing']);
       this.agentPool.capabilities.set('opus', ['strategic_planning', 'task_finalization', 'team_coordination']);
       this.agentPool.taskQueues.set('sonnet', []);
       this.agentPool.taskQueues.set('opus', []);
-      
+
       // Attach this runner to the server for API access via HTTP
       try {
         // Wait a moment for server to be ready, then register via API
@@ -126,10 +126,10 @@ class AgentRunner {
           try {
             // Instead of requiring the server module, use HTTP to register
             const http = require('http');
-            const data = JSON.stringify({ 
+            const data = JSON.stringify({
               runner: 'attached',
               agents: ['sonnet', 'opus'],
-              poolReady: true 
+              poolReady: true
             });
 
             const options = {
@@ -171,18 +171,18 @@ class AgentRunner {
       } catch (error) {
         console.log('⚠️ Could not attach to server (server may not be running)');
       }
-      
+
       this.running = true;
       console.log('✅ All agents connected and running');
       console.log('🏊 Agent pool ready for specialist spawning');
-      
+
       // Start runner API server
       this.startRunnerAPI();
-      
+
       // Set up graceful shutdown
       process.on('SIGINT', () => this.shutdown());
       process.on('SIGTERM', () => this.shutdown());
-      
+
     } catch (error) {
       console.error('❌ Failed to start agents:', error);
       process.exit(1);
@@ -191,24 +191,24 @@ class AgentRunner {
 
   async shutdown() {
     if (!this.running) return;
-    
+
     console.log('🔄 Shutting down agents...');
     this.running = false;
-    
+
     // Shutdown runner server
     if (this.runnerServer) {
       this.runnerServer.close();
       console.log('🔌 Runner API server shut down');
     }
-    
+
     // Shutdown core agents
-    const shutdownPromises = Array.from(this.agents.values()).map(agent => 
+    const shutdownPromises = Array.from(this.agents.values()).map(agent =>
       agent.shutdown()
     );
-    
+
     // Shutdown agent pool
     await this.agentPool.shutdown();
-    
+
     await Promise.all(shutdownPromises);
     console.log('✅ All agents shut down successfully');
     process.exit(0);
@@ -244,7 +244,7 @@ class AgentRunner {
    */
   async triggerMultiAgentWorkflow(prdContent) {
     console.log('🔄 Triggering Multi-Agent Workflow...');
-    
+
     try {
       // Step 1: Team Lead (Opus) analyzes PRD and determines specialist needs
       const opus = this.getAgent('opus');
@@ -263,7 +263,7 @@ class AgentRunner {
       const spawnedAgents = [];
       for (const requirement of teamPlan.agentRequirements) {
         const agentId = await this.agentPool.spawnAgent(
-          requirement.role, 
+          requirement.role,
           requirement.capabilities,
           requirement.config
         );
@@ -297,7 +297,7 @@ class AgentRunner {
         throw new Error('Task assignment failed: ' + taskAssignments.error);
       }
 
-      console.log(`✅ Multi-agent workflow setup complete:`);
+      console.log('✅ Multi-agent workflow setup complete:');
       console.log(`   - ${spawnedAgents.length} specialist agents spawned`);
       console.log(`   - ${taskBreakdown.tasks.length} tasks generated`);
       console.log(`   - ${taskAssignments.assignments.length} assignments made`);
@@ -322,7 +322,7 @@ class AgentRunner {
 
   async triggerWorkflow(prdContent) {
     console.log('🔄 Triggering Sonnet → Opus workflow...');
-    
+
     try {
       // Step 1: Sonnet analyzes PRD
       const sonnet = this.getAgent('sonnet');
@@ -330,35 +330,35 @@ class AgentRunner {
         type: 'analyze_prd',
         prd: prdContent
       });
-      
+
       if (!analysis.success) {
         throw new Error('Sonnet analysis failed: ' + analysis.error);
       }
-      
+
       // Step 2: Sonnet generates tasks
       const taskBreakdown = await sonnet.process({
         type: 'breakdown_tasks',
         requirements: [
-          'memory', 'agents', 'VS Code', 'Chrome', 
+          'memory', 'agents', 'VS Code', 'Chrome',
           'shared state', 'browser automation'
         ]
       });
-      
+
       if (!taskBreakdown.success) {
         throw new Error('Task breakdown failed: ' + taskBreakdown.error);
       }
-      
+
       // Step 3: Opus reviews and finalizes
       const opus = this.getAgent('opus');
       const finalDecision = await opus.process({
         type: 'finalize_tasks',
         tasks: taskBreakdown.taskBreakdown.tasks
       });
-      
+
       if (!finalDecision.success) {
         throw new Error('Opus finalization failed: ' + finalDecision.error);
       }
-      
+
       console.log('✅ Workflow completed successfully');
       return {
         success: true,
@@ -367,7 +367,7 @@ class AgentRunner {
         finalDecision: finalDecision.finalOutput,
         message: 'Sonnet → Opus workflow completed'
       };
-      
+
     } catch (error) {
       console.error('❌ Workflow failed:', error);
       return {
@@ -381,31 +381,31 @@ class AgentRunner {
 // CLI interface
 async function main() {
   const runner = new AgentRunner();
-  
+
   if (process.argv.includes('--workflow')) {
     // Run the full workflow
     await runner.start();
-    
+
     // Wait a moment for connections to stabilize
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
+
     // Read PRD and trigger workflow
     const fs = require('fs');
     const path = require('path');
     const prdPath = path.join(__dirname, '../../../docs/design/trilogy_prd.md');
-    
+
     if (fs.existsSync(prdPath)) {
       const prdContent = fs.readFileSync(prdPath, 'utf8');
-      
+
       // Choose workflow type based on arguments
       const useMultiAgent = process.argv.includes('--multi-agent');
-      const result = useMultiAgent 
+      const result = useMultiAgent
         ? await runner.triggerMultiAgentWorkflow(prdContent)
         : await runner.triggerWorkflow(prdContent);
-      
+
       if (result.success) {
         console.log('🎉 Workflow Results:');
-        
+
         if (useMultiAgent) {
           console.log(`🤖 Specialist Agents: ${result.spawnedAgents.length}`);
           console.log(`📋 Tasks Generated: ${result.taskBreakdown.length}`);
@@ -424,14 +424,14 @@ async function main() {
     } else {
       console.error('❌ PRD file not found:', prdPath);
     }
-    
+
   } else {
     // Just start agents
     await runner.start();
     console.log('💡 Agents running. Available options:');
     console.log('   --workflow                Run traditional Sonnet → Opus workflow');
     console.log('   --workflow --multi-agent  Run new multi-agent coordination workflow');
-    
+
     // Keep process alive indefinitely
     console.log('🔄 Keeping agents alive...');
     setInterval(() => {
@@ -439,7 +439,7 @@ async function main() {
         console.log(`💓 Agents alive - Pool size: ${runner.getPoolStats().totalAgents}`);
       }
     }, 30000); // Heartbeat every 30 seconds
-    
+
     // Prevent process exit
     process.stdin.resume();
   }

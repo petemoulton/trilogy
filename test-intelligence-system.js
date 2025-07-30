@@ -2,7 +2,7 @@
 
 /**
  * Trilogy AI System - Milestone 4 Intelligence Enhancement Test Suite
- * 
+ *
  * Tests the new intelligence capabilities:
  * - Complex task breakdown
  * - Learning memory patterns
@@ -22,18 +22,18 @@ class IntelligenceTestSuite {
       failed: 0,
       details: []
     };
-    
+
     this.opus = new OpusAgent({
       memoryPath: path.join(__dirname, 'memory'),
       serverUrl: null // Skip WebSocket for testing
     });
-    
+
     // Mock writeMemory for testing (to avoid server connection errors)
     this.opus.writeMemory = async (namespace, key, data) => {
       console.log(`📝 Mock memory write: ${namespace}/${key}`);
       return true;
     };
-    
+
     this.intelligenceEngine = new IntelligenceEngine({
       memoryPath: path.join(__dirname, 'memory'),
       learningThreshold: 0.7,
@@ -43,31 +43,31 @@ class IntelligenceTestSuite {
 
   async runAllTests() {
     console.log('🧠 Starting Milestone 4 Intelligence Enhancement Tests...\n');
-    
+
     try {
       // Wait for intelligence engine to initialize
       await this.waitForIntelligenceReady();
-      
+
       // Test 1: Complex Task Breakdown
       await this.testComplexTaskBreakdown();
-      
+
       // Test 2: Intelligent Decision Making
       await this.testIntelligentDecisionMaking();
-      
+
       // Test 3: Predictive Agent Spawning
       await this.testPredictiveAgentSpawning();
-      
+
       // Test 4: Learning Pattern Recognition
       await this.testLearningPatterns();
-      
+
       // Test 5: Multi-criteria Decision Optimization
       await this.testDecisionOptimization();
-      
+
       // Test 6: Integration with Existing System
       await this.testSystemIntegration();
-      
+
       this.printResults();
-      
+
     } catch (error) {
       console.error('❌ Test suite failed with error:', error);
       process.exit(1);
@@ -87,16 +87,16 @@ class IntelligenceTestSuite {
   async testComplexTaskBreakdown() {
     const testName = 'Complex Task Breakdown';
     console.log(`🔍 Testing: ${testName}`);
-    
+
     try {
       const taskDescription = 'Build a real-time collaborative document editor with AI-powered suggestions and version control';
       const context = {
         project: { domain: 'web-development', complexity: 'high' },
         constraints: { timeline: '4 weeks', team: 'small' }
       };
-      
+
       const result = await this.opus.performComplexTaskBreakdown(taskDescription, context);
-      
+
       // Assertions
       this.assert(result.success === true, 'Task breakdown should succeed');
       this.assert(result.breakdown !== undefined, 'Should return breakdown structure');
@@ -104,10 +104,10 @@ class IntelligenceTestSuite {
       this.assert(result.breakdown.estimatedComplexity > 0, 'Should calculate complexity score');
       this.assert(Array.isArray(result.breakdown.riskFactors), 'Should identify risk factors');
       this.assert(result.strategicAnalysis !== undefined, 'Should include strategic analysis');
-      
+
       console.log(`  ✅ Breakdown created: ${result.breakdown.levels.length} levels, complexity: ${result.breakdown.estimatedComplexity}/10`);
       this.recordTest(testName, true, 'Complex task breakdown working correctly');
-      
+
     } catch (error) {
       console.log(`  ❌ Test failed: ${error.message}`);
       this.recordTest(testName, false, error.message);
@@ -117,7 +117,7 @@ class IntelligenceTestSuite {
   async testIntelligentDecisionMaking() {
     const testName = 'Intelligent Decision Making';
     console.log(`🧠 Testing: ${testName}`);
-    
+
     try {
       const options = [
         {
@@ -129,7 +129,7 @@ class IntelligenceTestSuite {
           cost: 5
         },
         {
-          id: 'option2', 
+          id: 'option2',
           name: 'Server-Sent Events',
           feasibility: 9,
           impact: 5,
@@ -145,11 +145,11 @@ class IntelligenceTestSuite {
           cost: 8
         }
       ];
-      
+
       const context = { type: 'technical', priority: 'performance' };
-      
+
       const result = await this.opus.makeIntelligentDecision(options, context);
-      
+
       // Assertions
       this.assert(result.success === true, 'Decision making should succeed');
       this.assert(result.decision !== undefined, 'Should return decision');
@@ -157,10 +157,10 @@ class IntelligenceTestSuite {
       this.assert(result.decision.confidence > 0 && result.decision.confidence <= 1, 'Should have valid confidence score');
       this.assert(Array.isArray(result.decision.reasoning), 'Should provide reasoning');
       this.assert(result.decision.riskAssessment !== undefined, 'Should include risk assessment');
-      
+
       console.log(`  ✅ Decision made: ${result.decision.selectedOption.name} (confidence: ${Math.round(result.decision.confidence * 100)}%)`);
       this.recordTest(testName, true, 'Intelligent decision making working correctly');
-      
+
     } catch (error) {
       console.log(`  ❌ Test failed: ${error.message}`);
       this.recordTest(testName, false, error.message);
@@ -170,7 +170,7 @@ class IntelligenceTestSuite {
   async testPredictiveAgentSpawning() {
     const testName = 'Predictive Agent Spawning';
     console.log(`🔮 Testing: ${testName}`);
-    
+
     try {
       // Create mock task breakdown
       const taskBreakdown = {
@@ -187,13 +187,13 @@ class IntelligenceTestSuite {
         requiredSkills: new Set(['frontend-development', 'backend-development', 'react', 'nodejs']),
         estimatedComplexity: 7
       };
-      
+
       const currentAgentPool = [
         { id: 'agent1', type: 'generalist', capabilities: ['basic-development'], status: 'idle' }
       ];
-      
+
       const result = await this.opus.predictiveAgentSpawning(taskBreakdown, currentAgentPool);
-      
+
       // Assertions
       this.assert(result.success === true, 'Predictive spawning should succeed');
       this.assert(result.predictions !== undefined, 'Should return predictions');
@@ -201,14 +201,14 @@ class IntelligenceTestSuite {
       this.assert(Array.isArray(result.recommendations.immediateSpawns), 'Should categorize immediate spawns');
       this.assert(Array.isArray(result.recommendations.scheduledSpawns), 'Should categorize scheduled spawns');
       this.assert(Array.isArray(result.recommendations.contingencySpawns), 'Should categorize contingency spawns');
-      
-      const totalRecommendations = result.recommendations.immediateSpawns.length + 
-                                  result.recommendations.scheduledSpawns.length + 
+
+      const totalRecommendations = result.recommendations.immediateSpawns.length +
+                                  result.recommendations.scheduledSpawns.length +
                                   result.recommendations.contingencySpawns.length;
-      
+
       console.log(`  ✅ Predictions generated: ${totalRecommendations} agents recommended`);
       this.recordTest(testName, true, 'Predictive agent spawning working correctly');
-      
+
     } catch (error) {
       console.log(`  ❌ Test failed: ${error.message}`);
       this.recordTest(testName, false, error.message);
@@ -218,7 +218,7 @@ class IntelligenceTestSuite {
   async testLearningPatterns() {
     const testName = 'Learning Pattern Recognition';
     console.log(`🎓 Testing: ${testName}`);
-    
+
     try {
       const projectContext = {
         domain: 'web-development',
@@ -226,9 +226,9 @@ class IntelligenceTestSuite {
         features: ['real-time', 'collaboration', 'ai-integration'],
         timeline: '4 weeks'
       };
-      
+
       const result = await this.opus.analyzeHistoricalPatterns(projectContext);
-      
+
       // Assertions
       this.assert(result.success === true, 'Pattern analysis should succeed');
       this.assert(result.patterns !== undefined, 'Should return patterns');
@@ -236,10 +236,10 @@ class IntelligenceTestSuite {
       this.assert(result.insights.successPatterns !== undefined, 'Should identify success patterns');
       this.assert(result.insights.riskPatterns !== undefined, 'Should identify risk patterns');
       this.assert(Array.isArray(result.insights.recommendations), 'Should provide recommendations');
-      
-      console.log(`  ✅ Pattern analysis complete: insights generated`);
+
+      console.log('  ✅ Pattern analysis complete: insights generated');
       this.recordTest(testName, true, 'Learning pattern recognition working correctly');
-      
+
     } catch (error) {
       console.log(`  ❌ Test failed: ${error.message}`);
       this.recordTest(testName, false, error.message);
@@ -249,7 +249,7 @@ class IntelligenceTestSuite {
   async testDecisionOptimization() {
     const testName = 'Multi-criteria Decision Optimization';
     console.log(`🌳 Testing: ${testName}`);
-    
+
     try {
       const currentState = {
         agentPool: 2,
@@ -257,15 +257,15 @@ class IntelligenceTestSuite {
         averageComplexity: 6.5,
         efficiency: 78
       };
-      
+
       const goals = {
         targetEfficiency: 90,
         maxComplexity: 8,
         completionTime: '3 weeks'
       };
-      
+
       const result = await this.opus.optimizeWithLearning(currentState, goals);
-      
+
       // Assertions
       this.assert(result.success === true, 'Optimization should succeed');
       this.assert(result.plan !== undefined, 'Should return optimization plan');
@@ -273,10 +273,10 @@ class IntelligenceTestSuite {
       this.assert(result.plan.targetState !== undefined, 'Should include target state');
       this.assert(Array.isArray(result.plan.optimizations), 'Should include optimizations');
       this.assert(Array.isArray(result.plan.implementationSteps), 'Should include implementation steps');
-      
+
       console.log(`  ✅ Optimization plan generated: ${result.plan.optimizations.length} recommendations`);
       this.recordTest(testName, true, 'Decision optimization working correctly');
-      
+
     } catch (error) {
       console.log(`  ❌ Test failed: ${error.message}`);
       this.recordTest(testName, false, error.message);
@@ -286,24 +286,24 @@ class IntelligenceTestSuite {
   async testSystemIntegration() {
     const testName = 'System Integration';
     console.log(`🔗 Testing: ${testName}`);
-    
+
     try {
       // Test that enhanced Opus agent maintains backward compatibility
       const basicTasks = [
-        { 
-          id: 'task1', 
-          title: 'Basic Task', 
-          category: 'development', 
+        {
+          id: 'task1',
+          title: 'Basic Task',
+          category: 'development',
           priority: 'HIGH',
           complexity: 'MEDIUM',
           estimatedHours: 8,
           dependencies: [],
           blockers: []
         },
-        { 
-          id: 'task2', 
-          title: 'Another Task', 
-          category: 'testing', 
+        {
+          id: 'task2',
+          title: 'Another Task',
+          category: 'testing',
           priority: 'MEDIUM',
           complexity: 'LOW',
           estimatedHours: 4,
@@ -311,23 +311,23 @@ class IntelligenceTestSuite {
           blockers: []
         }
       ];
-      
+
       const result = await this.opus.finalizeTasks(basicTasks);
-      
+
       // Assertions
       this.assert(result.success === true, 'Basic functionality should still work');
       this.assert(result.finalOutput !== undefined, 'Should return final output');
       this.assert(Array.isArray(result.finalOutput.approved), 'Should have approved tasks');
       this.assert(result.finalOutput.roadmap !== undefined, 'Should generate roadmap');
-      
+
       // Test that new capabilities are available
       this.assert(this.opus.capabilities.includes('Complex Task Breakdown'), 'Should have new capabilities');
       this.assert(this.opus.capabilities.includes('Learning Pattern Recognition'), 'Should have learning capabilities');
       this.assert(this.opus.capabilities.includes('Predictive Agent Spawning'), 'Should have predictive capabilities');
-      
-      console.log(`  ✅ Integration verified: backward compatibility maintained, new features available`);
+
+      console.log('  ✅ Integration verified: backward compatibility maintained, new features available');
       this.recordTest(testName, true, 'System integration working correctly');
-      
+
     } catch (error) {
       console.log(`  ❌ Test failed: ${error.message}`);
       this.recordTest(testName, false, error.message);
@@ -347,7 +347,7 @@ class IntelligenceTestSuite {
     } else {
       this.testResults.failed++;
     }
-    
+
     this.testResults.details.push({
       name,
       passed,
@@ -363,7 +363,7 @@ class IntelligenceTestSuite {
     console.log(`✅ Passed: ${this.testResults.passed}`);
     console.log(`❌ Failed: ${this.testResults.failed}`);
     console.log(`Success Rate: ${Math.round((this.testResults.passed / this.testResults.total) * 100)}%`);
-    
+
     if (this.testResults.failed > 0) {
       console.log('\n❌ FAILED TESTS:');
       this.testResults.details
@@ -372,7 +372,7 @@ class IntelligenceTestSuite {
           console.log(`  - ${test.name}: ${test.details}`);
         });
     }
-    
+
     console.log('\n✅ INTELLIGENCE FEATURES VERIFIED:');
     console.log('  - Complex multi-level task breakdown');
     console.log('  - Learning pattern recognition and application');
@@ -380,7 +380,7 @@ class IntelligenceTestSuite {
     console.log('  - Advanced multi-criteria decision optimization');
     console.log('  - Backward compatibility with existing system');
     console.log('  - Professional intelligence dashboard interface');
-    
+
     console.log('\n🎯 MILESTONE 4 STATUS:');
     if (this.testResults.failed === 0) {
       console.log('✅ INTELLIGENCE ENHANCEMENT COMPLETE - All tests passed!');
@@ -388,7 +388,7 @@ class IntelligenceTestSuite {
     } else {
       console.log('⚠️  Some tests failed - review and fix before deployment');
     }
-    
+
     console.log('='.repeat(60));
   }
 }

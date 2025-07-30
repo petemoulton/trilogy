@@ -20,11 +20,11 @@ class AgentPool extends EventEmitter {
    */
   async spawnAgent(role, capabilities = [], config = {}) {
     const agentId = `agent-${this.nextAgentId++}`;
-    
+
     try {
       // Dynamic import of specialist agent
       const SpecialistAgent = require('./specialist-agent');
-      
+
       const agent = new SpecialistAgent(agentId, {
         role,
         capabilities,
@@ -33,7 +33,7 @@ class AgentPool extends EventEmitter {
 
       // Initialize agent connection
       await agent.connect();
-      
+
       // Store in pool
       this.agents.set(agentId, agent);
       this.agentStatus.set(agentId, {
@@ -71,16 +71,16 @@ class AgentPool extends EventEmitter {
     });
 
     agent.on('task_started', (taskId) => {
-      this.updateAgentStatus(agentId, { 
+      this.updateAgentStatus(agentId, {
         status: 'working',
-        currentTask: taskId 
+        currentTask: taskId
       });
       this.emit('agent_task_started', { agentId, taskId });
     });
 
     agent.on('task_completed', (taskId, result) => {
       const currentStatus = this.agentStatus.get(agentId);
-      this.updateAgentStatus(agentId, { 
+      this.updateAgentStatus(agentId, {
         status: 'idle',
         currentTask: null,
         tasksCompleted: (currentStatus.tasksCompleted || 0) + 1
@@ -146,7 +146,7 @@ class AgentPool extends EventEmitter {
    */
   findAgentsByCapability(capability) {
     const matchingAgents = [];
-    
+
     for (const [agentId, capabilities] of this.capabilities.entries()) {
       if (capabilities.includes(capability)) {
         matchingAgents.push({
@@ -156,7 +156,7 @@ class AgentPool extends EventEmitter {
         });
       }
     }
-    
+
     return matchingAgents;
   }
 
@@ -176,7 +176,7 @@ class AgentPool extends EventEmitter {
 
       // Calculate capability match score
       let score = 0;
-      
+
       // Points for matching capabilities
       for (const required of requiredCapabilities) {
         if (capabilities.includes(required)) {
@@ -206,7 +206,7 @@ class AgentPool extends EventEmitter {
    */
   async assignTask(agentId, task) {
     const agent = this.agents.get(agentId);
-    
+
     if (!agent) {
       throw new Error(`Agent ${agentId} not found`);
     }
@@ -238,13 +238,13 @@ class AgentPool extends EventEmitter {
     if (!agent || queue.length === 0) return;
 
     const task = queue[0]; // Process first task
-    
+
     try {
       await agent.processTask(task);
-      
+
       // Remove completed task from queue
       queue.shift();
-      
+
       // Process next task if available
       if (queue.length > 0) {
         setTimeout(() => this.processNextTask(agentId), 100);
@@ -260,7 +260,7 @@ class AgentPool extends EventEmitter {
    */
   async removeAgent(agentId) {
     const agent = this.agents.get(agentId);
-    
+
     if (agent) {
       try {
         // Only call disconnect if the agent has this method (specialist agents)
@@ -275,12 +275,12 @@ class AgentPool extends EventEmitter {
       } catch (error) {
         console.error(`Error disconnecting agent ${agentId}:`, error.message);
       }
-      
+
       this.agents.delete(agentId);
       this.agentStatus.delete(agentId);
       this.capabilities.delete(agentId);
       this.taskQueues.delete(agentId);
-      
+
       console.log(`🗑️ Agent removed: ${agentId}`);
       this.emit('agent_removed', { agentId });
     }
@@ -291,7 +291,7 @@ class AgentPool extends EventEmitter {
    */
   getPoolStats() {
     const statuses = Array.from(this.agentStatus.values());
-    
+
     return {
       totalAgents: this.agents.size,
       activeAgents: statuses.filter(s => s.status === 'working').length,
@@ -309,13 +309,13 @@ class AgentPool extends EventEmitter {
    */
   async shutdown() {
     console.log('🔄 Shutting down agent pool...');
-    
-    const shutdownPromises = Array.from(this.agents.keys()).map(agentId => 
+
+    const shutdownPromises = Array.from(this.agents.keys()).map(agentId =>
       this.removeAgent(agentId)
     );
-    
+
     await Promise.all(shutdownPromises);
-    
+
     console.log('✅ Agent pool shutdown complete');
     this.emit('pool_shutdown');
   }

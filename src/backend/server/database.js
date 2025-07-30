@@ -12,9 +12,9 @@ class PostgreSQLMemory {
       password: config.password || process.env.POSTGRES_PASSWORD || 'trilogy123',
       max: 20,
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
+      connectionTimeoutMillis: 2000
     };
-    
+
     this.pool = null;
     this.isConnected = false;
   }
@@ -22,14 +22,14 @@ class PostgreSQLMemory {
   async connect() {
     try {
       this.pool = new Pool(this.config);
-      
+
       // Test connection
       const client = await this.pool.connect();
       client.release();
-      
+
       await this.initializeTables();
       this.isConnected = true;
-      
+
       console.log('✅ Connected to PostgreSQL memory system');
       return true;
     } catch (error) {
@@ -204,13 +204,13 @@ class PostgreSQLMemory {
       if (result.rows.length === 0) return null;
 
       const row = result.rows[0];
-      
+
       if (row.content_type === 'json' && row.value) {
         return row.value;
       } else if (row.content_type === 'text' && row.content) {
         return row.content;
       }
-      
+
       return row.value || row.content;
     } catch (error) {
       console.error(`Memory read error for ${namespace}/${key}:`, error);
@@ -231,7 +231,7 @@ class PostgreSQLMemory {
     try {
       const isString = typeof data === 'string';
       const contentType = isString ? 'text' : 'json';
-      
+
       await this.pool.query(`
         INSERT INTO memory_store (namespace, key, value, content, content_type)
         VALUES ($1, $2, $3, $4, $5)
@@ -241,8 +241,8 @@ class PostgreSQLMemory {
           content_type = EXCLUDED.content_type,
           updated_at = CURRENT_TIMESTAMP
       `, [
-        namespace, 
-        key, 
+        namespace,
+        key,
         isString ? null : JSON.stringify(data),
         isString ? data : null,
         contentType
@@ -250,7 +250,7 @@ class PostgreSQLMemory {
 
       // Log the write operation
       await this.logOperation(namespace, key, 'write', data);
-      
+
       return true;
     } finally {
       await this.releaseLock(namespace, key);
@@ -296,8 +296,8 @@ class PostgreSQLMemory {
 
   async logOperation(namespace, key, operation, data) {
     try {
-      const dataPreview = typeof data === 'string' 
-        ? data.substring(0, 200) 
+      const dataPreview = typeof data === 'string'
+        ? data.substring(0, 200)
         : JSON.stringify(data || null).substring(0, 200);
 
       await this.pool.query(`

@@ -24,14 +24,14 @@ class OpusAgent extends BaseAgent {
       'Historical Performance Analysis'
     ];
     this.teamLeadMode = true;
-    
+
     // Initialize Intelligence Engine
     this.intelligenceEngine = new IntelligenceEngine({
       memoryPath: config.memoryPath || './memory',
       learningThreshold: 0.7,
       maxTaskDepth: 5
     });
-    
+
     this.intelligenceEngine.on('intelligence_ready', () => {
       console.log('🧠 Opus Agent: Intelligence Engine ready');
     });
@@ -39,44 +39,44 @@ class OpusAgent extends BaseAgent {
 
   async process(input) {
     console.log(`🎯 Opus Agent processing: ${input.type || 'unknown'}`);
-    
+
     try {
       switch (input.type) {
-        case 'finalize_tasks':
-          return await this.finalizeTasks(input.tasks);
-        case 'prioritize_roadmap':
-          return await this.prioritizeRoadmap(input.requirements);
-        case 'make_decision':
-          return await this.makeDecision(input.options);
-        case 'review_sonnet_output':
-          return await this.reviewSonnetOutput(input.analysis);
+      case 'finalize_tasks':
+        return await this.finalizeTasks(input.tasks);
+      case 'prioritize_roadmap':
+        return await this.prioritizeRoadmap(input.requirements);
+      case 'make_decision':
+        return await this.makeDecision(input.options);
+      case 'review_sonnet_output':
+        return await this.reviewSonnetOutput(input.analysis);
         // NEW: Team Lead capabilities for Milestone 2
-        case 'analyze_prd':
-          return await this.analyzePRD(input.prdContent);
-        case 'allocate_tasks':
-          return await this.allocateTasksToAgents(input.tasks, input.agentPool);
-        case 'rebalance_workload':
-          return await this.rebalanceWorkload(input.agentPool);
-        case 'evaluate_agent_capacity':
-          return await this.evaluateAgentCapacity(input.agentId);
-        case 'optimize_allocation':
-          return await this.optimizeTaskAllocation(input.currentAllocation);
+      case 'analyze_prd':
+        return await this.analyzePRD(input.prdContent);
+      case 'allocate_tasks':
+        return await this.allocateTasksToAgents(input.tasks, input.agentPool);
+      case 'rebalance_workload':
+        return await this.rebalanceWorkload(input.agentPool);
+      case 'evaluate_agent_capacity':
+        return await this.evaluateAgentCapacity(input.agentId);
+      case 'optimize_allocation':
+        return await this.optimizeTaskAllocation(input.currentAllocation);
         // NEW: Milestone 4 Intelligence Enhancement capabilities
-        case 'complex_breakdown':
-          return await this.performComplexTaskBreakdown(input.taskDescription, input.context);
-        case 'intelligent_decision':
-          return await this.makeIntelligentDecision(input.options, input.context);
-        case 'predictive_spawning':
-          return await this.predictiveAgentSpawning(input.taskBreakdown, input.agentPool);
-        case 'analyze_patterns':
-          return await this.analyzeHistoricalPatterns(input.projectContext);
-        case 'optimize_with_learning':
-          return await this.optimizeWithLearning(input.currentState, input.goals);
-        default:
-          return await this.handleGenericInput(input);
+      case 'complex_breakdown':
+        return await this.performComplexTaskBreakdown(input.taskDescription, input.context);
+      case 'intelligent_decision':
+        return await this.makeIntelligentDecision(input.options, input.context);
+      case 'predictive_spawning':
+        return await this.predictiveAgentSpawning(input.taskBreakdown, input.agentPool);
+      case 'analyze_patterns':
+        return await this.analyzeHistoricalPatterns(input.projectContext);
+      case 'optimize_with_learning':
+        return await this.optimizeWithLearning(input.currentState, input.goals);
+      default:
+        return await this.handleGenericInput(input);
       }
     } catch (error) {
-      console.error(`Opus Agent processing error:`, error);
+      console.error('Opus Agent processing error:', error);
       return {
         success: false,
         error: error.message,
@@ -87,7 +87,7 @@ class OpusAgent extends BaseAgent {
 
   async finalizeTasks(generatedTasks) {
     console.log(`🔍 Opus reviewing ${generatedTasks.length} tasks from Sonnet`);
-    
+
     // Filter and prioritize tasks
     const approvedTasks = [];
     const rejectedTasks = [];
@@ -95,30 +95,30 @@ class OpusAgent extends BaseAgent {
 
     for (const task of generatedTasks) {
       const decision = await this.evaluateTask(task);
-      
+
       switch (decision.action) {
-        case 'APPROVE':
-          approvedTasks.push({
-            ...task,
-            status: 'APPROVED',
-            opusNotes: decision.reasoning
-          });
-          break;
-        case 'REJECT':
-          rejectedTasks.push({
-            ...task,
-            status: 'REJECTED',
-            opusNotes: decision.reasoning
-          });
-          break;
-        case 'MODIFY':
-          modifiedTasks.push({
-            ...task,
-            ...decision.modifications,
-            status: 'MODIFIED',
-            opusNotes: decision.reasoning
-          });
-          break;
+      case 'APPROVE':
+        approvedTasks.push({
+          ...task,
+          status: 'APPROVED',
+          opusNotes: decision.reasoning
+        });
+        break;
+      case 'REJECT':
+        rejectedTasks.push({
+          ...task,
+          status: 'REJECTED',
+          opusNotes: decision.reasoning
+        });
+        break;
+      case 'MODIFY':
+        modifiedTasks.push({
+          ...task,
+          ...decision.modifications,
+          status: 'MODIFIED',
+          opusNotes: decision.reasoning
+        });
+        break;
       }
     }
 
@@ -176,7 +176,7 @@ class OpusAgent extends BaseAgent {
       const modifications = this.suggestModifications(task, evaluation);
       return {
         action: 'MODIFY',
-        reasoning: `Task has potential but needs adjustments`,
+        reasoning: 'Task has potential but needs adjustments',
         modifications
       };
     }
@@ -184,32 +184,32 @@ class OpusAgent extends BaseAgent {
 
   assessStrategicValue(task) {
     let score = 5; // Base score
-    
+
     // High value indicators
     if (task.category === 'Core System') score += 3;
     if (task.priority === 'HIGH') score += 2;
     if (task.title.includes('Memory') || task.title.includes('Agent')) score += 2;
-    
+
     // Adjust for complexity vs. impact
     if (task.complexity === 'HIGH' && task.estimatedHours < 20) score += 1;
     if (task.complexity === 'LOW' && task.estimatedHours > 10) score -= 1;
-    
+
     return Math.min(10, Math.max(1, score));
   }
 
   assessImplementationRisk(task) {
     let risk = 3; // Base risk
-    
+
     // Risk factors
     if (task.complexity === 'HIGH') risk += 3;
     if (task.blockers.length > 1) risk += 2;
     if (task.dependencies.length > 2) risk += 2;
     if (task.estimatedHours > 20) risk += 1;
-    
+
     // Risk mitigation factors
     if (task.category === 'Integration') risk -= 1;
     if (task.blockers.length === 0) risk -= 1;
-    
+
     return Math.min(10, Math.max(1, risk));
   }
 
@@ -220,7 +220,7 @@ class OpusAgent extends BaseAgent {
       'MEDIUM': 2,
       'HIGH': 3
     };
-    
+
     const efficiency = task.estimatedHours / complexityMultiplier[task.complexity];
     return efficiency < 5 ? 8 : efficiency < 8 ? 6 : 4;
   }
@@ -228,31 +228,31 @@ class OpusAgent extends BaseAgent {
   assessTimelineFit(task) {
     // Assess how well task fits in project timeline
     let fit = 7; // Base fit score
-    
+
     if (task.dependencies.length === 0) fit += 2; // Can start immediately
     if (task.category === 'Infrastructure') fit += 1; // Foundation tasks
     if (task.estimatedHours > 15) fit -= 2; // Large tasks harder to fit
-    
+
     return Math.min(10, Math.max(1, fit));
   }
 
   suggestModifications(task, evaluation) {
     const modifications = {};
-    
+
     // Reduce scope if too complex
     if (task.complexity === 'HIGH' && task.estimatedHours > 15) {
       modifications.estimatedHours = Math.ceil(task.estimatedHours * 0.7);
       modifications.complexity = 'MEDIUM';
       modifications.description = task.description + ' (reduced scope)';
     }
-    
+
     // Adjust priority based on strategic value
     if (evaluation.strategicValue > 7) {
       modifications.priority = 'HIGH';
     } else if (evaluation.strategicValue < 4) {
       modifications.priority = 'LOW';
     }
-    
+
     // Add risk mitigation
     if (evaluation.implementationRisk > 6) {
       modifications.riskMitigation = [
@@ -261,14 +261,14 @@ class OpusAgent extends BaseAgent {
         'Consider proof of concept first'
       ];
     }
-    
+
     return modifications;
   }
 
   generateRoadmap(approvedTasks) {
     // Sort tasks by priority and dependencies
     const sortedTasks = this.topologicalSort(approvedTasks);
-    
+
     // Create phases
     const phases = [
       {
@@ -309,10 +309,10 @@ class OpusAgent extends BaseAgent {
     // Simple dependency-based sorting
     const sorted = [];
     const visited = new Set();
-    
+
     const visit = (task) => {
       if (visited.has(task.id)) return;
-      
+
       // Visit dependencies first
       task.dependencies.forEach(depId => {
         const depTask = tasks.find(t => t.id === depId);
@@ -320,24 +320,24 @@ class OpusAgent extends BaseAgent {
           visit(depTask);
         }
       });
-      
+
       visited.add(task.id);
       sorted.push(task);
     };
-    
+
     tasks.forEach(task => {
       if (!visited.has(task.id)) {
         visit(task);
       }
     });
-    
+
     return sorted;
   }
 
   identifyCriticalPath(tasks) {
     // Simplified critical path identification
-    return tasks.filter(task => 
-      task.priority === 'HIGH' || 
+    return tasks.filter(task =>
+      task.priority === 'HIGH' ||
       tasks.some(t => t.dependencies.includes(task.id))
     ).map(task => task.id);
   }
@@ -361,7 +361,7 @@ class OpusAgent extends BaseAgent {
       'testing': 5
     };
 
-    const prioritizedRequirements = requirements.sort((a, b) => 
+    const prioritizedRequirements = requirements.sort((a, b) =>
       (priorities[a] || 99) - (priorities[b] || 99)
     );
 
@@ -380,7 +380,7 @@ class OpusAgent extends BaseAgent {
       score: this.scoreOption(option)
     }));
 
-    const bestOption = scoredOptions.reduce((best, current) => 
+    const bestOption = scoredOptions.reduce((best, current) =>
       current.score > best.score ? current : best
     );
 
@@ -440,7 +440,7 @@ class OpusAgent extends BaseAgent {
     // Check alignment with business objectives
     const strategicKeywords = ['automation', 'efficiency', 'collaboration', 'integration'];
     const content = JSON.stringify(analysis).toLowerCase();
-    const alignmentScore = strategicKeywords.reduce((score, keyword) => 
+    const alignmentScore = strategicKeywords.reduce((score, keyword) =>
       content.includes(keyword) ? score + 2 : score, 4
     );
     return Math.min(10, alignmentScore);
@@ -453,19 +453,19 @@ class OpusAgent extends BaseAgent {
 
   generateStrategicRecommendations(analysis) {
     const recommendations = [];
-    
+
     if (analysis.complexity === 'HIGH') {
       recommendations.push('Consider phased implementation approach');
     }
-    
+
     if (!analysis.timeline || !analysis.timeline.phases) {
       recommendations.push('Develop detailed timeline with milestones');
     }
-    
+
     if (!analysis.features || analysis.features.length < 3) {
       recommendations.push('Expand feature analysis for completeness');
     }
-    
+
     return recommendations;
   }
 
@@ -488,7 +488,7 @@ class OpusAgent extends BaseAgent {
 
   async analyzePRD(prdContent) {
     console.log('👨‍💼 Team Lead: Analyzing PRD for task allocation...');
-    
+
     // Simulate intelligent PRD analysis
     const analysis = {
       features: this.extractFeatures(prdContent),
@@ -500,7 +500,7 @@ class OpusAgent extends BaseAgent {
 
     // Store analysis results
     await this.writeMemory('prd', 'analysis.json', analysis);
-    
+
     // Broadcast to dashboard
     this.broadcast('prd_analysis_complete', analysis);
 
@@ -514,16 +514,16 @@ class OpusAgent extends BaseAgent {
 
   async allocateTasksToAgents(tasks, agentPool) {
     console.log(`👨‍💼 Team Lead: Allocating ${tasks.length} tasks across ${agentPool.length} agents...`);
-    
+
     const allocation = {};
     const unallocatedTasks = [];
-    
+
     // Sort tasks by priority and dependencies
     const sortedTasks = this.prioritizeTasks(tasks);
-    
+
     for (const task of sortedTasks) {
       const bestAgent = this.findBestAgentForTask(task, agentPool);
-      
+
       if (bestAgent) {
         if (!allocation[bestAgent.id]) {
           allocation[bestAgent.id] = {
@@ -532,10 +532,10 @@ class OpusAgent extends BaseAgent {
             estimatedLoad: 0
           };
         }
-        
+
         allocation[bestAgent.id].tasks.push(task);
         allocation[bestAgent.id].estimatedLoad += task.estimatedHours || 8;
-        
+
         // Update agent status
         bestAgent.status = 'assigned';
         bestAgent.currentTasks = allocation[bestAgent.id].tasks.length;
@@ -546,7 +546,7 @@ class OpusAgent extends BaseAgent {
 
     // Calculate load balancing metrics
     const metrics = this.calculateAllocationMetrics(allocation);
-    
+
     // Store allocation results
     const allocationResult = {
       allocation,
@@ -554,12 +554,12 @@ class OpusAgent extends BaseAgent {
       metrics,
       timestamp: new Date().toISOString()
     };
-    
+
     await this.writeMemory('tasks', 'allocation.json', allocationResult);
-    
+
     // Broadcast real-time updates
     this.broadcast('task_allocation_complete', allocationResult);
-    
+
     return {
       success: true,
       allocation,
@@ -572,7 +572,7 @@ class OpusAgent extends BaseAgent {
 
   async rebalanceWorkload(agentPool) {
     console.log('👨‍💼 Team Lead: Rebalancing workload across agent pool...');
-    
+
     // Get current allocation
     const currentAllocation = await this.readMemory('tasks', 'allocation.json');
     if (!currentAllocation) {
@@ -582,7 +582,7 @@ class OpusAgent extends BaseAgent {
     // Identify overloaded and underloaded agents
     const overloaded = [];
     const underloaded = [];
-    
+
     Object.values(currentAllocation.allocation).forEach(agentAlloc => {
       if (agentAlloc.estimatedLoad > 40) { // 40+ hours = overloaded
         overloaded.push(agentAlloc);
@@ -597,20 +597,20 @@ class OpusAgent extends BaseAgent {
 
     for (const overloadedAgent of overloaded) {
       const tasksToMove = overloadedAgent.tasks.slice(-2); // Move last 2 tasks
-      
+
       for (const task of tasksToMove) {
-        const bestUnderloadedAgent = underloaded.find(agent => 
+        const bestUnderloadedAgent = underloaded.find(agent =>
           this.canAgentHandleTask(agent.agent, task)
         );
-        
+
         if (bestUnderloadedAgent) {
           // Move task
           overloadedAgent.tasks = overloadedAgent.tasks.filter(t => t.id !== task.id);
           overloadedAgent.estimatedLoad -= task.estimatedHours || 8;
-          
+
           bestUnderloadedAgent.tasks.push(task);
           bestUnderloadedAgent.estimatedLoad += task.estimatedHours || 8;
-          
+
           movedTasks.push({
             task: task.id,
             from: overloadedAgent.agent.id,
@@ -621,8 +621,8 @@ class OpusAgent extends BaseAgent {
     }
 
     // Update allocation
-    await this.writeMemory('tasks', 'allocation.json', { 
-      ...currentAllocation, 
+    await this.writeMemory('tasks', 'allocation.json', {
+      ...currentAllocation,
       allocation: rebalancedAllocation,
       lastRebalanced: new Date().toISOString()
     });
@@ -693,11 +693,11 @@ class OpusAgent extends BaseAgent {
       const priorityScore = { 'High': 3, 'Medium': 2, 'Low': 1 };
       const aPriority = priorityScore[a.priority] || 2;
       const bPriority = priorityScore[b.priority] || 2;
-      
+
       if (aPriority !== bPriority) {
         return bPriority - aPriority;
       }
-      
+
       // Secondary sort by dependencies (fewer dependencies first)
       return (a.dependencies?.length || 0) - (b.dependencies?.length || 0);
     });
@@ -706,7 +706,7 @@ class OpusAgent extends BaseAgent {
   findBestAgentForTask(task, agentPool) {
     let bestAgent = null;
     let bestScore = 0;
-    
+
     for (const agent of agentPool) {
       const score = this.calculateAgentTaskFit(agent, task);
       if (score > bestScore && agent.status !== 'busy') {
@@ -714,31 +714,31 @@ class OpusAgent extends BaseAgent {
         bestAgent = agent;
       }
     }
-    
+
     return bestAgent;
   }
 
   calculateAgentTaskFit(agent, task) {
     let score = 0;
-    
+
     // Capability matching
     const taskRequirements = task.requiredSkills || [];
     const agentCapabilities = agent.capabilities || [];
-    
-    const matchingCapabilities = taskRequirements.filter(req => 
+
+    const matchingCapabilities = taskRequirements.filter(req =>
       agentCapabilities.some(cap => cap.toLowerCase().includes(req.toLowerCase()))
     );
-    
+
     score += (matchingCapabilities.length / taskRequirements.length) * 50;
-    
+
     // Workload consideration
     const currentLoad = agent.currentTasks || 0;
     if (currentLoad < 3) score += 30;
     else if (currentLoad < 5) score += 10;
-    
+
     // Agent type matching
     if (agent.role === task.category) score += 20;
-    
+
     return score;
   }
 
@@ -752,7 +752,7 @@ class OpusAgent extends BaseAgent {
     const avgLoad = totalLoad / loads.length;
     const maxLoad = Math.max(...loads);
     const minLoad = Math.min(...loads);
-    
+
     return {
       totalTasks: Object.values(allocation).reduce((sum, a) => sum + a.tasks.length, 0),
       averageLoad: avgLoad,
@@ -779,21 +779,21 @@ class OpusAgent extends BaseAgent {
    */
   async performComplexTaskBreakdown(taskDescription, context = {}) {
     console.log('🧠 Enhanced Opus: Performing intelligent task breakdown...');
-    
+
     try {
       // Use Intelligence Engine for complex breakdown
       const breakdown = await this.intelligenceEngine.performComplexTaskBreakdown(taskDescription, context);
-      
+
       // Apply Opus strategic oversight
       const strategicAnalysis = await this.applyStrategicOversight(breakdown);
-      
+
       // Store enhanced breakdown
       await this.writeMemory('tasks/intelligence', 'complex_breakdown.json', {
         breakdown,
         strategicAnalysis,
         timestamp: new Date().toISOString()
       });
-      
+
       // Broadcast real-time updates
       this.broadcast('complex_breakdown_complete', {
         taskId: breakdown.id,
@@ -801,7 +801,7 @@ class OpusAgent extends BaseAgent {
         levels: breakdown.levels.length,
         totalTasks: breakdown.levels.reduce((sum, level) => sum + level.tasks.length, 0)
       });
-      
+
       return {
         success: true,
         breakdown,
@@ -824,14 +824,14 @@ class OpusAgent extends BaseAgent {
    */
   async makeIntelligentDecision(options, context = {}) {
     console.log('🧠 Enhanced Opus: Making intelligent decision...');
-    
+
     try {
       // Use Intelligence Engine for decision optimization
       const optimization = await this.intelligenceEngine.optimizeDecisionTree(options, context);
-      
+
       // Apply Opus strategic validation
       const strategicValidation = await this.validateStrategicAlignment(optimization);
-      
+
       // Create final decision with confidence scoring
       const finalDecision = {
         selectedOption: optimization.recommendation,
@@ -844,17 +844,17 @@ class OpusAgent extends BaseAgent {
         ],
         alternatives: optimization.scoredOptions.filter(opt => opt.id !== optimization.recommendation.id)
       };
-      
+
       // Store decision for learning
       await this.writeMemory('decisions/intelligent', `decision_${Date.now()}.json`, finalDecision);
-      
+
       // Broadcast decision
       this.broadcast('intelligent_decision_made', {
         decision: finalDecision.selectedOption.id,
         confidence: finalDecision.confidence,
         strategicScore: finalDecision.strategicScore
       });
-      
+
       return {
         success: true,
         decision: finalDecision,
@@ -876,14 +876,14 @@ class OpusAgent extends BaseAgent {
    */
   async predictiveAgentSpawning(taskBreakdown, currentAgentPool) {
     console.log('🧠 Enhanced Opus: Performing predictive agent spawning...');
-    
+
     try {
       // Use Intelligence Engine for predictions
       const predictions = await this.intelligenceEngine.predictiveAgentSpawning(taskBreakdown, currentAgentPool);
-      
+
       // Apply Opus resource management oversight
       const resourceOptimization = await this.optimizeResourceAllocation(predictions, currentAgentPool);
-      
+
       // Generate spawn recommendations
       const spawnRecommendations = {
         immediateSpawns: [],
@@ -891,12 +891,12 @@ class OpusAgent extends BaseAgent {
         contingencySpawns: [],
         resourceRequirements: resourceOptimization
       };
-      
+
       // Categorize agent spawning by urgency
       for (const agent of predictions.recommendedAgents) {
         const spawnTiming = predictions.spawnTiming.get(agent.id);
         const urgency = this.calculateSpawnUrgency(agent, taskBreakdown, spawnTiming);
-        
+
         if (urgency > 0.8) {
           spawnRecommendations.immediateSpawns.push(agent);
         } else if (urgency > 0.5) {
@@ -908,7 +908,7 @@ class OpusAgent extends BaseAgent {
           spawnRecommendations.contingencySpawns.push(agent);
         }
       }
-      
+
       // Store predictions
       await this.writeMemory('agents/predictions', 'spawn_predictions.json', {
         predictions,
@@ -916,14 +916,14 @@ class OpusAgent extends BaseAgent {
         confidence: predictions.confidenceScore,
         timestamp: new Date().toISOString()
       });
-      
+
       // Broadcast spawn recommendations
       this.broadcast('predictive_spawning_complete', {
         immediateSpawns: spawnRecommendations.immediateSpawns.length,
         scheduledSpawns: spawnRecommendations.scheduledSpawns.length,
         confidence: predictions.confidenceScore
       });
-      
+
       return {
         success: true,
         predictions,
@@ -946,11 +946,11 @@ class OpusAgent extends BaseAgent {
    */
   async analyzeHistoricalPatterns(projectContext) {
     console.log('🧠 Enhanced Opus: Analyzing historical patterns...');
-    
+
     try {
       // Get historical data from Intelligence Engine
       const patterns = await this.intelligenceEngine.analyzeHistoricalPatterns(projectContext);
-      
+
       // Apply strategic pattern analysis
       const strategicInsights = {
         successPatterns: this.identifySuccessPatterns(patterns),
@@ -958,17 +958,17 @@ class OpusAgent extends BaseAgent {
         optimizationOpportunities: this.identifyOptimizationOpportunities(patterns),
         recommendations: []
       };
-      
+
       // Generate strategic recommendations based on patterns
       strategicInsights.recommendations = this.generatePatternBasedRecommendations(strategicInsights);
-      
+
       // Store pattern analysis
       await this.writeMemory('intelligence/patterns', 'pattern_analysis.json', {
         patterns,
         strategicInsights,
         timestamp: new Date().toISOString()
       });
-      
+
       return {
         success: true,
         patterns,
@@ -991,14 +991,14 @@ class OpusAgent extends BaseAgent {
    */
   async optimizeWithLearning(currentState, goals) {
     console.log('🧠 Enhanced Opus: Optimizing with learning patterns...');
-    
+
     try {
       // Apply learning-based optimizations
       const learningOptimizations = await this.intelligenceEngine.applyLearningOptimizations(currentState, goals);
-      
+
       // Strategic validation of optimizations
       const validatedOptimizations = await this.validateOptimizations(learningOptimizations, goals);
-      
+
       // Create optimization plan
       const optimizationPlan = {
         currentState,
@@ -1008,10 +1008,10 @@ class OpusAgent extends BaseAgent {
         expectedImpact: this.calculateExpectedImpact(validatedOptimizations),
         riskMitigation: this.generateRiskMitigation(validatedOptimizations)
       };
-      
+
       // Store optimization plan
       await this.writeMemory('optimization/plans', `plan_${Date.now()}.json`, optimizationPlan);
-      
+
       return {
         success: true,
         plan: optimizationPlan,
@@ -1040,19 +1040,19 @@ class OpusAgent extends BaseAgent {
 
   generateBreakdownRecommendation(breakdown, strategicAnalysis) {
     const recommendations = [];
-    
+
     if (breakdown.estimatedComplexity > 8) {
       recommendations.push('Consider phased implementation due to high complexity');
     }
-    
+
     if (strategicAnalysis.riskAssessment.highRiskTasks > 0) {
       recommendations.push('Prioritize risk mitigation for high-risk tasks');
     }
-    
+
     if (strategicAnalysis.resourceImplications.requiresSpecializedAgents) {
       recommendations.push('Plan for specialized agent acquisition early');
     }
-    
+
     return recommendations;
   }
 
@@ -1060,11 +1060,11 @@ class OpusAgent extends BaseAgent {
     // Calculate urgency based on dependency timing and resource availability
     const timeDiff = new Date(spawnTiming) - new Date();
     const urgencyScore = Math.max(0, 1 - (timeDiff / (7 * 24 * 60 * 60 * 1000))); // 1 week baseline
-    
+
     // Adjust for agent specialization importance
     if (agent.priority === 'HIGH') urgencyScore += 0.2;
     if (agent.estimatedUtilization > 0.8) urgencyScore += 0.1;
-    
+
     return Math.min(1, urgencyScore);
   }
 

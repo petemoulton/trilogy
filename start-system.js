@@ -17,19 +17,19 @@ let mcpProcess;
 // Cleanup function
 function cleanup() {
   console.log('\n🔄 Shutting down system...');
-  
+
   if (agentProcess) {
     agentProcess.kill('SIGTERM');
   }
-  
+
   if (mcpProcess) {
     mcpProcess.kill('SIGTERM');
   }
-  
+
   if (serverProcess) {
     serverProcess.kill('SIGTERM');
   }
-  
+
   setTimeout(() => {
     console.log('✅ System shutdown complete');
     process.exit(0);
@@ -59,7 +59,7 @@ function checkServerHealth(retries = 30) {
           reject(new Error('Server health check failed'));
         }
       });
-      
+
       req.on('error', (err) => {
         if (attempt < retries) {
           setTimeout(() => check(attempt + 1), 1000);
@@ -67,10 +67,10 @@ function checkServerHealth(retries = 30) {
           reject(err);
         }
       });
-      
+
       req.end();
     };
-    
+
     check(1);
   });
 }
@@ -82,48 +82,48 @@ async function startSystem() {
     serverProcess = spawn('node', ['src/backend/server/index.js'], {
       stdio: ['inherit', 'pipe', 'pipe']
     });
-    
+
     serverProcess.stdout.on('data', (data) => {
       process.stdout.write(`[SERVER] ${data}`);
     });
-    
+
     serverProcess.stderr.on('data', (data) => {
       process.stderr.write(`[SERVER] ${data}`);
     });
-    
+
     serverProcess.on('exit', (code) => {
       console.log(`Server exited with code ${code}`);
       if (code !== 0) {
         cleanup();
       }
     });
-    
+
     // Step 2: Wait for server to be ready
     console.log('⏳ Waiting for server to be ready...');
     await checkServerHealth();
     console.log('✅ Server is ready');
-    
+
     // Step 3: Start the MCP server
     console.log('🌐 Starting MCP server...');
     mcpProcess = spawn('node', ['src/mcp-server/server.js'], {
       stdio: ['inherit', 'pipe', 'pipe']
     });
-    
+
     mcpProcess.stdout.on('data', (data) => {
       process.stdout.write(`[MCP] ${data}`);
     });
-    
+
     mcpProcess.stderr.on('data', (data) => {
       process.stderr.write(`[MCP] ${data}`);
     });
-    
+
     mcpProcess.on('exit', (code) => {
       console.log(`MCP server exited with code ${code}`);
       if (code !== 0) {
         cleanup();
       }
     });
-    
+
     // Wait a moment for MCP server to start
     await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -132,29 +132,29 @@ async function startSystem() {
     agentProcess = spawn('node', ['src/shared/agents/runner.js'], {
       stdio: ['inherit', 'pipe', 'pipe']
     });
-    
+
     agentProcess.stdout.on('data', (data) => {
       process.stdout.write(`[AGENTS] ${data}`);
     });
-    
+
     agentProcess.stderr.on('data', (data) => {
       process.stderr.write(`[AGENTS] ${data}`);
     });
-    
+
     agentProcess.on('exit', (code) => {
       console.log(`Agents exited with code ${code}`);
       if (code !== 0) {
         cleanup();
       }
     });
-    
+
     // Wait longer for agents to connect and attach
     setTimeout(async () => {
       try {
         // Test agent pool API to ensure runners are attached
         const response = await fetch('http://localhost:3100/agents/pool/status');
         const data = await response.json();
-        
+
         console.log('\n🎉 Trilogy System Started Successfully!');
         console.log('📊 Dashboard: http://localhost:3100');
         console.log('🌐 MCP Dashboard: http://localhost:3101/dashboard');
@@ -171,7 +171,7 @@ async function startSystem() {
         console.log('\nPress Ctrl+C to shutdown');
       }
     }, 5000); // Wait 5 seconds for full initialization
-    
+
   } catch (error) {
     console.error('❌ Failed to start system:', error.message);
     cleanup();

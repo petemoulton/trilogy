@@ -39,7 +39,7 @@ function authenticateToken(req, res, next) {
         error: 'Invalid or expired token'
       });
     }
-    
+
     req.user = user;
     next();
   });
@@ -57,7 +57,7 @@ function optionalAuth(req, res, next) {
       }
     });
   }
-  
+
   next();
 }
 
@@ -75,10 +75,10 @@ async function login(username, password) {
     }
 
     const token = jwt.sign(
-      { 
-        id: user.id, 
-        username: user.username, 
-        role: user.role 
+      {
+        id: user.id,
+        username: user.username,
+        role: user.role
       },
       JWT_SECRET,
       { expiresIn: TOKEN_EXPIRY }
@@ -123,10 +123,10 @@ async function register(username, password, role = 'user') {
     users.push(newUser);
 
     const token = jwt.sign(
-      { 
-        id: newUser.id, 
-        username: newUser.username, 
-        role: newUser.role 
+      {
+        id: newUser.id,
+        username: newUser.username,
+        role: newUser.role
       },
       JWT_SECRET,
       { expiresIn: TOKEN_EXPIRY }
@@ -151,7 +151,7 @@ function verifyToken(token) {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = users.find(u => u.id === decoded.id);
-    
+
     if (!user) {
       return { success: false, error: 'User not found' };
     }
@@ -173,7 +173,7 @@ function verifyToken(token) {
 function getUserById(id) {
   const user = users.find(u => u.id === id);
   if (!user) return null;
-  
+
   return {
     id: user.id,
     username: user.username,

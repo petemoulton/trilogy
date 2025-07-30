@@ -7,10 +7,10 @@ test.describe('Trilogy AI Dashboard', () => {
 
   test('should load dashboard with correct title', async ({ page }) => {
     await expect(page).toHaveTitle(/Trilogy AI System Dashboard/);
-    
+
     // Check for main heading
     await expect(page.locator('h1')).toContainText('Trilogy AI System');
-    
+
     // Check for subtitle
     await expect(page.locator('p')).toContainText('Cooperative AI Agent Orchestration Dashboard');
   });
@@ -40,7 +40,7 @@ test.describe('Trilogy AI Dashboard', () => {
     // Check for uptime display
     const uptimeElement = page.locator('#uptime');
     await expect(uptimeElement).toBeVisible();
-    
+
     // Check for memory usage display
     const memoryElement = page.locator('#memory-usage');
     await expect(memoryElement).toBeVisible();
@@ -60,7 +60,7 @@ test.describe('Trilogy AI Dashboard', () => {
   test('should show log display', async ({ page }) => {
     // Check for logs section
     await expect(page.getByText('System Logs')).toBeVisible();
-    
+
     // Check for log display area
     const logDisplay = page.locator('#log-display');
     await expect(logDisplay).toBeVisible();
@@ -69,7 +69,7 @@ test.describe('Trilogy AI Dashboard', () => {
   test('should handle refresh button click', async ({ page }) => {
     const refreshButton = page.getByRole('button', { name: /Refresh/ });
     await refreshButton.click();
-    
+
     // Check that a log entry was added
     await page.waitForTimeout(1000);
     const logDisplay = page.locator('#log-display');
@@ -88,7 +88,7 @@ test.describe('Trilogy AI Dashboard', () => {
 
     const workflowButton = page.getByRole('button', { name: /Trigger Workflow/ });
     await workflowButton.click();
-    
+
     // Check that a log entry was added
     await page.waitForTimeout(1000);
     const logDisplay = page.locator('#log-display');
@@ -98,10 +98,10 @@ test.describe('Trilogy AI Dashboard', () => {
   test('should be responsive on mobile', async ({ page }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
-    
+
     // Check that dashboard still loads
     await expect(page.locator('h1')).toContainText('Trilogy AI System');
-    
+
     // Check that cards are still visible
     await expect(page.getByText('System Status')).toBeVisible();
     await expect(page.getByText('AI Agents')).toBeVisible();
@@ -110,10 +110,10 @@ test.describe('Trilogy AI Dashboard', () => {
   test('should handle WebSocket connection', async ({ page }) => {
     // Monitor WebSocket connections
     const wsPromise = page.waitForEvent('websocket');
-    
+
     // Reload page to trigger WebSocket connection
     await page.reload();
-    
+
     // Wait for WebSocket connection (if available)
     try {
       const ws = await wsPromise;
@@ -135,7 +135,7 @@ test.describe('Trilogy AI Dashboard', () => {
     });
 
     await page.reload();
-    
+
     // Dashboard should still load even if health check fails
     await expect(page.locator('h1')).toContainText('Trilogy AI System');
   });

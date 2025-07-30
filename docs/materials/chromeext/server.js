@@ -9,8 +9,8 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:3100", "chrome-extension://*"],
-    methods: ["GET", "POST"]
+    origin: ['http://localhost:3100', 'chrome-extension://*'],
+    methods: ['GET', 'POST']
   }
 });
 
@@ -47,25 +47,25 @@ function rateLimit(maxRequests = 100, windowMs = 60000) {
   return (req, res, next) => {
     const key = req.ip || req.connection.remoteAddress;
     const now = Date.now();
-    
+
     if (!requestCounts.has(key)) {
       requestCounts.set(key, { count: 0, resetTime: now + windowMs });
     }
-    
+
     const clientData = requestCounts.get(key);
-    
+
     if (now > clientData.resetTime) {
       clientData.count = 0;
       clientData.resetTime = now + windowMs;
     }
-    
+
     if (clientData.count >= maxRequests) {
       return res.status(429).json({
         success: false,
         error: 'Too many requests'
       });
     }
-    
+
     clientData.count++;
     next();
   };
@@ -80,7 +80,7 @@ const connectedClients = new Map(); // Track WebSocket connections
 // Session management functions
 async function createSession(tabId, url, title = '') {
   const sessionId = `session_${tabId}_${Date.now()}`;
-  
+
   // Store in memory for quick access
   sessions.set(sessionId, {
     tabId,
@@ -90,14 +90,14 @@ async function createSession(tabId, url, title = '') {
     lastActivity: Date.now(),
     eventCount: 0
   });
-  
+
   // Store in database for persistence
   try {
     await SessionDB.create(sessionId, tabId, url, title);
   } catch (error) {
     console.error('Error saving session to database:', error);
   }
-  
+
   return sessionId;
 }
 
@@ -106,7 +106,7 @@ async function updateSessionActivity(sessionId) {
   if (session) {
     session.lastActivity = Date.now();
     session.eventCount++;
-    
+
     // Update database
     try {
       await SessionDB.update(sessionId, {
@@ -122,7 +122,7 @@ async function updateSessionActivity(sessionId) {
 function cleanupInactiveSessions() {
   const now = Date.now();
   const timeout = 30 * 60 * 1000; // 30 minutes
-  
+
   for (const [sessionId, session] of sessions.entries()) {
     if (now - session.lastActivity > timeout) {
       sessions.delete(sessionId);
@@ -138,7 +138,7 @@ app.use(rateLimit());
 // Selector validation function
 function isValidSelector(selector) {
   if (!selector || typeof selector !== 'string') return false;
-  
+
   // Basic selector validation - prevent dangerous selectors
   const dangerousPatterns = [
     /script/i,
@@ -147,38 +147,38 @@ function isValidSelector(selector) {
     /data:/i,
     /vbscript:/i
   ];
-  
+
   return !dangerousPatterns.some(pattern => pattern.test(selector));
 }
 
 // Endpoint to receive click events from chrome extension
 app.post('/click-event', validateRequest({ required: ['event', 'url'] }), async (req, res) => {
   const { sessionId, event, url, timestamp } = req.body;
-  
+
   const clickEvent = {
     sessionId: sessionId || 'default',
     event,
     url,
     timestamp: timestamp || Date.now()
   };
-  
+
   // Update session activity if sessionId exists
   if (sessionId && sessions.has(sessionId)) {
     await updateSessionActivity(sessionId);
   }
-  
+
   // Store in memory for quick access
   eventLogs.push(clickEvent);
-  
+
   // Store in database for persistence
   try {
     await EventDB.create(clickEvent);
   } catch (error) {
     console.error('Error saving event to database:', error);
   }
-  
+
   console.log('Click event received:', clickEvent);
-  
+
   res.json({ success: true, eventId: eventLogs.length - 1 });
 });
 
@@ -186,12 +186,12 @@ app.post('/click-event', validateRequest({ required: ['event', 'url'] }), async 
 app.get('/commands', (req, res) => {
   const { sessionId } = req.query;
   const session = sessionId || 'default';
-  
+
   const sessionCommands = commands.get(session) || [];
-  
+
   // Return and clear commands for this session
   commands.set(session, []);
-  
+
   res.json({ commands: sessionCommands });
 });
 
@@ -200,32 +200,32 @@ app.get('/commands', (req, res) => {
 // Optional endpoint to get event logs
 app.get('/log', (req, res) => {
   const { sessionId, limit } = req.query;
-  
+
   let logs = eventLogs;
   if (sessionId) {
     logs = logs.filter(log => log.sessionId === sessionId);
   }
-  
+
   if (limit) {
     logs = logs.slice(-parseInt(limit));
   }
-  
+
   res.json({ logs });
 });
 
 // Optional endpoint to receive full DOM snapshots
 app.post('/full-dom', (req, res) => {
   const { sessionId, html, url, timestamp } = req.body;
-  
+
   const domSnapshot = {
     sessionId: sessionId || 'default',
     html,
     url,
     timestamp: timestamp || Date.now()
   };
-  
+
   console.log(`DOM snapshot received for ${url} (${html.length} chars)`);
-  
+
   // Store or process DOM snapshot as needed
   res.json({ success: true });
 });
@@ -233,7 +233,7 @@ app.post('/full-dom', (req, res) => {
 // Optional endpoint to receive screenshots
 app.post('/screenshot', (req, res) => {
   const { sessionId, screenshot, url, timestamp, title } = req.body;
-  
+
   const screenshotData = {
     sessionId: sessionId || 'default',
     screenshot: screenshot, // Base64 data URL
@@ -242,24 +242,24 @@ app.post('/screenshot', (req, res) => {
     timestamp: timestamp || Date.now(),
     size: screenshot ? screenshot.length : 0
   };
-  
+
   console.log(`Screenshot received for ${url} (${Math.round(screenshotData.size / 1024)}KB)`);
-  
+
   // Store screenshot (in production, you might want to save to disk or cloud storage)
   screenshots.push(screenshotData);
-  
+
   // Keep only last 50 screenshots to manage memory
   if (screenshots.length > 50) {
     screenshots.shift();
   }
-  
+
   res.json({ success: true, screenshotId: screenshots.length - 1 });
 });
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     timestamp: Date.now(),
     activeSessions: sessions.size,
     eventCount: eventLogs.length
@@ -299,7 +299,7 @@ app.post('/macros', validateRequest({ required: ['name', 'actions'] }), async (r
   try {
     const { name, actions, description } = req.body;
     const createdBy = req.user ? req.user.id : null;
-    
+
     // Store in memory for quick access
     const macro = {
       id: `macro_${Date.now()}`,
@@ -310,12 +310,12 @@ app.post('/macros', validateRequest({ required: ['name', 'actions'] }), async (r
       createdBy
     };
     macros.push(macro);
-    
+
     // Store in database for persistence
     const result = await MacroDB.create(name, actions, description, createdBy);
-    
+
     console.log(`Macro saved: ${name} (${actions.length} actions)`);
-    
+
     res.json({ success: true, macroId: result.id });
   } catch (error) {
     console.error('Error saving macro:', error);
@@ -365,16 +365,16 @@ app.delete('/macros/:id', async (req, res) => {
 // Endpoint to get screenshots
 app.get('/screenshots', (req, res) => {
   const { sessionId, limit } = req.query;
-  
+
   let filteredScreenshots = screenshots;
   if (sessionId) {
     filteredScreenshots = screenshots.filter(s => s.sessionId === sessionId);
   }
-  
+
   if (limit) {
     filteredScreenshots = filteredScreenshots.slice(-parseInt(limit));
   }
-  
+
   // Don't send the full base64 data, just metadata
   const screenshotMeta = filteredScreenshots.map(s => ({
     sessionId: s.sessionId,
@@ -384,7 +384,7 @@ app.get('/screenshots', (req, res) => {
     size: s.size,
     id: screenshots.indexOf(s)
   }));
-  
+
   res.json({ screenshots: screenshotMeta });
 });
 
@@ -394,7 +394,7 @@ app.get('/screenshots/:id', (req, res) => {
   if (id < 0 || id >= screenshots.length) {
     return res.status(404).json({ success: false, error: 'Screenshot not found' });
   }
-  
+
   const screenshot = screenshots[id];
   res.json({ screenshot });
 });
@@ -402,7 +402,7 @@ app.get('/screenshots/:id', (req, res) => {
 // Authentication endpoints
 app.post('/auth/login', async (req, res) => {
   const { username, password } = req.body;
-  
+
   if (!username || !password) {
     return res.status(400).json({
       success: false,
@@ -416,7 +416,7 @@ app.post('/auth/login', async (req, res) => {
 
 app.post('/auth/register', async (req, res) => {
   const { username, password, role } = req.body;
-  
+
   if (!username || !password) {
     return res.status(400).json({
       success: false,
@@ -453,7 +453,7 @@ app.post('/auth/api-key', auth.authenticateToken, (req, res) => {
 app.post('/commands', auth.optionalAuth, validateRequest({ required: ['command'] }), (req, res) => {
   const { sessionId, command } = req.body;
   const session = sessionId || 'default';
-  
+
   // Validate command structure and selector
   if (!command.type || !command.selector) {
     return res.status(400).json({
@@ -461,14 +461,14 @@ app.post('/commands', auth.optionalAuth, validateRequest({ required: ['command']
       error: 'Command must have type and selector fields'
     });
   }
-  
+
   if (!isValidSelector(command.selector)) {
     return res.status(400).json({
       success: false,
       error: 'Invalid or potentially dangerous selector'
     });
   }
-  
+
   // Validate command type
   const validCommandTypes = ['click', 'highlight', 'scroll', 'input', 'capture_dom'];
   if (!validCommandTypes.includes(command.type)) {
@@ -477,7 +477,7 @@ app.post('/commands', auth.optionalAuth, validateRequest({ required: ['command']
       error: 'Invalid command type'
     });
   }
-  
+
   // Log command with user info if authenticated
   const logEntry = {
     command,
@@ -486,11 +486,11 @@ app.post('/commands', auth.optionalAuth, validateRequest({ required: ['command']
     user: req.user ? req.user.username : 'anonymous'
   };
   console.log('Command executed:', logEntry);
-  
+
   if (!commands.has(session)) {
     commands.set(session, []);
   }
-  
+
   commands.get(session).push(command);
   res.json({ success: true, commandCount: commands.get(session).length });
 });
@@ -536,7 +536,7 @@ io.on('connection', (socket) => {
   // Send command to specific session
   socket.on('send_command', (data) => {
     const { sessionId, command } = data;
-    
+
     // Find extension client with matching session
     for (const [clientId, client] of connectedClients.entries()) {
       if (client.type === 'extension' && client.sessionId === sessionId) {
@@ -545,7 +545,7 @@ io.on('connection', (socket) => {
         return;
       }
     }
-    
+
     // Fallback to command queue if no WebSocket connection
     if (!commands.has(sessionId)) {
       commands.set(sessionId, []);
@@ -566,7 +566,7 @@ function broadcastSessionUpdate() {
     sessionId: id,
     ...data
   }));
-  
+
   io.to('dashboard_updates').emit('sessions_update', { sessions: sessionList });
 }
 
@@ -578,7 +578,7 @@ function broadcastStatsUpdate() {
     connectedClients: connectedClients.size,
     timestamp: Date.now()
   };
-  
+
   io.to('dashboard_updates').emit('stats_update', stats);
 }
 
@@ -592,6 +592,6 @@ server.listen(PORT, () => {
   console.log(`MCP Chrome Agent server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
   console.log(`Dashboard: http://localhost:${PORT}/dashboard`);
-  console.log(`WebSocket server enabled for real-time communication`);
-  console.log(`Session management enabled with automatic cleanup`);
+  console.log('WebSocket server enabled for real-time communication');
+  console.log('Session management enabled with automatic cleanup');
 });

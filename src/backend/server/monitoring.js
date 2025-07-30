@@ -4,11 +4,11 @@ class MonitoringManager {
   constructor() {
     // Create a Registry to register the metrics
     this.register = new client.Registry();
-    
+
     // Add default metrics
-    client.collectDefaultMetrics({ 
+    client.collectDefaultMetrics({
       register: this.register,
-      timeout: 5000 
+      timeout: 5000
     });
 
     this.initializeMetrics();
@@ -158,20 +158,20 @@ class MonitoringManager {
   httpRequestMiddleware() {
     return (req, res, next) => {
       const start = Date.now();
-      
+
       res.on('finish', () => {
         const duration = (Date.now() - start) / 1000;
         const route = req.route ? req.route.path : req.path;
-        
+
         this.httpRequestDuration
           .labels(req.method, route, res.statusCode)
           .observe(duration);
-        
+
         this.httpRequestsTotal
           .labels(req.method, route, res.statusCode)
           .inc();
       });
-      
+
       next();
     };
   }
@@ -181,7 +181,7 @@ class MonitoringManager {
     this.memoryOperationsTotal
       .labels(operation, namespace, success ? 'success' : 'error')
       .inc();
-    
+
     if (duration !== undefined) {
       this.memoryOperationDuration
         .labels(operation, namespace)
@@ -194,7 +194,7 @@ class MonitoringManager {
     if (stats.keysByNamespace) {
       // Reset all namespace gauges
       this.memoryKeysGauge.reset();
-      
+
       // Set current values
       stats.keysByNamespace.forEach(item => {
         this.memoryKeysGauge
@@ -202,7 +202,7 @@ class MonitoringManager {
           .set(item.count);
       });
     }
-    
+
     if (stats.activeLocks !== undefined) {
       this.memoryLocksGauge.set(stats.activeLocks);
     }
@@ -213,7 +213,7 @@ class MonitoringManager {
     this.agentSessionsTotal
       .labels(agent, status)
       .inc();
-    
+
     if (duration !== undefined) {
       this.agentProcessingDuration
         .labels(agent, 'process')
@@ -232,7 +232,7 @@ class MonitoringManager {
   updateTaskStats(tasksByStatus) {
     // Reset task gauges
     this.tasksTotal.reset();
-    
+
     if (tasksByStatus) {
       tasksByStatus.forEach(item => {
         this.tasksTotal
@@ -254,7 +254,7 @@ class MonitoringManager {
     this.dbQueriesTotal
       .labels(operation, success ? 'success' : 'error')
       .inc();
-    
+
     this.dbQueryDuration
       .labels(operation)
       .observe(duration);
@@ -302,7 +302,7 @@ class MonitoringManager {
       // Update system health
       this.updateSystemHealth('main', 1);
       this.updateSystemHealth('memory', memorySystem ? 1 : 0);
-      
+
       // Get memory stats if available
       if (memorySystem) {
         const stats = await memorySystem.getStats();

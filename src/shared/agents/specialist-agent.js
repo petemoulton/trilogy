@@ -8,12 +8,12 @@ const BaseAgent = require('./base-agent');
 class SpecialistAgent extends BaseAgent {
   constructor(agentId, config = {}) {
     super(agentId);
-    
+
     this.role = config.role || 'specialist';
     this.capabilities = config.capabilities || [];
     this.specialization = config.specialization || {};
     this.maxConcurrentTasks = config.maxConcurrentTasks || 1;
-    
+
     // Task processing state
     this.currentTasks = new Map();
     this.taskHistory = [];
@@ -23,7 +23,7 @@ class SpecialistAgent extends BaseAgent {
       successRate: 1.0,
       lastActiveTime: Date.now()
     };
-    
+
     console.log(`🤖 Specialist Agent initialized: ${agentId} (${this.role})`);
   }
 
@@ -32,13 +32,13 @@ class SpecialistAgent extends BaseAgent {
    */
   async connect() {
     await super.connect();
-    
+
     // Register specialist capabilities with the system
     await this.registerCapabilities();
-    
+
     // Set up specialized processing patterns
     this.setupSpecialistProcessing();
-    
+
     this.emit('status_change', 'ready');
   }
 
@@ -108,23 +108,23 @@ class SpecialistAgent extends BaseAgent {
    */
   async processTask(task) {
     const startTime = Date.now();
-    
+
     try {
       this.emit('task_started', task.id);
       this.currentTasks.set(task.id, { ...task, startTime });
-      
+
       console.log(`🔄 ${this.agentId} processing task: ${task.id} (${task.type || 'unknown'})`);
-      
+
       // Validate task compatibility with capabilities
       await this.validateTaskCompatibility(task);
-      
+
       // Execute specialist processing
       const result = await this.executeSpecialistTask(task);
-      
+
       // Record task completion
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       this.updatePerformanceMetrics(duration, true);
       this.currentTasks.delete(task.id);
       this.taskHistory.push({
@@ -133,22 +133,22 @@ class SpecialistAgent extends BaseAgent {
         success: true,
         completedAt: new Date().toISOString()
       });
-      
+
       console.log(`✅ ${this.agentId} completed task: ${task.id} (${duration}ms)`);
       this.emit('task_completed', task.id, result);
-      
+
       return result;
-      
+
     } catch (error) {
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       this.updatePerformanceMetrics(duration, false);
       this.currentTasks.delete(task.id);
-      
+
       console.error(`❌ ${this.agentId} failed task: ${task.id} - ${error.message}`);
       this.emit('task_failed', task.id, error.message);
-      
+
       throw error;
     }
   }
@@ -159,20 +159,20 @@ class SpecialistAgent extends BaseAgent {
   async validateTaskCompatibility(task) {
     const requiredCapabilities = task.requiredCapabilities || [];
     const taskType = task.type || 'general';
-    
+
     // Check if agent has required capabilities
     for (const required of requiredCapabilities) {
       if (!this.capabilities.includes(required)) {
         throw new Error(`Agent ${this.agentId} lacks required capability: ${required}`);
       }
     }
-    
+
     // Check if task type is supported
     const supportedTypes = this.currentTemplate.taskTypes;
     if (!supportedTypes.includes('general') && !supportedTypes.includes(taskType)) {
       console.warn(`⚠️ Task type '${taskType}' not optimal for ${this.role}, but proceeding`);
     }
-    
+
     return true;
   }
 
@@ -181,7 +181,7 @@ class SpecialistAgent extends BaseAgent {
    */
   async executeSpecialistTask(task) {
     const processingStrategy = this.determineProcessingStrategy(task);
-    
+
     // Try AI processing first, fall back to simulation
     try {
       return await this.processWithAI(task, processingStrategy);
@@ -197,13 +197,13 @@ class SpecialistAgent extends BaseAgent {
   async processWithAI(task, strategy) {
     // This would integrate with Claude API
     // For now, we'll use a simplified approach with system prompts
-    
+
     const systemPrompt = this.buildSystemPrompt(strategy);
     const userPrompt = this.buildTaskPrompt(task);
-    
+
     // TODO: Integrate with actual Claude API
     // const response = await this.callClaudeAPI(systemPrompt, userPrompt);
-    
+
     // For now, return enhanced simulation with AI-like structure
     return await this.processWithSimulation(task, strategy);
   }
@@ -219,14 +219,14 @@ class SpecialistAgent extends BaseAgent {
       'devops-specialist': 'You are a DevOps specialist expert in deployment, infrastructure, and monitoring.',
       'fullstack-specialist': 'You are a fullstack specialist expert in end-to-end application development.'
     };
-    
+
     const strategyPrompts = {
       'code-generation': 'Focus on generating clean, maintainable code with proper error handling.',
       'analysis-review': 'Provide thorough analysis with actionable recommendations.',
       'testing-validation': 'Create comprehensive test coverage with edge case handling.',
       'integration-setup': 'Design robust integrations with proper monitoring and fallbacks.'
     };
-    
+
     return `${rolePrompts[this.role] || 'You are a specialist AI agent.'} ${strategyPrompts[strategy] || 'Complete the given task efficiently.'}`;
   }
 
@@ -252,20 +252,20 @@ Please provide a detailed response including:
    */
   async processWithSimulation(task, strategy) {
     switch (strategy) {
-      case 'code-generation':
-        return await this.generateCode(task);
-      
-      case 'analysis-review':
-        return await this.performAnalysis(task);
-      
-      case 'testing-validation':
-        return await this.performTesting(task);
-      
-      case 'integration-setup':
-        return await this.setupIntegration(task);
-      
-      default:
-        return await this.performGeneralProcessing(task);
+    case 'code-generation':
+      return await this.generateCode(task);
+
+    case 'analysis-review':
+      return await this.performAnalysis(task);
+
+    case 'testing-validation':
+      return await this.performTesting(task);
+
+    case 'integration-setup':
+      return await this.setupIntegration(task);
+
+    default:
+      return await this.performGeneralProcessing(task);
     }
   }
 
@@ -275,27 +275,27 @@ Please provide a detailed response including:
   determineProcessingStrategy(task) {
     const taskType = task.type || 'general';
     const role = this.role;
-    
+
     if (role.includes('frontend') && ['ui-component', 'styling'].includes(taskType)) {
       return 'code-generation';
     }
-    
+
     if (role.includes('backend') && ['api-endpoint', 'business-logic'].includes(taskType)) {
       return 'code-generation';
     }
-    
+
     if (role.includes('qa') && ['test-creation', 'quality-review'].includes(taskType)) {
       return 'testing-validation';
     }
-    
+
     if (role.includes('devops') && ['deployment', 'infrastructure'].includes(taskType)) {
       return 'integration-setup';
     }
-    
+
     if (taskType === 'analysis' || task.description?.toLowerCase().includes('analyze')) {
       return 'analysis-review';
     }
-    
+
     return 'general-processing';
   }
 
@@ -305,10 +305,10 @@ Please provide a detailed response including:
   async generateCode(task) {
     // Simulate code generation with specialist knowledge
     await this.simulateProcessingTime(2000, 5000);
-    
+
     const codeTemplate = this.getCodeTemplate(task.type);
     const generatedCode = this.customizeCodeForTask(codeTemplate, task);
-    
+
     return {
       type: 'code-generation',
       taskId: task.id,
@@ -329,7 +329,7 @@ Please provide a detailed response including:
    */
   async performAnalysis(task) {
     await this.simulateProcessingTime(1500, 3000);
-    
+
     return {
       type: 'analysis',
       taskId: task.id,
@@ -350,7 +350,7 @@ Please provide a detailed response including:
    */
   async performTesting(task) {
     await this.simulateProcessingTime(1000, 4000);
-    
+
     return {
       type: 'testing',
       taskId: task.id,
@@ -371,7 +371,7 @@ Please provide a detailed response including:
    */
   async setupIntegration(task) {
     await this.simulateProcessingTime(3000, 7000);
-    
+
     return {
       type: 'integration',
       taskId: task.id,
@@ -392,7 +392,7 @@ Please provide a detailed response including:
    */
   async performGeneralProcessing(task) {
     await this.simulateProcessingTime(1000, 3000);
-    
+
     return {
       type: 'general',
       taskId: task.id,
@@ -407,7 +407,7 @@ Please provide a detailed response including:
   }
 
   // Helper methods for generating realistic outputs
-  
+
   getCodeTemplate(taskType) {
     const templates = {
       'ui-component': 'export default function Component() { return <div>Generated Component</div>; }',
@@ -419,8 +419,8 @@ Please provide a detailed response including:
 
   customizeCodeForTask(template, task) {
     return template.replace(/Component/g, task.name || 'GeneratedComponent')
-                  .replace(/endpoint/g, task.endpoint || 'generated')
-                  .replace(/generated_table/g, task.tableName || 'task_table');
+      .replace(/endpoint/g, task.endpoint || 'generated')
+      .replace(/generated_table/g, task.tableName || 'task_table');
   }
 
   generateFileStructure(task) {
@@ -469,15 +469,15 @@ Please provide a detailed response including:
   }
 
   // Performance and utility methods
-  
+
   updatePerformanceMetrics(duration, success) {
     const metrics = this.performanceMetrics;
-    
+
     if (success) {
       metrics.tasksCompleted++;
       metrics.averageTaskTime = (metrics.averageTaskTime + duration) / 2;
     }
-    
+
     const totalTasks = metrics.tasksCompleted + this.taskHistory.filter(t => !t.success).length;
     metrics.successRate = metrics.tasksCompleted / Math.max(totalTasks, 1);
     metrics.lastActiveTime = Date.now();
@@ -518,9 +518,9 @@ Please provide a detailed response including:
       console.log(`⚠️ Cancelling task ${taskId} due to agent disconnect`);
       this.emit('task_cancelled', taskId);
     }
-    
+
     this.currentTasks.clear();
-    
+
     await super.disconnect();
     console.log(`👋 Specialist Agent disconnected: ${this.agentId}`);
   }

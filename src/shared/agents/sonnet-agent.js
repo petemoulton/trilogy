@@ -14,20 +14,20 @@ class SonnetAgent extends BaseAgent {
 
   async process(input) {
     console.log(`🔍 Sonnet Agent processing: ${input.type || 'unknown'}`);
-    
+
     try {
       switch (input.type) {
-        case 'analyze_prd':
-          return await this.analyzePRD(input.prd);
-        case 'breakdown_tasks':
-          return await this.breakdownTasks(input.requirements);
-        case 'assess_feasibility':
-          return await this.assessFeasibility(input.tasks);
-        default:
-          return await this.handleGenericInput(input);
+      case 'analyze_prd':
+        return await this.analyzePRD(input.prd);
+      case 'breakdown_tasks':
+        return await this.breakdownTasks(input.requirements);
+      case 'assess_feasibility':
+        return await this.assessFeasibility(input.tasks);
+      default:
+        return await this.handleGenericInput(input);
       }
     } catch (error) {
-      console.error(`Sonnet Agent processing error:`, error);
+      console.error('Sonnet Agent processing error:', error);
       return {
         success: false,
         error: error.message,
@@ -208,7 +208,7 @@ class SonnetAgent extends BaseAgent {
 
   assessComplexity(prd) {
     const complexityIndicators = ['Redis', 'WebSocket', 'Chrome Extension', 'VS Code', 'Git'];
-    const foundIndicators = complexityIndicators.filter(indicator => 
+    const foundIndicators = complexityIndicators.filter(indicator =>
       prd.toLowerCase().includes(indicator.toLowerCase())
     );
     return foundIndicators.length > 3 ? 'HIGH' : foundIndicators.length > 1 ? 'MEDIUM' : 'LOW';

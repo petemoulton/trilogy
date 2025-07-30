@@ -4,14 +4,14 @@ const MCP_SERVER_URL = 'http://localhost:3100';
 
 async function testServerEndpoints() {
   console.log('Testing MCP Chrome Agent Server...\n');
-  
+
   try {
     // Test 1: Health check
     console.log('1. Testing health endpoint...');
     const healthResponse = await fetch(`${MCP_SERVER_URL}/health`);
     const healthData = await healthResponse.json();
     console.log('✅ Health check:', healthData);
-    
+
     // Test 2: Create session
     console.log('\n2. Testing session creation...');
     const sessionResponse = await fetch(`${MCP_SERVER_URL}/session`, {
@@ -22,7 +22,7 @@ async function testServerEndpoints() {
     const sessionData = await sessionResponse.json();
     console.log('✅ Session created:', sessionData);
     const testSessionId = sessionData.sessionId;
-    
+
     // Test 3: Send click event
     console.log('\n3. Testing click event...');
     const clickEventResponse = await fetch(`${MCP_SERVER_URL}/click-event`, {
@@ -45,7 +45,7 @@ async function testServerEndpoints() {
     });
     const clickEventData = await clickEventResponse.json();
     console.log('✅ Click event sent:', clickEventData);
-    
+
     // Test 4: Add command
     console.log('\n4. Testing command addition...');
     const commandResponse = await fetch(`${MCP_SERVER_URL}/commands`, {
@@ -61,25 +61,25 @@ async function testServerEndpoints() {
     });
     const commandData = await commandResponse.json();
     console.log('✅ Command added:', commandData);
-    
+
     // Test 5: Get commands
     console.log('\n5. Testing command retrieval...');
     const getCommandsResponse = await fetch(`${MCP_SERVER_URL}/commands?sessionId=${testSessionId}`);
     const getCommandsData = await getCommandsResponse.json();
     console.log('✅ Commands retrieved:', getCommandsData);
-    
+
     // Test 6: Get logs
     console.log('\n6. Testing log retrieval...');
     const logResponse = await fetch(`${MCP_SERVER_URL}/log?limit=5`);
     const logData = await logResponse.json();
     console.log('✅ Logs retrieved:', logData.logs.length, 'events');
-    
+
     // Test 7: Get sessions
     console.log('\n7. Testing session list...');
     const sessionsResponse = await fetch(`${MCP_SERVER_URL}/sessions`);
     const sessionsData = await sessionsResponse.json();
     console.log('✅ Sessions retrieved:', sessionsData.sessions.length, 'sessions');
-    
+
     // Test 8: Invalid command (security test)
     console.log('\n8. Testing security validation...');
     const invalidCommandResponse = await fetch(`${MCP_SERVER_URL}/commands`, {
@@ -95,9 +95,9 @@ async function testServerEndpoints() {
     });
     const invalidCommandData = await invalidCommandResponse.json();
     console.log('✅ Security validation:', invalidCommandData.success ? '❌ Failed' : '✅ Passed');
-    
+
     console.log('\n🎉 All tests completed successfully!');
-    
+
   } catch (error) {
     console.error('❌ Test failed:', error.message);
   }

@@ -8,7 +8,7 @@ function testEndpoint(url, name) {
   return new Promise((resolve) => {
     const urlObj = new URL(url);
     const client = urlObj.protocol === 'https:' ? https : http;
-    
+
     const req = client.get(url, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
@@ -17,12 +17,12 @@ function testEndpoint(url, name) {
         resolve({ success: true, status: res.statusCode, length: data.length });
       });
     });
-    
+
     req.on('error', (error) => {
       console.log(`❌ ${name}: ${error.message}`);
       resolve({ success: false, error: error.message });
     });
-    
+
     req.setTimeout(5000, () => {
       req.destroy();
       console.log(`❌ ${name}: Timeout after 5 seconds`);
@@ -33,18 +33,18 @@ function testEndpoint(url, name) {
 
 async function verifyDashboards() {
   console.log('🧪 Verifying Trilogy System Dashboards...\n');
-  
+
   // Test main server endpoints
   console.log('📊 Testing Main Server (port 8080):');
   await testEndpoint('http://localhost:8080/health', 'Health Check');
   await testEndpoint('http://localhost:8080/', 'Main Dashboard');
   await testEndpoint('http://localhost:8080/agents/pool/status', 'Agent Pool Status');
-  
+
   console.log('\n🌐 Testing MCP Server (port 3101):');
   await testEndpoint('http://localhost:3101/health', 'MCP Health Check');
   await testEndpoint('http://localhost:3101/dashboard', 'MCP Dashboard');
   await testEndpoint('http://localhost:3101/', 'MCP Root (should redirect)');
-  
+
   console.log('\n🎉 Dashboard verification complete!');
   console.log('📖 Main Dashboard: http://localhost:8080');
   console.log('🌐 MCP Dashboard: http://localhost:3101/dashboard');

@@ -21,7 +21,7 @@ class BaseAgent {
     return new Promise((resolve, reject) => {
       try {
         this.ws = new WebSocket(this.config.serverUrl);
-        
+
         this.ws.on('open', () => {
           this.isConnected = true;
           console.log(`✅ Agent ${this.name} connected to server`);

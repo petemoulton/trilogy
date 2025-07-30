@@ -16,7 +16,10 @@ RUN apk add --no-cache \
 COPY package*.json ./
 
 # Install Node.js dependencies
-RUN npm ci --only=production
+RUN npm ci --only=production --ignore-scripts
+
+# Rebuild native modules for the current architecture
+RUN npm rebuild sqlite3
 
 # Copy application code
 COPY . .
@@ -26,6 +29,10 @@ RUN mkdir -p /app/data /app/logs /app/memory
 
 # Set permissions
 RUN chmod +x /app/scripts/*.sh || true
+
+# Configure git
+RUN git config --global user.email "trilogy@example.com"
+RUN git config --global user.name "Trilogy System"
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs

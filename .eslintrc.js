@@ -2,14 +2,14 @@ module.exports = {
   env: {
     node: true,
     es2021: true,
-    jest: true,
+    jest: true
   },
   extends: [
-    'eslint:recommended',
+    'eslint:recommended'
   ],
   parserOptions: {
     ecmaVersion: 'latest',
-    sourceType: 'module',
+    sourceType: 'module'
   },
   rules: {
     'indent': ['error', 2],
@@ -31,17 +31,17 @@ module.exports = {
     'prefer-const': 'error',
     'no-var': 'error',
     'arrow-spacing': 'error',
-    'prefer-arrow-callback': 'error',
+    'prefer-arrow-callback': 'error'
   },
   overrides: [
     {
       files: ['tests/**/*.js', '**/*.test.js', '**/*.spec.js'],
       env: {
-        jest: true,
+        jest: true
       },
       rules: {
-        'no-console': 'off',
-      },
-    },
-  ],
+        'no-console': 'off'
+      }
+    }
+  ]
 };

@@ -5,12 +5,12 @@ const fs = require('fs');
 
 async function testDashboardComprehensive() {
   console.log('🧪 Running comprehensive dashboard test (Trilogy Dashboard Automated Tester)...');
-  
+
   const testResults = {
     testRun: {
       timestamp: new Date().toISOString(),
-      duration: "In Progress",
-      tester: "Trilogy Dashboard Automated Tester"
+      duration: 'In Progress',
+      tester: 'Trilogy Dashboard Automated Tester'
     },
     summary: {
       totalTests: 6,
@@ -30,14 +30,14 @@ async function testDashboardComprehensive() {
     consoleErrors: [],
     screenshots: []
   };
-  
-  const browser = await puppeteer.launch({ 
+
+  const browser = await puppeteer.launch({
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
-  
+
   const page = await browser.newPage();
-  
+
   // Listen for console errors
   page.on('console', msg => {
     if (msg.type() === 'error') {
@@ -49,10 +49,10 @@ async function testDashboardComprehensive() {
       testResults.summary.consoleErrorCount++;
     }
   });
-  
+
   try {
     page.setDefaultTimeout(10000);
-    
+
     // Test 1: Main Page
     console.log('🌐 Testing main page...');
     try {
@@ -65,7 +65,7 @@ async function testDashboardComprehensive() {
       testResults.summary.failedTests++;
       console.log('❌ Main page test failed');
     }
-    
+
     // Test 2: Health Endpoint
     console.log('🏥 Testing health endpoint...');
     try {
@@ -85,7 +85,7 @@ async function testDashboardComprehensive() {
       testResults.summary.failedTests++;
       console.log('❌ Health endpoint test failed');
     }
-    
+
     // Test 3: Professional Dashboard
     console.log('🖥️ Testing professional dashboard...');
     try {
@@ -102,7 +102,7 @@ async function testDashboardComprehensive() {
       testResults.summary.failedTests++;
       console.log('❌ Professional dashboard test failed');
     }
-    
+
     // Test 4: WebSocket Connection
     console.log('🔌 Testing websocket connection...');
     try {
@@ -115,7 +115,7 @@ async function testDashboardComprehensive() {
       testResults.summary.failedTests++;
       console.log('❌ WebSocket connection test failed');
     }
-    
+
     // Test 5: Dashboard Elements
     console.log('🧩 Testing dashboard elements...');
     try {
@@ -124,7 +124,7 @@ async function testDashboardComprehensive() {
                document.querySelector('.nav-tabs') !== null &&
                document.querySelector('#overview') !== null;
       });
-      
+
       if (hasMainElements) {
         testResults.results.dashboardElements.passed = true;
         testResults.summary.passedTests++;
@@ -137,7 +137,7 @@ async function testDashboardComprehensive() {
       testResults.summary.failedTests++;
       console.log('❌ Dashboard elements test failed');
     }
-    
+
     // Test 6: Sample Data Toggle (THE KEY TEST!)
     console.log('🎯 Testing sample data toggle...');
     try {
@@ -145,26 +145,26 @@ async function testDashboardComprehensive() {
       const beforeScreenshot = `/Users/petermoulton/Library/Mobile Documents/com~apple~CloudDocs/Images/Snip Screenshot/trilogy-dashboard-before-toggle-${Date.now()}.png`;
       await page.screenshot({ path: beforeScreenshot, fullPage: true });
       testResults.screenshots.push({
-        name: "before-toggle",
-        description: "Dashboard Before Sample Data Toggle",
+        name: 'before-toggle',
+        description: 'Dashboard Before Sample Data Toggle',
         filepath: beforeScreenshot,
         timestamp: new Date().toISOString()
       });
       testResults.summary.screenshotCount++;
-      
+
       // Find and click the toggle button
       const toggleButton = await page.$('#sample-data-toggle');
       if (!toggleButton) {
         throw new Error('Sample data toggle button not found');
       }
-      
+
       // Click the button
       await toggleButton.click();
       console.log('✅ Sample data toggle button clicked successfully');
-      
+
       // Wait for changes
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // Verify the toggle worked
       const sampleMode = await page.evaluate(() => window.useSampleData);
       if (sampleMode === true) {
@@ -174,19 +174,19 @@ async function testDashboardComprehensive() {
       } else {
         throw new Error('Sample data toggle did not change state');
       }
-      
+
     } catch (error) {
       testResults.results.sampleDataToggle.errors.push(`Sample data toggle test failed: ${error.message}`);
       testResults.summary.failedTests++;
       console.log('❌ Sample data toggle test failed');
     }
-    
-    testResults.testRun.duration = "Completed";
-    
+
+    testResults.testRun.duration = 'Completed';
+
     // Save test results
     const logPath = `/Users/petermoulton/Repos/trilogy/logs/trilogy-dashboard-test-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
     fs.writeFileSync(logPath, JSON.stringify(testResults, null, 2));
-    
+
     console.log('\n📊 TEST SUMMARY:');
     console.log(`Total Tests: ${testResults.summary.totalTests}`);
     console.log(`Passed: ${testResults.summary.passedTests}`);
@@ -195,13 +195,13 @@ async function testDashboardComprehensive() {
     console.log(`Console Errors: ${testResults.summary.consoleErrorCount}`);
     console.log(`Screenshots: ${testResults.summary.screenshotCount}`);
     console.log(`Results saved to: ${logPath}`);
-    
+
     if (testResults.results.sampleDataToggle.passed) {
       console.log('\n🎉 SUCCESS: The sample data toggle is now working!');
       console.log('✅ The "Node is either not clickable or not an Element" error is FIXED!');
       console.log('✅ The 24-hour debugging challenge has been resolved!');
     }
-    
+
   } catch (error) {
     console.log('❌ Comprehensive test failed:', error.message);
   } finally {

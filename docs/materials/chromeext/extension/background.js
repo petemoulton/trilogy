@@ -1,7 +1,7 @@
 // Background service worker for MCP Chrome Agent
 
 const MCP_SERVER_URL = 'http://localhost:3101';
-let activeSessions = new Map();
+const activeSessions = new Map();
 
 // Initialize extension
 chrome.runtime.onInstalled.addListener(() => {
@@ -21,16 +21,16 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
           url: tab.url
         })
       });
-      
+
       if (response.ok) {
         const { sessionId } = await response.json();
         activeSessions.set(tabId, sessionId);
-        
+
         // Store session in tab's storage
         await chrome.storage.local.set({
           [`session_${tabId}`]: sessionId
         });
-        
+
         console.log(`Session created for tab ${tabId}: ${sessionId}`);
       }
     } catch (error) {
@@ -58,14 +58,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     handleScreenshotCapture(sender.tab, sendResponse);
     return true; // Keep message channel open for async response
   }
-  
+
   return true; // Keep message channel open for async response
 });
 
 // Send click event to MCP server
 async function handleClickEvent(eventData, tab) {
   const sessionId = activeSessions.get(tab.id);
-  
+
   try {
     const response = await fetch(`${MCP_SERVER_URL}/click-event`, {
       method: 'POST',
@@ -77,7 +77,7 @@ async function handleClickEvent(eventData, tab) {
         timestamp: Date.now()
       })
     });
-    
+
     if (response.ok) {
       console.log('Click event sent successfully');
     }
@@ -89,7 +89,7 @@ async function handleClickEvent(eventData, tab) {
 // Send DOM snapshot to MCP server
 async function handleDomSnapshot(domData, tab) {
   const sessionId = activeSessions.get(tab.id);
-  
+
   try {
     const response = await fetch(`${MCP_SERVER_URL}/full-dom`, {
       method: 'POST',
@@ -101,7 +101,7 @@ async function handleDomSnapshot(domData, tab) {
         timestamp: Date.now()
       })
     });
-    
+
     if (response.ok) {
       console.log('DOM snapshot sent successfully');
     }
@@ -115,10 +115,10 @@ async function pollForCommands() {
   for (const [tabId, sessionId] of activeSessions.entries()) {
     try {
       const response = await fetch(`${MCP_SERVER_URL}/commands?sessionId=${sessionId}`);
-      
+
       if (response.ok) {
         const { commands } = await response.json();
-        
+
         if (commands && commands.length > 0) {
           // Send commands to content script
           chrome.tabs.sendMessage(tabId, {

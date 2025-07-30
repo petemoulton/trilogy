@@ -11,7 +11,7 @@ class SecurityManager {
 
   // JWT Token Management
   generateToken(payload, expiresIn = '24h') {
-    return jwt.sign(payload, this.jwtSecret, { 
+    return jwt.sign(payload, this.jwtSecret, {
       expiresIn,
       issuer: 'trilogy-ai-system',
       audience: 'trilogy-users'
@@ -91,30 +91,30 @@ class SecurityManager {
     if (!input) return false;
 
     switch (type) {
-      case 'namespace':
-        return /^[a-zA-Z0-9_-]+$/.test(input) && input.length <= 255;
-      
-      case 'key':
-        return /^[a-zA-Z0-9_.-]+$/.test(input) && input.length <= 255;
-      
-      case 'agent':
-        return ['sonnet', 'opus'].includes(input);
-      
-      case 'sessionId':
-        return /^[a-zA-Z0-9-]{36}$/.test(input); // UUID format
-      
-      case 'email':
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input);
-      
-      default:
-        return false;
+    case 'namespace':
+      return /^[a-zA-Z0-9_-]+$/.test(input) && input.length <= 255;
+
+    case 'key':
+      return /^[a-zA-Z0-9_.-]+$/.test(input) && input.length <= 255;
+
+    case 'agent':
+      return ['sonnet', 'opus'].includes(input);
+
+    case 'sessionId':
+      return /^[a-zA-Z0-9-]{36}$/.test(input); // UUID format
+
+    case 'email':
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input);
+
+    default:
+      return false;
     }
   }
 
   // Sanitize strings to prevent injection
   sanitizeString(str) {
     if (typeof str !== 'string') return '';
-    
+
     return str
       .replace(/[<>]/g, '') // Remove HTML tags
       .replace(/['"]/g, '') // Remove quotes
@@ -126,7 +126,7 @@ class SecurityManager {
   // Memory key sanitization
   sanitizeMemoryKey(key) {
     if (typeof key !== 'string') return '';
-    
+
     return key
       .replace(/[^a-zA-Z0-9_.-]/g, '_') // Replace invalid chars with underscore
       .replace(/_{2,}/g, '_') // Replace multiple underscores with single
@@ -144,7 +144,7 @@ class SecurityManager {
       origin: (origin, callback) => {
         // Allow requests with no origin (mobile apps, Postman, etc.)
         if (!origin) return callback(null, true);
-        
+
         if (allowedOrigins.includes(origin)) {
           callback(null, true);
         } else {
@@ -163,34 +163,34 @@ class SecurityManager {
     return (req, res, next) => {
       // Prevent clickjacking
       res.setHeader('X-Frame-Options', 'DENY');
-      
+
       // Prevent MIME type sniffing
       res.setHeader('X-Content-Type-Options', 'nosniff');
-      
+
       // XSS Protection
       res.setHeader('X-XSS-Protection', '1; mode=block');
-      
+
       // HTTPS Strict Transport Security
       if (process.env.NODE_ENV === 'production') {
         res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
       }
-      
+
       // Content Security Policy
-      res.setHeader('Content-Security-Policy', 
-        "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline'; " +
-        "style-src 'self' 'unsafe-inline'; " +
-        "img-src 'self' data: https:; " +
-        "connect-src 'self' ws: wss:; " +
-        "font-src 'self'; " +
-        "object-src 'none'; " +
-        "media-src 'self'; " +
-        "frame-src 'none';"
+      res.setHeader('Content-Security-Policy',
+        'default-src \'self\'; ' +
+        'script-src \'self\' \'unsafe-inline\'; ' +
+        'style-src \'self\' \'unsafe-inline\'; ' +
+        'img-src \'self\' data: https:; ' +
+        'connect-src \'self\' ws: wss:; ' +
+        'font-src \'self\'; ' +
+        'object-src \'none\'; ' +
+        'media-src \'self\'; ' +
+        'frame-src \'none\';'
       );
-      
+
       // Remove server information
       res.removeHeader('X-Powered-By');
-      
+
       next();
     };
   }
@@ -199,25 +199,25 @@ class SecurityManager {
   validateMemoryRequest() {
     return (req, res, next) => {
       const { namespace, key } = req.params;
-      
+
       if (!this.validateInput(namespace, 'namespace')) {
         return res.status(400).json({
           success: false,
           error: 'Invalid namespace format'
         });
       }
-      
+
       if (!this.validateInput(key, 'key')) {
         return res.status(400).json({
           success: false,
           error: 'Invalid key format'
         });
       }
-      
+
       // Sanitize parameters
       req.params.namespace = this.sanitizeString(namespace);
       req.params.key = this.sanitizeMemoryKey(key);
-      
+
       next();
     };
   }
@@ -226,14 +226,14 @@ class SecurityManager {
   validateAgentRequest() {
     return (req, res, next) => {
       const { agent } = req.params;
-      
+
       if (!this.validateInput(agent, 'agent')) {
         return res.status(400).json({
           success: false,
           error: 'Invalid agent name'
         });
       }
-      
+
       // Validate request body
       if (req.body && typeof req.body.input === 'object') {
         // Sanitize input data
@@ -241,7 +241,7 @@ class SecurityManager {
           req.body.input.type = this.sanitizeString(req.body.input.type);
         }
       }
-      
+
       next();
     };
   }
@@ -250,14 +250,14 @@ class SecurityManager {
   requireAuth() {
     return (req, res, next) => {
       const token = req.headers.authorization?.replace('Bearer ', '');
-      
+
       if (!token) {
         return res.status(401).json({
           success: false,
           error: 'Authentication token required'
         });
       }
-      
+
       try {
         const decoded = this.verifyToken(token);
         req.user = decoded;
@@ -293,9 +293,9 @@ class SecurityManager {
       details,
       severity: 'security'
     };
-    
+
     console.warn(`[SECURITY] ${timestamp}: ${event}`, details);
-    
+
     // In production, send to security monitoring system
     if (process.env.NODE_ENV === 'production') {
       // Send to monitoring service (Sentry, DataDog, etc.)

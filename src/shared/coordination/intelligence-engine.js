@@ -4,7 +4,7 @@ const fs = require('fs').promises;
 
 /**
  * Intelligence Engine - Milestone 4 Enhancement
- * 
+ *
  * Provides advanced intelligence features:
  * - Complex task breakdown with multi-level analysis
  * - Learning memory with pattern recognition
@@ -20,24 +20,24 @@ class IntelligenceEngine extends EventEmitter {
       maxTaskDepth: config.maxTaskDepth || 5,
       ...config
     };
-    
+
     this.learningMemory = new Map();
     this.taskPatterns = new Map();
     this.agentPerformanceHistory = new Map();
     this.dependencyPatterns = new Map();
-    
+
     this.initializeIntelligence();
   }
 
   async initializeIntelligence() {
     console.log('🧠 Intelligence Engine: Initializing...');
-    
+
     try {
       // Load existing learning patterns
       await this.loadLearningMemory();
       await this.loadTaskPatterns();
       await this.loadPerformanceHistory();
-      
+
       console.log('✅ Intelligence Engine: Initialization complete');
       this.emit('intelligence_ready');
     } catch (error) {
@@ -51,7 +51,7 @@ class IntelligenceEngine extends EventEmitter {
    */
   async performComplexTaskBreakdown(taskDescription, context = {}) {
     console.log('🔍 Intelligence Engine: Performing complex task breakdown...');
-    
+
     const breakdown = {
       id: this.generateTaskId(),
       originalTask: taskDescription,
@@ -77,11 +77,11 @@ class IntelligenceEngine extends EventEmitter {
     for (const primaryTask of primaryTasks) {
       const subtasks = await this.decomposeTaskLevel2(primaryTask, context);
       detailedTasks.push(...subtasks);
-      
+
       // Build dependency graph
       this.analyzeDependencies(primaryTask, subtasks, breakdown.dependencies);
     }
-    
+
     breakdown.levels.push({
       level: 2,
       tasks: detailedTasks,
@@ -110,7 +110,7 @@ class IntelligenceEngine extends EventEmitter {
     await this.storeTaskBreakdown(breakdown);
 
     console.log(`✅ Complex breakdown complete: ${breakdown.levels.length} levels, complexity: ${breakdown.estimatedComplexity}/10`);
-    
+
     return breakdown;
   }
 
@@ -118,27 +118,27 @@ class IntelligenceEngine extends EventEmitter {
     // Analyze task type and domain
     const taskType = this.classifyTaskType(taskDescription);
     const domain = this.identifyDomain(taskDescription, context);
-    
+
     let primaryTasks = [];
 
     switch (taskType) {
-      case 'FEATURE_DEVELOPMENT':
-        primaryTasks = this.decomposeFeatureDevelopment(taskDescription, context);
-        break;
-      case 'SYSTEM_INTEGRATION':
-        primaryTasks = this.decomposeSystemIntegration(taskDescription, context);
-        break;
-      case 'DATA_PROCESSING':
-        primaryTasks = this.decomposeDataProcessing(taskDescription, context);
-        break;
-      case 'UI_DEVELOPMENT':
-        primaryTasks = this.decomposeUITasks(taskDescription, context);
-        break;
-      case 'API_DEVELOPMENT':
-        primaryTasks = this.decomposeAPITasks(taskDescription, context);
-        break;
-      default:
-        primaryTasks = this.decomposeGenericTask(taskDescription, context);
+    case 'FEATURE_DEVELOPMENT':
+      primaryTasks = this.decomposeFeatureDevelopment(taskDescription, context);
+      break;
+    case 'SYSTEM_INTEGRATION':
+      primaryTasks = this.decomposeSystemIntegration(taskDescription, context);
+      break;
+    case 'DATA_PROCESSING':
+      primaryTasks = this.decomposeDataProcessing(taskDescription, context);
+      break;
+    case 'UI_DEVELOPMENT':
+      primaryTasks = this.decomposeUITasks(taskDescription, context);
+      break;
+    case 'API_DEVELOPMENT':
+      primaryTasks = this.decomposeAPITasks(taskDescription, context);
+      break;
+    default:
+      primaryTasks = this.decomposeGenericTask(taskDescription, context);
     }
 
     // Enhance with domain-specific considerations
@@ -237,25 +237,25 @@ class IntelligenceEngine extends EventEmitter {
 
   async decomposeTaskLevel2(primaryTask, context) {
     const subtasks = [];
-    
+
     switch (primaryTask.category) {
-      case 'analysis':
-        subtasks.push(...this.decomposeAnalysisTasks(primaryTask, context));
-        break;
-      case 'backend':
-        subtasks.push(...this.decomposeBackendTasks(primaryTask, context));
-        break;
-      case 'frontend':
-        subtasks.push(...this.decomposeFrontendTasks(primaryTask, context));
-        break;
-      case 'integration':
-        subtasks.push(...this.decomposeIntegrationTasks(primaryTask, context));
-        break;
-      case 'testing':
-        subtasks.push(...this.decomposeTestingTasks(primaryTask, context));
-        break;
-      default:
-        subtasks.push(...this.decomposeGenericSubtasks(primaryTask, context));
+    case 'analysis':
+      subtasks.push(...this.decomposeAnalysisTasks(primaryTask, context));
+      break;
+    case 'backend':
+      subtasks.push(...this.decomposeBackendTasks(primaryTask, context));
+      break;
+    case 'frontend':
+      subtasks.push(...this.decomposeFrontendTasks(primaryTask, context));
+      break;
+    case 'integration':
+      subtasks.push(...this.decomposeIntegrationTasks(primaryTask, context));
+      break;
+    case 'testing':
+      subtasks.push(...this.decomposeTestingTasks(primaryTask, context));
+      break;
+    default:
+      subtasks.push(...this.decomposeGenericSubtasks(primaryTask, context));
     }
 
     return subtasks;
@@ -308,31 +308,31 @@ class IntelligenceEngine extends EventEmitter {
    */
   async applyLearningPatterns(taskBreakdown) {
     console.log('🎓 Intelligence Engine: Applying learning patterns...');
-    
+
     // Find similar past projects
     const similarProjects = await this.findSimilarProjects(taskBreakdown);
-    
+
     if (similarProjects.length > 0) {
       // Apply learned optimizations
       await this.applyLearnedOptimizations(taskBreakdown, similarProjects);
-      
+
       // Adjust estimates based on historical performance
       await this.adjustEstimatesFromHistory(taskBreakdown, similarProjects);
-      
+
       // Identify potential risks from past projects
       await this.identifyHistoricalRisks(taskBreakdown, similarProjects);
     }
-    
+
     // Learn from current breakdown
     await this.learnFromCurrentBreakdown(taskBreakdown);
   }
 
   async findSimilarProjects(taskBreakdown) {
     const similarities = [];
-    
+
     for (const [projectId, patterns] of this.taskPatterns) {
       const similarity = this.calculateTaskSimilarity(taskBreakdown, patterns);
-      
+
       if (similarity > this.config.learningThreshold) {
         similarities.push({
           projectId,
@@ -342,40 +342,40 @@ class IntelligenceEngine extends EventEmitter {
         });
       }
     }
-    
+
     return similarities.sort((a, b) => b.similarity - a.similarity).slice(0, 3);
   }
 
   calculateTaskSimilarity(currentBreakdown, historicalPatterns) {
     let similarity = 0;
     let totalFactors = 0;
-    
+
     // Compare required skills
     const currentSkills = Array.from(currentBreakdown.requiredSkills);
     const historicalSkills = historicalPatterns.requiredSkills || [];
     const skillOverlap = currentSkills.filter(skill => historicalSkills.includes(skill));
     similarity += (skillOverlap.length / Math.max(currentSkills.length, historicalSkills.length)) * 0.3;
     totalFactors += 0.3;
-    
+
     // Compare complexity
     const complexityDiff = Math.abs(currentBreakdown.estimatedComplexity - (historicalPatterns.complexity || 5));
     similarity += (1 - complexityDiff / 10) * 0.2;
     totalFactors += 0.2;
-    
+
     // Compare task structure
     const currentTaskCount = currentBreakdown.levels.reduce((sum, level) => sum + level.tasks.length, 0);
     const historicalTaskCount = historicalPatterns.taskCount || 1;
     const taskCountSimilarity = 1 - Math.abs(currentTaskCount - historicalTaskCount) / Math.max(currentTaskCount, historicalTaskCount);
     similarity += taskCountSimilarity * 0.2;
     totalFactors += 0.2;
-    
+
     // Compare domain/category patterns
     const currentCategories = this.extractCategories(currentBreakdown);
     const historicalCategories = historicalPatterns.categories || [];
     const categoryOverlap = currentCategories.filter(cat => historicalCategories.includes(cat));
     similarity += (categoryOverlap.length / Math.max(currentCategories.length, historicalCategories.length)) * 0.3;
     totalFactors += 0.3;
-    
+
     return totalFactors > 0 ? similarity / totalFactors : 0;
   }
 
@@ -385,56 +385,56 @@ class IntelligenceEngine extends EventEmitter {
    */
   async predictiveAgentSpawning(taskBreakdown, currentAgentPool) {
     console.log('🔮 Intelligence Engine: Performing predictive agent spawning...');
-    
+
     const predictions = {
       recommendedAgents: [],
       spawnTiming: new Map(),
       resourceOptimization: {},
       confidenceScore: 0
     };
-    
+
     // Analyze dependency chains
     const dependencyChains = this.analyzeDependencyChains(taskBreakdown);
-    
+
     // Predict required agent types and timing
     for (const chain of dependencyChains) {
       const chainPredictions = await this.predictChainRequirements(chain, taskBreakdown);
       predictions.recommendedAgents.push(...chainPredictions.agents);
-      
+
       // Set spawn timing based on dependency delays
       chainPredictions.agents.forEach(agent => {
         predictions.spawnTiming.set(agent.id, chainPredictions.optimalSpawnTime);
       });
     }
-    
+
     // Optimize for resource efficiency
     predictions.resourceOptimization = await this.optimizeResourceAllocation(
-      predictions.recommendedAgents, 
+      predictions.recommendedAgents,
       currentAgentPool,
       taskBreakdown
     );
-    
+
     // Calculate confidence based on historical accuracy
     predictions.confidenceScore = await this.calculatePredictionConfidence(taskBreakdown);
-    
+
     // Store predictions for learning
     await this.storePredictions(predictions, taskBreakdown);
-    
+
     console.log(`✅ Predictive spawning complete: ${predictions.recommendedAgents.length} agents recommended`);
-    
+
     return predictions;
   }
 
   analyzeDependencyChains(taskBreakdown) {
     const chains = [];
     const visitedTasks = new Set();
-    
+
     // Find all root tasks (no dependencies)
     const allTasks = this.flattenTaskLevels(taskBreakdown);
-    const rootTasks = allTasks.filter(task => 
+    const rootTasks = allTasks.filter(task =>
       !task.dependencies || task.dependencies.length === 0
     );
-    
+
     // Build chains from each root
     for (const rootTask of rootTasks) {
       const chain = this.buildDependencyChain(rootTask, allTasks, visitedTasks);
@@ -442,7 +442,7 @@ class IntelligenceEngine extends EventEmitter {
         chains.push(chain);
       }
     }
-    
+
     return chains;
   }
 
@@ -452,21 +452,21 @@ class IntelligenceEngine extends EventEmitter {
       optimalSpawnTime: new Date(),
       reasoning: []
     };
-    
+
     // Analyze skill requirements across the chain
     const skillMap = new Map();
     let maxComplexity = 0;
-    
+
     for (const task of chain) {
       task.requiredSkills.forEach(skill => {
         skillMap.set(skill, (skillMap.get(skill) || 0) + 1);
       });
       maxComplexity = Math.max(maxComplexity, this.getTaskComplexity(task));
     }
-    
+
     // Determine optimal agent types
     const requiredAgentTypes = await this.determineOptimalAgentTypes(skillMap, maxComplexity);
-    
+
     // Create agent recommendations
     for (const agentType of requiredAgentTypes) {
       predictions.agents.push({
@@ -478,10 +478,10 @@ class IntelligenceEngine extends EventEmitter {
         priority: agentType.priority
       });
     }
-    
+
     // Calculate optimal spawn timing
     predictions.optimalSpawnTime = this.calculateOptimalSpawnTime(chain, taskBreakdown);
-    
+
     return predictions;
   }
 
@@ -491,7 +491,7 @@ class IntelligenceEngine extends EventEmitter {
    */
   async optimizeDecisionTree(options, context = {}) {
     console.log('🌳 Intelligence Engine: Optimizing decision tree...');
-    
+
     const optimization = {
       scoredOptions: [],
       decisionMatrix: [],
@@ -500,22 +500,22 @@ class IntelligenceEngine extends EventEmitter {
       confidence: 0,
       reasoning: []
     };
-    
+
     // Multi-criteria decision analysis
     const criteria = this.defineCriteria(context);
     const weights = await this.calculateCriteriaWeights(criteria, context);
-    
+
     // Score each option against all criteria
     for (const option of options) {
       const scores = {};
       let totalScore = 0;
-      
+
       for (const criterion of criteria) {
         const score = await this.scoreOptionAgainstCriterion(option, criterion, context);
         scores[criterion.name] = score;
         totalScore += score * weights[criterion.name];
       }
-      
+
       optimization.scoredOptions.push({
         ...option,
         criteriaScores: scores,
@@ -523,31 +523,31 @@ class IntelligenceEngine extends EventEmitter {
         normalizedScore: totalScore / criteria.length
       });
     }
-    
+
     // Create decision matrix
     optimization.decisionMatrix = this.createDecisionMatrix(optimization.scoredOptions, criteria);
-    
+
     // Perform risk analysis
     optimization.riskAnalysis = await this.performRiskAnalysis(optimization.scoredOptions, context);
-    
+
     // Apply sensitivity analysis
     const sensitivityResults = await this.performSensitivityAnalysis(optimization.scoredOptions, weights);
-    
+
     // Select recommendation with risk adjustment
     optimization.recommendation = this.selectOptimalOption(
-      optimization.scoredOptions, 
+      optimization.scoredOptions,
       optimization.riskAnalysis,
       sensitivityResults
     );
-    
+
     // Calculate confidence
     optimization.confidence = this.calculateDecisionConfidence(optimization);
-    
+
     // Generate reasoning
     optimization.reasoning = this.generateDecisionReasoning(optimization);
-    
+
     console.log(`✅ Decision optimization complete: ${optimization.recommendation.id} selected (confidence: ${optimization.confidence})`);
-    
+
     return optimization;
   }
 
@@ -559,13 +559,13 @@ class IntelligenceEngine extends EventEmitter {
       { name: 'cost', weight: 0.15, description: 'Resource and time costs' },
       { name: 'alignment', weight: 0.15, description: 'Strategic alignment' }
     ];
-    
+
     // Add context-specific criteria
     if (context.type === 'technical') {
       baseCriteria.push({ name: 'maintainability', weight: 0.10, description: 'Long-term maintainability' });
       baseCriteria.push({ name: 'scalability', weight: 0.10, description: 'System scalability' });
     }
-    
+
     return baseCriteria;
   }
 
@@ -580,7 +580,7 @@ class IntelligenceEngine extends EventEmitter {
 
   classifyTaskType(taskDescription) {
     const description = taskDescription.toLowerCase();
-    
+
     if (description.includes('feature') || description.includes('functionality')) {
       return 'FEATURE_DEVELOPMENT';
     } else if (description.includes('integrate') || description.includes('connect')) {
@@ -592,7 +592,7 @@ class IntelligenceEngine extends EventEmitter {
     } else if (description.includes('api') || description.includes('endpoint')) {
       return 'API_DEVELOPMENT';
     }
-    
+
     return 'GENERIC_TASK';
   }
 
@@ -601,13 +601,13 @@ class IntelligenceEngine extends EventEmitter {
     if (context.project && context.project.domain) {
       return context.project.domain;
     }
-    
+
     const description = taskDescription.toLowerCase();
     if (description.includes('web') || description.includes('website')) return 'web-development';
     if (description.includes('mobile') || description.includes('app')) return 'mobile-development';
     if (description.includes('data') || description.includes('analytics')) return 'data-science';
     if (description.includes('ai') || description.includes('machine learning')) return 'artificial-intelligence';
-    
+
     return 'general-software';
   }
 
@@ -616,11 +616,11 @@ class IntelligenceEngine extends EventEmitter {
       const memoryPath = path.join(this.config.memoryPath, 'intelligence', 'learning_memory.json');
       const data = await fs.readFile(memoryPath, 'utf8');
       const parsed = JSON.parse(data);
-      
+
       for (const [key, value] of Object.entries(parsed)) {
         this.learningMemory.set(key, value);
       }
-      
+
       console.log(`📚 Loaded ${this.learningMemory.size} learning patterns`);
     } catch (error) {
       console.log('📚 No existing learning memory found, starting fresh');
@@ -632,11 +632,11 @@ class IntelligenceEngine extends EventEmitter {
       const patternsPath = path.join(this.config.memoryPath, 'intelligence', 'task_patterns.json');
       const data = await fs.readFile(patternsPath, 'utf8');
       const parsed = JSON.parse(data);
-      
+
       for (const [key, value] of Object.entries(parsed)) {
         this.taskPatterns.set(key, value);
       }
-      
+
       console.log(`📋 Loaded ${this.taskPatterns.size} task patterns`);
     } catch (error) {
       console.log('📋 No existing task patterns found, starting fresh');
@@ -648,11 +648,11 @@ class IntelligenceEngine extends EventEmitter {
       const historyPath = path.join(this.config.memoryPath, 'intelligence', 'performance_history.json');
       const data = await fs.readFile(historyPath, 'utf8');
       const parsed = JSON.parse(data);
-      
+
       for (const [key, value] of Object.entries(parsed)) {
         this.agentPerformanceHistory.set(key, value);
       }
-      
+
       console.log(`📊 Loaded ${this.agentPerformanceHistory.size} performance records`);
     } catch (error) {
       console.log('📊 No existing performance history found, starting fresh');
@@ -663,19 +663,19 @@ class IntelligenceEngine extends EventEmitter {
     try {
       const intelligenceDir = path.join(this.config.memoryPath, 'intelligence');
       await fs.mkdir(intelligenceDir, { recursive: true });
-      
+
       // Save learning memory
       const learningMemoryPath = path.join(intelligenceDir, 'learning_memory.json');
       await fs.writeFile(learningMemoryPath, JSON.stringify(Object.fromEntries(this.learningMemory), null, 2));
-      
+
       // Save task patterns
       const taskPatternsPath = path.join(intelligenceDir, 'task_patterns.json');
       await fs.writeFile(taskPatternsPath, JSON.stringify(Object.fromEntries(this.taskPatterns), null, 2));
-      
+
       // Save performance history
       const performancePath = path.join(intelligenceDir, 'performance_history.json');
       await fs.writeFile(performancePath, JSON.stringify(Object.fromEntries(this.agentPerformanceHistory), null, 2));
-      
+
       console.log('💾 Intelligence state saved');
     } catch (error) {
       console.error('❌ Error saving intelligence state:', error);
@@ -769,19 +769,19 @@ class IntelligenceEngine extends EventEmitter {
       'data-science': ['data quality', 'model accuracy'],
       'artificial-intelligence': ['training time', 'computational resources']
     };
-    
+
     return riskMap[domain] || ['technical complexity', 'integration challenges'];
   }
 
   calculateTaskComplexity(task) {
     let complexity = 5; // Base complexity
-    
+
     if (task.complexity === 'HIGH') complexity += 3;
     else if (task.complexity === 'MEDIUM') complexity += 1;
-    
+
     if (task.estimatedHours > 15) complexity += 2;
     if (task.requiredSkills && task.requiredSkills.length > 3) complexity += 1;
-    
+
     return Math.min(10, complexity);
   }
 
@@ -915,18 +915,18 @@ class IntelligenceEngine extends EventEmitter {
   buildDependencyChain(rootTask, allTasks, visitedTasks) {
     const chain = [rootTask];
     visitedTasks.add(rootTask.id);
-    
+
     // Find tasks that depend on this root task
-    const dependents = allTasks.filter(task => 
+    const dependents = allTasks.filter(task =>
       task.dependencies && task.dependencies.includes(rootTask.id) && !visitedTasks.has(task.id)
     );
-    
+
     // Recursively build chains for dependents
     dependents.forEach(dependent => {
       const subChain = this.buildDependencyChain(dependent, allTasks, visitedTasks);
       chain.push(...subChain.slice(1)); // Exclude the root as it's already added
     });
-    
+
     return chain;
   }
 
@@ -935,7 +935,7 @@ class IntelligenceEngine extends EventEmitter {
     const baseTime = new Date();
     const chainComplexity = chain.reduce((sum, task) => sum + this.getTaskComplexity(task), 0);
     const hoursOffset = Math.max(2, chainComplexity * 0.5); // At least 2 hours, scaled by complexity
-    
+
     return new Date(baseTime.getTime() + (hoursOffset * 60 * 60 * 1000));
   }
 
@@ -946,12 +946,12 @@ class IntelligenceEngine extends EventEmitter {
 
   async determineOptimalAgentTypes(skillMap, maxComplexity) {
     const agentTypes = [];
-    
+
     // Convert skill frequency to agent recommendations
     for (const [skill, frequency] of skillMap) {
       const agentType = this.mapSkillToAgentType(skill);
       const existingType = agentTypes.find(type => type.type === agentType.type);
-      
+
       if (existingType) {
         existingType.utilization += frequency * 0.1;
         existingType.skills.push(skill);
@@ -965,7 +965,7 @@ class IntelligenceEngine extends EventEmitter {
         });
       }
     }
-    
+
     return agentTypes;
   }
 
@@ -977,18 +977,18 @@ class IntelligenceEngine extends EventEmitter {
       'testing': { type: 'qa-specialist', specialization: 'Quality Assurance' },
       'devops': { type: 'devops-specialist', specialization: 'Infrastructure' }
     };
-    
+
     return skillMap[skill] || { type: 'generalist', specialization: 'General Development' };
   }
 
   async calculateCriteriaWeights(criteria, context) {
     const weights = {};
     const totalWeight = criteria.reduce((sum, criterion) => sum + criterion.weight, 0);
-    
+
     criteria.forEach(criterion => {
       weights[criterion.name] = criterion.weight / totalWeight;
     });
-    
+
     return weights;
   }
 
@@ -999,7 +999,7 @@ class IntelligenceEngine extends EventEmitter {
 
   createDecisionMatrix(scoredOptions, criteria) {
     const matrix = [];
-    
+
     scoredOptions.forEach(option => {
       const row = { option: option.name || option.id };
       criteria.forEach(criterion => {
@@ -1008,7 +1008,7 @@ class IntelligenceEngine extends EventEmitter {
       row.totalScore = option.totalScore;
       matrix.push(row);
     });
-    
+
     return matrix;
   }
 
@@ -1030,11 +1030,11 @@ class IntelligenceEngine extends EventEmitter {
 
   selectOptimalOption(scoredOptions, riskAnalysis, sensitivityResults) {
     // Select highest scoring option that's not high risk
-    const viableOptions = scoredOptions.filter(opt => 
+    const viableOptions = scoredOptions.filter(opt =>
       !riskAnalysis.highRiskOptions.includes(opt)
     );
-    
-    return viableOptions.reduce((best, current) => 
+
+    return viableOptions.reduce((best, current) =>
       current.totalScore > best.totalScore ? current : best
     );
   }
@@ -1044,7 +1044,7 @@ class IntelligenceEngine extends EventEmitter {
     const secondScore = optimization.scoredOptions
       .map(opt => opt.totalScore)
       .sort((a, b) => b - a)[1] || 0;
-    
+
     const scoreGap = topScore - secondScore;
     return Math.min(0.95, 0.5 + (scoreGap / 10));
   }
@@ -1052,15 +1052,15 @@ class IntelligenceEngine extends EventEmitter {
   generateDecisionReasoning(optimization) {
     const reasoning = [];
     const selected = optimization.recommendation;
-    
+
     reasoning.push(`Selected ${selected.name || selected.id} with highest total score (${selected.totalScore.toFixed(2)})`);
-    
+
     if (optimization.riskAnalysis.overallRiskLevel === 'LOW') {
       reasoning.push('Low risk profile makes this a safe choice');
     }
-    
+
     reasoning.push(`Confidence level: ${Math.round(optimization.confidence * 100)}%`);
-    
+
     return reasoning;
   }
 
@@ -1099,10 +1099,10 @@ class IntelligenceEngine extends EventEmitter {
     try {
       const breakdownsDir = path.join(this.config.memoryPath, 'intelligence', 'breakdowns');
       await fs.mkdir(breakdownsDir, { recursive: true });
-      
+
       const filename = `breakdown_${breakdown.id}.json`;
       const filepath = path.join(breakdownsDir, filename);
-      
+
       await fs.writeFile(filepath, JSON.stringify(breakdown, null, 2));
     } catch (error) {
       console.error('Error storing task breakdown:', error);
@@ -1113,10 +1113,10 @@ class IntelligenceEngine extends EventEmitter {
     try {
       const predictionsDir = path.join(this.config.memoryPath, 'intelligence', 'predictions');
       await fs.mkdir(predictionsDir, { recursive: true });
-      
+
       const filename = `predictions_${Date.now()}.json`;
       const filepath = path.join(predictionsDir, filename);
-      
+
       await fs.writeFile(filepath, JSON.stringify({
         predictions,
         taskBreakdown: taskBreakdown.id,
@@ -1129,7 +1129,7 @@ class IntelligenceEngine extends EventEmitter {
 
   extractCategories(taskBreakdown) {
     const categories = new Set();
-    
+
     if (taskBreakdown.levels) {
       taskBreakdown.levels.forEach(level => {
         if (level.tasks) {
@@ -1139,7 +1139,7 @@ class IntelligenceEngine extends EventEmitter {
         }
       });
     }
-    
+
     return Array.from(categories);
   }
 
@@ -1152,7 +1152,7 @@ class IntelligenceEngine extends EventEmitter {
       requiredSkills: Array.from(taskBreakdown.requiredSkills),
       timestamp: new Date().toISOString()
     };
-    
+
     this.taskPatterns.set(taskBreakdown.id, patterns);
     await this.saveIntelligenceState();
   }
@@ -1250,7 +1250,7 @@ class IntelligenceEngine extends EventEmitter {
 
   identifyRequiredSkills(breakdown) {
     const allSkills = new Set();
-    
+
     if (breakdown.levels) {
       breakdown.levels.forEach(level => {
         if (level.tasks) {
@@ -1269,7 +1269,7 @@ class IntelligenceEngine extends EventEmitter {
   identifyRiskFactors(breakdown) {
     const risks = [];
     const allTasks = this.flattenTaskLevels(breakdown);
-    
+
     // High complexity tasks
     const highComplexityTasks = allTasks.filter(task => this.getTaskComplexity(task) > 7);
     if (highComplexityTasks.length > 0) {
@@ -1294,36 +1294,36 @@ class IntelligenceEngine extends EventEmitter {
   async calculatePredictionConfidence(taskBreakdown) {
     // Calculate confidence based on various factors
     let confidence = 0.7; // Base confidence
-    
+
     // Increase confidence based on task breakdown completeness
     if (taskBreakdown.levels && taskBreakdown.levels.length > 1) {
       confidence += 0.1;
     }
-    
+
     // Increase confidence based on skill clarity
     const skillCount = Array.from(taskBreakdown.requiredSkills || []).length;
     if (skillCount > 0) {
       confidence += Math.min(0.15, skillCount * 0.03);
     }
-    
+
     // Decrease confidence for high complexity
     if (taskBreakdown.estimatedComplexity > 8) {
       confidence -= 0.1;
     }
-    
+
     // Decrease confidence for many risk factors
     const riskCount = taskBreakdown.riskFactors?.length || 0;
     if (riskCount > 3) {
       confidence -= 0.05;
     }
-    
+
     return Math.min(0.95, Math.max(0.5, confidence));
   }
 
   async applyLearnedOptimizations(taskBreakdown, similarProjects) {
     // Apply optimizations learned from similar projects
     const optimizations = [];
-    
+
     for (const project of similarProjects) {
       if (project.performance && project.performance.successRate > 0.8) {
         // Apply successful patterns
@@ -1334,18 +1334,18 @@ class IntelligenceEngine extends EventEmitter {
         });
       }
     }
-    
+
     return optimizations;
   }
 
   async adjustEstimatesFromHistory(taskBreakdown, similarProjects) {
     // Adjust time estimates based on historical data
     if (similarProjects.length === 0) return;
-    
-    const avgPerformance = similarProjects.reduce((sum, proj) => 
+
+    const avgPerformance = similarProjects.reduce((sum, proj) =>
       sum + (proj.performance?.timeAccuracy || 1), 0
     ) / similarProjects.length;
-    
+
     // Adjust estimates if historical accuracy suggests over/under estimation
     if (avgPerformance < 0.8) {
       // Historical projects took longer than estimated
@@ -1360,7 +1360,7 @@ class IntelligenceEngine extends EventEmitter {
   async identifyHistoricalRisks(taskBreakdown, similarProjects) {
     // Identify risks based on similar project outcomes
     const historicalRisks = [];
-    
+
     for (const project of similarProjects) {
       if (project.performance && project.performance.issues) {
         project.performance.issues.forEach(issue => {
@@ -1370,7 +1370,7 @@ class IntelligenceEngine extends EventEmitter {
         });
       }
     }
-    
+
     // Add historical risks to current breakdown
     if (historicalRisks.length > 0) {
       taskBreakdown.riskFactors = [

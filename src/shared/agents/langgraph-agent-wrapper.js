@@ -1,9 +1,9 @@
 /**
  * LangGraph Agent Wrapper
- * 
+ *
  * Wraps existing Trilogy agents (Sonnet, Opus, Specialists) with LangGraph
  * state management, checkpointing, and fault tolerance capabilities.
- * 
+ *
  * This enables:
  * - Automatic state persistence across agent executions
  * - Fault tolerance with automatic recovery
@@ -18,7 +18,7 @@ const TrilogyLangGraphCheckpointer = require('../coordination/langgraph-checkpoi
 class LangGraphAgentWrapper extends EventEmitter {
   constructor(agent, checkpointer, options = {}) {
     super();
-    
+
     this.agent = agent;
     this.checkpointer = checkpointer;
     this.options = {
@@ -29,17 +29,17 @@ class LangGraphAgentWrapper extends EventEmitter {
       retryDelay: options.retryDelay || 1000,
       ...options
     };
-    
+
     // Agent state
     this.currentThread = null;
     this.executionState = 'idle'; // idle, running, paused, failed, completed
     this.lastCheckpoint = null;
     this.executionHistory = [];
     this.retryCount = 0;
-    
+
     // Wrap agent methods with LangGraph capabilities
     this.wrapAgentMethods();
-    
+
     console.log(`🤖 LangGraph wrapper initialized for agent: ${agent.constructor.name}`);
   }
 
@@ -48,11 +48,11 @@ class LangGraphAgentWrapper extends EventEmitter {
    */
   wrapAgentMethods() {
     const originalMethods = ['process', 'execute', 'performTask', 'analyze'];
-    
+
     originalMethods.forEach(methodName => {
       if (typeof this.agent[methodName] === 'function') {
         const originalMethod = this.agent[methodName].bind(this.agent);
-        
+
         this.agent[methodName] = async (...args) => {
           return this.executeWithCheckpointing(methodName, originalMethod, args);
         };
@@ -67,10 +67,10 @@ class LangGraphAgentWrapper extends EventEmitter {
     if (!this.currentThread) {
       throw new Error('No active thread. Call startThread() first.');
     }
-    
+
     const executionId = `exec_${Date.now()}_${methodName}`;
     this.executionState = 'running';
-    
+
     try {
       // Pre-execution checkpoint
       if (this.options.enableCheckpointing) {
@@ -81,7 +81,7 @@ class LangGraphAgentWrapper extends EventEmitter {
           timestamp: new Date().toISOString()
         });
       }
-      
+
       // Check for approval gates
       if (this.options.enableApprovalGates && this.needsApproval(methodName, args)) {
         const approval = await this.checkpointer.requestApproval(
@@ -89,39 +89,39 @@ class LangGraphAgentWrapper extends EventEmitter {
           { method: methodName, args: this.sanitizeArgs(args) },
           { timeout: 5 * 60 * 1000 } // 5 minutes
         );
-        
+
         if (!approval.approved) {
           throw new Error(`Execution rejected: ${approval.reason || 'No reason provided'}`);
         }
       }
-      
+
       // Execute with retry logic
       let result;
       let attempts = 0;
-      
+
       while (attempts <= this.options.maxRetries) {
         try {
           this.emit('execution:started', { executionId, methodName, attempt: attempts + 1 });
-          
+
           result = await originalMethod(...args);
-          
+
           // Successful execution
           this.retryCount = 0;
           this.executionState = 'completed';
-          
+
           break;
-          
+
         } catch (error) {
           attempts++;
           this.retryCount = attempts;
-          
+
           console.error(`❌ Agent execution failed (attempt ${attempts}/${this.options.maxRetries + 1}):`, error);
-          
+
           if (attempts > this.options.maxRetries) {
             this.executionState = 'failed';
             throw error;
           }
-          
+
           // Save failure checkpoint for debugging
           if (this.options.enableCheckpointing) {
             await this.saveExecutionCheckpoint('execution_failure', {
@@ -133,14 +133,14 @@ class LangGraphAgentWrapper extends EventEmitter {
               timestamp: new Date().toISOString()
             });
           }
-          
+
           this.emit('execution:retry', { executionId, methodName, attempt: attempts, error });
-          
+
           // Wait before retry
           await new Promise(resolve => setTimeout(resolve, this.options.retryDelay * attempts));
         }
       }
-      
+
       // Post-execution checkpoint
       if (this.options.enableCheckpointing) {
         await this.saveExecutionCheckpoint('post_execution', {
@@ -151,14 +151,14 @@ class LangGraphAgentWrapper extends EventEmitter {
           success: true
         });
       }
-      
+
       this.emit('execution:completed', { executionId, methodName, result });
-      
+
       return result;
-      
+
     } catch (error) {
       this.executionState = 'failed';
-      
+
       // Final failure checkpoint
       if (this.options.enableCheckpointing) {
         await this.saveExecutionCheckpoint('execution_failed', {
@@ -171,9 +171,9 @@ class LangGraphAgentWrapper extends EventEmitter {
           success: false
         });
       }
-      
+
       this.emit('execution:failed', { executionId, methodName, error });
-      
+
       throw error;
     }
   }
@@ -191,13 +191,13 @@ class LangGraphAgentWrapper extends EventEmitter {
       },
       ...config
     };
-    
+
     this.currentThread = await this.checkpointer.createThread(threadConfig);
     this.executionState = 'idle';
     this.executionHistory = [];
-    
+
     this.emit('thread:started', this.currentThread);
-    
+
     console.log(`🧵 Started new thread for agent: ${this.currentThread.threadId}`);
     return this.currentThread;
   }
@@ -208,21 +208,21 @@ class LangGraphAgentWrapper extends EventEmitter {
   async resumeFromCheckpoint(threadId, checkpointId = null) {
     // Load thread configuration
     this.currentThread = { threadId, config: { configurable: { thread_id: threadId } } };
-    
+
     // Load checkpoint state
-    const checkpoint = checkpointId 
+    const checkpoint = checkpointId
       ? await this.checkpointer.revertToCheckpoint(threadId, checkpointId)
       : await this.checkpointer.loadCheckpoint(threadId);
-    
+
     if (checkpoint) {
       this.lastCheckpoint = checkpoint;
       this.executionState = 'paused'; // Ready to continue
-      
+
       this.emit('thread:resumed', { threadId, checkpoint });
-      
+
       console.log(`🔄 Resumed thread ${threadId} from checkpoint`);
     }
-    
+
     return checkpoint;
   }
 
@@ -233,7 +233,7 @@ class LangGraphAgentWrapper extends EventEmitter {
     if (!this.currentThread || !this.options.enableCheckpointing) {
       return;
     }
-    
+
     const checkpoint = {
       phase,
       agentType: this.agent.constructor.name,
@@ -242,16 +242,16 @@ class LangGraphAgentWrapper extends EventEmitter {
       thread: this.currentThread.threadId,
       timestamp: new Date().toISOString()
     };
-    
+
     const checkpointId = await this.checkpointer.saveCheckpoint(
       this.currentThread.threadId,
       checkpoint,
       { phase, agentType: this.agent.constructor.name }
     );
-    
+
     this.lastCheckpoint = { ...checkpoint, id: checkpointId };
     this.executionHistory.push(this.lastCheckpoint);
-    
+
     return checkpointId;
   }
 
@@ -265,7 +265,7 @@ class LangGraphAgentWrapper extends EventEmitter {
       'SonnetAgent': ['generateTasks', 'analyzePRD'],
       'SpecialistAgent': ['executeTask', 'performTask']
     };
-    
+
     const agentApprovals = approvalGates[this.agent.constructor.name] || [];
     return agentApprovals.includes(methodName);
   }
@@ -337,13 +337,13 @@ class LangGraphAgentWrapper extends EventEmitter {
           timestamp: new Date().toISOString()
         });
       }
-      
+
       this.emit('thread:closed', this.currentThread);
-      
+
       console.log(`🏁 Closed thread: ${this.currentThread.threadId}`);
       this.currentThread = null;
     }
-    
+
     this.executionState = 'idle';
     this.executionHistory = [];
     this.retryCount = 0;

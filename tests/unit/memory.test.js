@@ -92,10 +92,10 @@ describe('PostgreSQL Memory System', () => {
     test('should delete data', async () => {
       const namespace = 'delete-test';
       const key = 'deletable-key';
-      
+
       await memory.write(namespace, key, 'delete me');
       expect(await memory.read(namespace, key)).toBe('delete me');
-      
+
       const deleted = await memory.delete(namespace, key);
       expect(deleted).toBe(true);
       expect(await memory.read(namespace, key)).toBeNull();
@@ -125,7 +125,7 @@ describe('PostgreSQL Memory System', () => {
       // Should be able to acquire after release
       const acquiredAfterRelease = await memory.acquireLock(namespace, key, 5000);
       expect(acquiredAfterRelease).toBe(true);
-      
+
       await memory.releaseLock(namespace, key);
     });
 
@@ -142,7 +142,7 @@ describe('PostgreSQL Memory System', () => {
       // Should be able to acquire expired lock
       const acquiredAfterExpiry = await memory.acquireLock(namespace, key, 5000);
       expect(acquiredAfterExpiry).toBe(true);
-      
+
       await memory.releaseLock(namespace, key);
     });
   });
@@ -160,7 +160,7 @@ describe('PostgreSQL Memory System', () => {
       await memory.write('stats-test', 'key2', { test: true });
 
       const stats = await memory.getStats();
-      
+
       expect(stats).toBeDefined();
       expect(typeof stats.totalKeys).toBe('number');
       expect(Array.isArray(stats.keysByNamespace)).toBe(true);

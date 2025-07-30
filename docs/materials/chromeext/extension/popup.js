@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Check if MCP server is running
 async function checkServerStatus() {
   const statusEl = document.getElementById('status');
-  
+
   try {
     const response = await fetch(`${MCP_SERVER_URL}/health`);
     if (response.ok) {
@@ -34,10 +34,10 @@ async function checkServerStatus() {
 async function getSessionInfo() {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    
+
     // Get session ID from background script
     const response = await chrome.runtime.sendMessage({ type: 'GET_SESSION_ID' });
-    
+
     if (response && response.sessionId) {
       currentSessionId = response.sessionId;
       document.getElementById('session-info').style.display = 'block';
@@ -56,7 +56,7 @@ function setupEventListeners() {
   document.getElementById('toggle-tracking').addEventListener('click', toggleTracking);
   document.getElementById('start-recording').addEventListener('click', startRecording);
   document.getElementById('stop-recording').addEventListener('click', stopRecording);
-  
+
   // Load saved macros
   loadSavedMacros();
 }
@@ -65,20 +65,20 @@ function setupEventListeners() {
 async function captureDom() {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    
+
     // Inject script to capture DOM
     const results = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: () => document.documentElement.outerHTML
     });
-    
+
     if (results[0].result) {
       // Send DOM to background script
       await chrome.runtime.sendMessage({
         type: 'DOM_SNAPSHOT',
         data: { html: results[0].result }
       });
-      
+
       console.log('DOM captured and sent to server');
     }
   } catch (error) {
@@ -93,10 +93,10 @@ async function captureScreenshot() {
     const response = await chrome.runtime.sendMessage({
       type: 'CAPTURE_SCREENSHOT'
     });
-    
+
     if (response && response.success) {
       console.log('Screenshot captured successfully');
-      
+
       // Optionally show preview
       const previewWindow = window.open('', '_blank', 'width=800,height=600');
       previewWindow.document.write(`
@@ -121,7 +121,7 @@ async function captureScreenshot() {
 function toggleTracking() {
   const btn = document.getElementById('toggle-tracking');
   isTracking = !isTracking;
-  
+
   if (isTracking) {
     btn.textContent = 'Disable Tracking';
     btn.className = 'toggle-btn';
@@ -129,7 +129,7 @@ function toggleTracking() {
     btn.textContent = 'Enable Tracking';
     btn.className = 'toggle-btn disabled';
   }
-  
+
   // Send tracking state to content script
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     chrome.tabs.sendMessage(tabs[0].id, {
@@ -142,10 +142,10 @@ function toggleTracking() {
 // Start macro recording
 async function startRecording() {
   const macroName = document.getElementById('macro-name').value || `Macro_${Date.now()}`;
-  
+
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    
+
     // Send message to content script to start recording
     chrome.tabs.sendMessage(tab.id, {
       type: 'START_RECORDING',
@@ -167,7 +167,7 @@ async function startRecording() {
 async function stopRecording() {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    
+
     // Send message to content script to stop recording
     chrome.tabs.sendMessage(tab.id, {
       type: 'STOP_RECORDING'
@@ -177,7 +177,7 @@ async function stopRecording() {
         document.getElementById('stop-recording').style.display = 'none';
         document.getElementById('macro-name').disabled = false;
         document.getElementById('macro-name').value = '';
-        
+
         // Refresh macro list
         loadSavedMacros();
         console.log('Recording stopped');
@@ -193,9 +193,9 @@ async function loadSavedMacros() {
   try {
     const result = await chrome.storage.local.get(['macros']);
     const macros = result.macros || [];
-    
+
     const macrosList = document.getElementById('macros-list');
-    
+
     if (macros.length === 0) {
       macrosList.innerHTML = '<p class="no-macros">No macros saved</p>';
     } else {
@@ -220,17 +220,17 @@ async function loadSavedMacros() {
 async function playMacro(macroName) {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    
+
     // Get the macro from storage
     const result = await chrome.storage.local.get(['macros']);
     const macros = result.macros || [];
     const macro = macros.find(m => m.name === macroName);
-    
+
     if (!macro) {
       alert('Macro not found');
       return;
     }
-    
+
     // Send message to content script to play macro
     chrome.tabs.sendMessage(tab.id, {
       type: 'PLAY_MACRO',

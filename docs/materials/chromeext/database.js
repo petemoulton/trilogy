@@ -28,7 +28,7 @@ function initializeTables() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       last_login DATETIME
     )`,
-    
+
     // Sessions table
     `CREATE TABLE IF NOT EXISTS sessions (
       id TEXT PRIMARY KEY,
@@ -40,7 +40,7 @@ function initializeTables() {
       event_count INTEGER DEFAULT 0,
       is_active BOOLEAN DEFAULT 1
     )`,
-    
+
     // Events table
     `CREATE TABLE IF NOT EXISTS events (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,7 +57,7 @@ function initializeTables() {
       FOREIGN KEY (session_id) REFERENCES sessions(id),
       FOREIGN KEY (user_id) REFERENCES users(id)
     )`,
-    
+
     // Commands table
     `CREATE TABLE IF NOT EXISTS commands (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -74,7 +74,7 @@ function initializeTables() {
       FOREIGN KEY (session_id) REFERENCES sessions(id),
       FOREIGN KEY (user_id) REFERENCES users(id)
     )`,
-    
+
     // Macros table
     `CREATE TABLE IF NOT EXISTS macros (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -86,7 +86,7 @@ function initializeTables() {
       usage_count INTEGER DEFAULT 0,
       FOREIGN KEY (created_by) REFERENCES users(id)
     )`,
-    
+
     // Screenshots table
     `CREATE TABLE IF NOT EXISTS screenshots (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -98,7 +98,7 @@ function initializeTables() {
       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (session_id) REFERENCES sessions(id)
     )`,
-    
+
     // DOM snapshots table
     `CREATE TABLE IF NOT EXISTS dom_snapshots (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -201,7 +201,7 @@ const SessionDB = {
   create: (sessionId, tabId, url, title) => {
     return new Promise((resolve, reject) => {
       const sql = 'INSERT INTO sessions (id, tab_id, url, title) VALUES (?, ?, ?, ?)';
-      db.run(sql, [sessionId, tabId, url, title], function(err) {
+      db.run(sql, [sessionId, tabId, url, title], (err) => {
         if (err) reject(err);
         else resolve({ id: sessionId, tabId, url, title });
       });
@@ -213,7 +213,7 @@ const SessionDB = {
       const fields = Object.keys(updates).map(key => `${key} = ?`).join(', ');
       const values = Object.values(updates);
       const sql = `UPDATE sessions SET ${fields} WHERE id = ?`;
-      
+
       db.run(sql, [...values, sessionId], (err) => {
         if (err) reject(err);
         else resolve();
@@ -249,7 +249,7 @@ const EventDB = {
       const sql = `INSERT INTO events 
         (session_id, event_type, tag_name, selector, element_text, coordinates_x, coordinates_y, page_url, user_id)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-      
+
       const values = [
         eventData.sessionId,
         eventData.event.type,
@@ -261,7 +261,7 @@ const EventDB = {
         eventData.url,
         eventData.userId
       ];
-      
+
       db.run(sql, values, function(err) {
         if (err) reject(err);
         else resolve({ id: this.lastID });
@@ -301,7 +301,7 @@ const EventDB = {
         WHERE timestamp >= datetime('now', '-24 hours')
         GROUP BY event_type
       `;
-      
+
       db.all(sql, (err, rows) => {
         if (err) reject(err);
         else resolve(rows);
