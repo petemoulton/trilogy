@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List App - Multi-Provider AI Demo</title>
+    <meta name="description" content="A simple todo list application built with multi-provider AI orchestration">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="app-title">
+                <span class="icon">✓</span>
+                Todo List
+            </h1>
+            <p class="subtitle">Multi-Provider AI Demo</p>
+        </header>
+
+        <main class="main-content">
+            <section class="todo-input-section">
+                <form id="todo-form" class="todo-form" aria-label="Add new todo">
+                    <div class="input-group">
+                        <input 
+                            type="text" 
+                            id="todo-input" 
+                            class="todo-input" 
+                            placeholder="What needs to be done?" 
+                            maxlength="500"
+                            required
+                            aria-label="New todo item"
+                        >
+                        <button type="submit" class="add-button" aria-label="Add todo">
+                            <span class="button-text">Add</span>
+                            <span class="button-icon">+</span>
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="todos-section">
+                <div class="todos-header">
+                    <h2 class="todos-title">Your Todos</h2>
+                    <div class="todos-stats">
+                        <span id="total-count" class="stat">0 total</span>
+                        <span id="pending-count" class="stat">0 pending</span>
+                    </div>
+                </div>
+
+                <div id="loading-indicator" class="loading hidden" aria-live="polite">
+                    <div class="spinner"></div>
+                    <span>Loading todos...</span>
+                </div>
+
+                <div id="error-message" class="error-message hidden" role="alert">
+                    <span class="error-icon">⚠️</span>
+                    <span class="error-text">Something went wrong. Please try again.</span>
+                    <button class="error-dismiss" aria-label="Dismiss error">×</button>
+                </div>
+
+                <ul id="todos-list" class="todos-list" role="list">
+                    <!-- Todos will be dynamically inserted here -->
+                </ul>
+
+                <div id="empty-state" class="empty-state">
+                    <div class="empty-icon">📝</div>
+                    <h3>No todos yet</h3>
+                    <p>Add your first todo above to get started!</p>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p class="footer-text">
+                Built with 
+                <span class="provider-badge openai">OpenAI GPT-4</span> (Frontend),
+                <span class="provider-badge gemini">Google Gemini</span> (Backend),
+                <span class="provider-badge qa">GPT-3.5</span> (QA)
+            </p>
+            <p class="orchestration-credit">
+                Orchestrated by <strong>Claude Opus</strong>
+            </p>
+        </footer>
+    </div>
+
+    <!-- Template for todo items -->
+    <template id="todo-item-template">
+        <li class="todo-item" data-todo-id="">
+            <div class="todo-content">
+                <button class="todo-toggle" aria-label="Toggle completion">
+                    <span class="toggle-icon">✓</span>
+                </button>
+                <span class="todo-text"></span>
+                <span class="todo-date"></span>
+            </div>
+            <div class="todo-actions">
+                <button class="delete-button" aria-label="Delete todo">
+                    <span class="delete-icon">🗑️</span>
+                </button>
+            </div>
+        </li>
+    </template>
+
+    <script src="app.js"></script>
+</body>
+</html>

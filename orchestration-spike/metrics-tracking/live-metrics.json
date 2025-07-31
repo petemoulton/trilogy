@@ -1,0 +1,19 @@
+{
+  "role": "frontend-specialist",
+  "provider": "openai",
+  "model": "gpt-4",
+  "timestamp": "2025-07-31T01:39:54.635Z",
+  "metrics": {
+    "totalTokensInput": 0,
+    "totalTokensOutput": 0,
+    "totalCost": 0,
+    "requestCount": 0,
+    "failureCount": 0,
+    "retryCount": 0,
+    "averageResponseTime": 0,
+    "providerSwitches": 0
+  },
+  "currentTasks": 0,
+  "taskHistory": 0,
+  "failureHistory": 0
+}
