@@ -7,7 +7,7 @@ const { v4: uuidv4 } = require('uuid');
 class TodoServer {
   constructor() {
     this.app = express();
-    this.port = process.env.PORT || 3001;
+    this.port = process.env.PORT || 3102;
     this.dataFile = path.join(__dirname, 'todos.json');
     this.todos = [];
     
@@ -17,7 +17,7 @@ class TodoServer {
 
   setupMiddleware() {
     this.app.use(cors({
-      origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+      origin: process.env.CORS_ORIGIN || 'http://localhost:3103',
       credentials: true
     }));
 

@@ -5,8 +5,8 @@
 
 class IntegrationTestSuite {
   constructor() {
-    this.frontendUrl = 'http://localhost:3000';
-    this.backendUrl = 'http://localhost:3001';
+    this.frontendUrl = 'http://localhost:3103';
+    this.backendUrl = 'http://localhost:3102';
     this.tests = [];
     this.passed = 0;
     this.failed = 0;

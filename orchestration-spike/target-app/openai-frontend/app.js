@@ -6,7 +6,7 @@
 class TodoApp {
     constructor() {
         this.todos = [];
-        this.baseUrl = 'http://localhost:3001/api';
+        this.baseUrl = 'http://localhost:3102/api';
         
         // DOM elements
         this.form = document.getElementById('todo-form');
