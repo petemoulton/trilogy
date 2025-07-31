@@ -1,0 +1,48 @@
+{
+  "rateLimits": {
+    "openai": {
+      "tier": "free",
+      "limits": {
+        "requestsPerMinute": 20,
+        "requestsPerDay": 200,
+        "tokensPerMinute": 40000,
+        "tokensPerDay": 200000
+      },
+      "models": {
+        "gpt-4": {
+          "requestsPerMinute": 10,
+          "tokensPerMinute": 30000
+        },
+        "gpt-3.5-turbo": {
+          "requestsPerMinute": 20,
+          "tokensPerMinute": 40000
+        }
+      }
+    },
+    "gemini": {
+      "tier": "free",
+      "limits": {
+        "requestsPerMinute": 15,
+        "requestsPerDay": 1500,
+        "tokensPerMinute": 32000,
+        "tokensPerDay": 50000
+      },
+      "models": {
+        "gemini-pro": {
+          "requestsPerMinute": 15,
+          "tokensPerMinute": 32000
+        }
+      }
+    }
+  },
+  "quotaTracking": {
+    "resetInterval": "1h",
+    "warningThreshold": 0.8,
+    "emergencyThreshold": 0.95
+  },
+  "fallbackBehavior": {
+    "onQuotaExceeded": "switch_provider",
+    "onRateLimitHit": "exponential_backoff",
+    "onProviderDown": "use_fallback"
+  }
+}

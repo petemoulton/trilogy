@@ -1,0 +1,33 @@
+{
+  "session_id": "orchestration_spike_001",
+  "failure_tracking": {
+    "total_failures": 0,
+    "escalations_triggered": 0,
+    "provider_switches": 0,
+    "recovered_failures": 0
+  },
+  "failures": [],
+  "escalations": [],
+  "three_strike_events": [],
+  "provider_reliability": {
+    "openai_gpt4": {
+      "total_attempts": 0,
+      "failures": 0,
+      "failure_rate": 0,
+      "common_failure_types": {}
+    },
+    "gemini_pro": {
+      "total_attempts": 0,
+      "failures": 0,
+      "failure_rate": 0,
+      "common_failure_types": {}
+    },
+    "openai_gpt35": {
+      "total_attempts": 0,
+      "failures": 0,
+      "failure_rate": 0,
+      "common_failure_types": {}
+    }
+  },
+  "last_updated": null
+}

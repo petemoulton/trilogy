@@ -1,0 +1,64 @@
+{
+  "session_id": "orchestration_spike_001",
+  "start_time": null,
+  "end_time": null,
+  "providers": {
+    "openai_gpt4": {
+      "agent_role": "frontend-specialist",
+      "total_tokens_input": 0,
+      "total_tokens_output": 0,
+      "total_cost_usd": 0,
+      "requests_made": 0,
+      "tasks_assigned": 0,
+      "tasks_completed": 0,
+      "tasks_failed": 0,
+      "success_rate": 0,
+      "avg_response_time_ms": 0,
+      "model_used": "gpt-4"
+    },
+    "gemini_pro": {
+      "agent_role": "backend-specialist",
+      "total_tokens_input": 0,
+      "total_tokens_output": 0,
+      "total_cost_usd": 0,
+      "requests_made": 0,
+      "tasks_assigned": 0,
+      "tasks_completed": 0,
+      "tasks_failed": 0,
+      "success_rate": 0,
+      "avg_response_time_ms": 0,
+      "model_used": "gemini-pro"
+    },
+    "openai_gpt35": {
+      "agent_role": "qa-specialist",
+      "total_tokens_input": 0,
+      "total_tokens_output": 0,
+      "total_cost_usd": 0,
+      "requests_made": 0,
+      "tasks_assigned": 0,
+      "tasks_completed": 0,
+      "tasks_failed": 0,
+      "success_rate": 0,
+      "avg_response_time_ms": 0,
+      "model_used": "gpt-3.5-turbo"
+    }
+  },
+  "opus_orchestration": {
+    "coordination_tokens": 0,
+    "decisions_made": 0,
+    "escalations_handled": 0,
+    "integration_fixes": 0,
+    "provider_switches_initiated": 0,
+    "total_orchestration_time_ms": 0
+  },
+  "session_totals": {
+    "combined_input_tokens": 0,
+    "combined_output_tokens": 0,
+    "total_session_cost": 0,
+    "tasks_completed": 0,
+    "tasks_failed": 0,
+    "overall_success_rate": 0,
+    "cost_per_successful_task": 0
+  },
+  "last_updated": null
+}
